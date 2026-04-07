@@ -1,4 +1,5 @@
 import { Nextable } from "../ambler.ts";
+import { downloadFile } from "../utils/download_files.ts";
 
 export namespace DownloadFilesNode {
   export interface State {
@@ -12,9 +13,7 @@ export namespace DownloadFilesNode {
   };
 
   const defaultUtils: Utils = {
-    downloadFile: async (_url: string, _folder: string) => {
-      throw new Error("downloadFile not implemented");
-    },
+    downloadFile,
     print: (msg: string) => console.log(msg),
   };
 

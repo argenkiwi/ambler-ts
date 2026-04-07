@@ -1,4 +1,5 @@
 import { Next, Nextable } from "../ambler.ts";
+import { resolveKhinsiderUrl } from "../utils/resolve_khinsider_url.ts";
 
 const KHINSIDER_PREFIX = "https://downloads.khinsider.com/game-soundtracks";
 
@@ -16,9 +17,7 @@ export namespace ResolveUrlsNode {
   };
 
   const defaultUtils: Utils = {
-    resolveUrl: async (_url: string) => {
-      throw new Error("resolveUrl not implemented");
-    },
+    resolveUrl: resolveKhinsiderUrl,
   };
 
   export function create<S extends State>(
