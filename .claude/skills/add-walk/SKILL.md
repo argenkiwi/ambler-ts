@@ -1,6 +1,6 @@
 ---
 name: add-walk
-description: Creates a new Ambler walk: the TypeScript wiring file (walks/<name>.ts) and the Markdown specification (walks/<name>.md). Ensures any required nodes exist or creates them. Use this when the user wants to add a new state-machine program to the project.
+description: Creates a new Ambler walk: the TypeScript wiring file (walks/<name>.ts) and the Markdown specification (specs/<name>.md). Ensures any required nodes exist or creates them. Use this when the user wants to add a new state-machine program to the project.
 metadata:
   author: leandro
   version: "1.0"
@@ -11,9 +11,9 @@ metadata:
 This skill guides you in creating a complete Ambler walk. A walk is a state-machine program consisting of two files:
 
 1. `walks/<name>.ts` — TypeScript file defining the shared `State`, `initialState`, and the wired node graph.
-2. `walks/<name>.md` — Markdown specification describing the shared state and the logic/transitions of each step.
+2. `specs/<name>.md` — Markdown specification describing the shared state and the logic/transitions of each step.
 
-The canonical reference is `walks/counter.ts` and `walks/counter.md`.
+The canonical reference is `walks/counter.ts` and `specs/counter.md`.
 
 ---
 
@@ -119,11 +119,11 @@ Deno.test("MyNode should transition to onSuccess", async () => {
 
 ---
 
-## Step 3 — Create the Specification File (`walks/<name>.md`)
+## Step 3 — Create the Specification File (`specs/<name>.md`)
 
 Create the Markdown spec **before** the TypeScript file, so it acts as a blueprint.
 
-Follow the exact format of `walks/counter.md`:
+Follow the exact format of `specs/counter.md`:
 
 ```markdown
 # Program Specifications
@@ -219,7 +219,7 @@ deno test nodes/
 
 Before finishing, confirm:
 
-- [ ] `walks/<name>.md` exists and matches the node names in the `.ts` file.
+- [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
 - [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
 - [ ] Every new node has a `nodes/<nodeName>_test.ts` with at least one test.
@@ -233,7 +233,7 @@ Before finishing, confirm:
 | File | Purpose |
 |------|---------|
 | `walks/counter.ts` | Canonical wiring example |
-| `walks/counter.md` | Canonical specification example |
+| `specs/counter.md` | Canonical specification example |
 | `nodes/startNode.ts` | Example node with input + error handling |
 | `nodes/countNode.ts` | Example node with randomized transition |
 | `nodes/stopNode.ts` | Example terminal node (returns `null`) |

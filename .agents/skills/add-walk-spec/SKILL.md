@@ -1,6 +1,6 @@
 ---
 name: add-walk-spec
-description: Specialist in creating and updating Markdown specifications for Ambler walks. Use this when a user wants to document a new or existing walk in the 'walks/' directory.
+description: Specialist in creating and updating Markdown specifications for Ambler walks. Use this when a user wants to document a new or existing walk in the 'specs/' directory.
 metadata:
   author: Gemini CLI
   version: "1.0"
@@ -8,7 +8,7 @@ metadata:
 
 # Add Walk Specification
 
-This skill guides you in creating or updating a Markdown specification file (e.g., `walks/<walk-name>.md`) for an Ambler walk. These specifications provide a high-level overview of the program's shared state and the logic for each transition (edge) in the state machine.
+This skill guides you in creating or updating a Markdown specification file (e.g., `specs/<walk-name>.md`) for an Ambler walk. These specifications provide a high-level overview of the program's shared state and the logic for each transition (edge) in the state machine.
 
 ## Instructions
 
@@ -16,7 +16,7 @@ When asked to create a walk specification, follow these steps:
 
 ### 1. Identify the Walk's Name and Purpose
 - If not provided, ask the user for the name and a brief description of the walk.
-- The file should be named `walks/<name>.md`.
+- The file should be named `specs/<name>.md`.
 
 ### 2. Determine the Shared State
 - Identify the data structure that is passed between nodes.
@@ -31,7 +31,7 @@ When asked to create a walk specification, follow these steps:
   - Its transitions (what happens after it completes, e.g., "If the input is empty, it proceeds to `COUNT`").
 
 ### 4. Format the Markdown
-- Follow the exact format of `walks/counter.md`:
+- Follow the exact format of `specs/counter.md`:
   - Main title: `# Program Specifications`
   - Introduction paragraph.
   - `## Shared State` section.

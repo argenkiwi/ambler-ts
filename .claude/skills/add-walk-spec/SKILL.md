@@ -8,14 +8,14 @@ metadata:
 
 # Add Walk Specification
 
-This skill guides you in creating a Markdown specification file (`walks/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine, following the format established in `walks/counter.md`.
+This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine, following the format established in `specs/counter.md`.
 
 ## Instructions
 
 ### 1. Identify the Walk's Name and Purpose
 
 - If not provided, ask the user for the name and a brief description of the walk.
-- The file should be named `walks/<name>.md`.
+- The file should be named `specs/<name>.md`.
 
 ### 2. Determine the Shared State
 
@@ -33,7 +33,7 @@ This skill guides you in creating a Markdown specification file (`walks/<walk-na
 
 ### 4. Format the Markdown
 
-Follow the exact format of `walks/counter.md`:
+Follow the exact format of `specs/counter.md`:
 
 ```markdown
 # Program Specifications
@@ -64,18 +64,18 @@ Follow the exact format of `walks/counter.md`:
 
 ### 5. Write the File
 
-Use the Write tool to create `walks/<name>.md`.
+Use the Write tool to create `specs/<name>.md`.
 
 ## Guidelines
 
-- **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``), matching the style in `walks/counter.md`.
+- **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``), matching the style in `specs/counter.md`.
 - **Clarity**: Describe *what* the program does, not *how* the code implements it.
 - **Consistency**: If `walks/<name>.ts` already exists, ensure the spec reflects the implementation. If it doesn't, treat the spec as a blueprint.
 - **No extra sections**: Stick to `# Program Specifications`, `## Shared State`, and `## Steps` — no additional top-level sections unless the walk clearly requires them.
 
 ## Reference Example
 
-See `walks/counter.md` for the canonical example:
+See `specs/counter.md` for the canonical example:
 
 - Shared state is a single integer (the count).
 - Three steps: `Start`, `Count`, `Stop`.

@@ -10,7 +10,7 @@ metadata:
 
 This skill guides you in creating a new Ambler walk. A walk consists of two files:
 1. `walks/<walk-name>.ts`: The TypeScript file that defines the state and wires the nodes together.
-2. `walks/<walk-name>.md`: The Markdown specification for the walk.
+2. `specs/<walk-name>.md`: The Markdown specification for the walk.
 
 ## Instructions
 
@@ -20,10 +20,9 @@ When asked to create a new Ambler walk, follow these steps:
 - Determine the name of the walk (e.g., `processWalk`).
 - Identify the shared `State` interface and the `initialState`.
 
-### 2. Create the Specification File (`walks/<walk-name>.md`)
-- Follow the format defined in the `add-walk-spec` skill.
-- Describe the shared state and the logic for each node (step).
-- Ensure the descriptions match the intended behavior.
+### 2. Create the Specification File (`specs/<walk-name>.md`)
+- Use the `add-walk-spec` skill to create or update the Markdown specification for the walk.
+- Ensure the specification accurately describes the shared state and node logic.
 
 ### 3. Create the Wiring File (`walks/<walk-name>.ts`)
 - Use the **Wiring Pattern** from `AGENTS.md`.
@@ -65,25 +64,6 @@ const nodes: Record<string, Nextable<State>> = {
 if (import.meta.main) {
   await amble(nodes.start, initialState);
 }
-```
-
-### Specification Template (`walks/myWalk.md`)
-```markdown
-# Program Specifications
-
-<Brief description.>
-
-## Shared State
-
-<Description of State properties.>
-
-## Steps
-
-### Start
-- <Description of StartNode logic and transitions.>
-
-### Next
-- <Description of NodeB logic and transitions.>
 ```
 
 ## Guidelines
