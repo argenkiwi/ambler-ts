@@ -3,6 +3,7 @@ import { Next, Nextable } from "../ambler.ts";
 export namespace StoryDecisionNode {
   export interface State {
     selectedModel: string;
+    ollamaHost: string;
     identity: string;
     placement: string;
     circumstances: string;
@@ -38,7 +39,7 @@ export namespace StoryDecisionNode {
       const options: string[] = [];
 
       for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes("- [ ]")) {
+        if (lines[i].includes(". [ ]")) {
           checkboxLines.push(i);
           options.push(lines[i]);
         }
@@ -49,27 +50,38 @@ export namespace StoryDecisionNode {
         return new Next(edges.onDecisionMade, state);
       }
 
-      utils.print("\nChoose an option:");
-      options.forEach((opt, idx) => utils.print(`${idx}: ${opt}`));
-
-      const input = await utils.readLine("Select option index: ");
-      if (input === null) return null;
-
-      const selectedIdx = parseInt(input);
-      if (isNaN(selectedIdx) || selectedIdx < 0 || selectedIdx >= options.length) {
+      let selectedIdx: number;
+      while (true) {
+        const input = await utils.readLine(
+          `Select option (1-${options.length}): `,
+        );
+        if (input === null) return null;
+        const parsed = parseInt(input);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= options.length) {
+          selectedIdx = parsed;
+          break;
+        }
         utils.print("Invalid selection. Please try again.");
-        return new Next(edges.onDecisionMade, state); // This will loop back to current node if wired correctly
       }
 
       // Update the last page in the state
       const updatedLines = [...lines];
-      const lineIndexInLines = checkboxLines[selectedIdx];
-      updatedLines[lineIndexInLines] = lines[lineIndexInLines].replace("- [ ]", "- [x]");
+      const lineIndexInLines = checkboxLines[selectedIdx - 1];
+      updatedLines[lineIndexInLines] = lines[lineIndexInLines].replace(
+        ". [ ]",
+        ". [x]",
+      );
 
       const updatedLastPage = updatedLines.join("\n");
-      const updatedStoryPages = [...state.storyPages.slice(0, -1), updatedLastPage];
+      const updatedStoryPages = [
+        ...state.storyPages.slice(0, -1),
+        updatedLastPage,
+      ];
 
-      return new Next(edges.onDecisionMade, { ...state, storyPages: updatedStoryPages });
+      return new Next(edges.onDecisionMade, {
+        ...state,
+        storyPages: updatedStoryPages,
+      });
     };
   }
 }

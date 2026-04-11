@@ -1,4 +1,5 @@
-import { amble, node, Nextable } from "../ambler.ts";
+import { amble, Nextable, node } from "../ambler.ts";
+import { OllamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
 import { ModelSelectNode } from "../nodes/modelSelectNode.ts";
 import { StoryIntroNode } from "../nodes/storyIntroNode.ts";
 import { StoryPageNode } from "../nodes/storyPageNode.ts";
@@ -7,6 +8,7 @@ import { StorySaveNode } from "../nodes/storySaveNode.ts";
 import { StopNode } from "../nodes/stopNode.ts";
 
 export interface State {
+  ollamaHost: string;
   selectedModel: string;
   identity: string;
   placement: string;
@@ -16,6 +18,7 @@ export interface State {
 }
 
 const initialState: State = {
+  ollamaHost: "",
   selectedModel: "",
   identity: "",
   placement: "",
@@ -25,12 +28,23 @@ const initialState: State = {
 };
 
 const nodes: Record<string, Nextable<State>> = {
-  start: node(() => ModelSelectNode.create({ onSelect: nodes.intro })),
+  start: node(() =>
+    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect })
+  ),
+  modelSelect: node(() => ModelSelectNode.create({ onSelect: nodes.intro })),
   intro: node(() => StoryIntroNode.create({ onIntroComplete: nodes.page })),
-  page: node(() => StoryPageNode.create({ onPageComplete: nodes.save, onDecisionRequired: nodes.decision })),
-  decision: node(() => StoryDecisionNode.create({ onDecisionMade: nodes.page })),
-  save: node(() => StorySaveNode.create({ onSaveComplete: nodes.stop })),
-  stop: node(() => StopNode.create()),
+  page: node(() =>
+    StoryPageNode.create({
+      onPageComplete: nodes.save,
+      onDecisionRequired: nodes.decision,
+    })
+  ),
+  decision: node(() =>
+    StoryDecisionNode.create({ onDecisionMade: nodes.page })
+  ),
+  save: node(() =>
+    StorySaveNode.create({ onSaveComplete: (state: State) => null })
+  ),
 };
 
 if (import.meta.main) {

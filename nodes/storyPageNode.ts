@@ -1,9 +1,10 @@
 import { Next, Nextable } from "../ambler.ts";
-import { Ollama } from 'npm:ollama'
+import { Ollama } from "npm:ollama";
 
 export namespace StoryPageNode {
   export interface State {
     selectedModel: string;
+    ollamaHost: string;
     identity: string;
     placement: string;
     circumstances: string;
@@ -17,14 +18,18 @@ export namespace StoryPageNode {
   };
 
   export type Utils = {
-    chat: (model: string, messages: { role: string; content: string }[]) => Promise<string>;
+    chat: (
+      host: string,
+      model: string,
+      messages: { role: string; content: string }[],
+    ) => Promise<string>;
     readLine: (msg: string) => Promise<string | null>;
     print: (msg: string) => void;
   };
 
   const defaultUtils: Utils = {
-    chat: async (model, messages) => {
-      const ollama = new Ollama({ host: 'http://192.168.1.5:11434' })
+    chat: async (host, model, messages) => {
+      const ollama = new Ollama({ host });
       const response = await ollama.chat({ model, messages });
       return response.message.content;
     },
@@ -37,7 +42,7 @@ export namespace StoryPageNode {
     utils: Utils = defaultUtils,
   ): Nextable<S> {
     return async (state: S): Promise<Next<S> | null> => {
-      const prompt = `Write a page (max 250 words) of a CYOA story. 
+      const prompt = `Write a page (max 280 characters) of a CYOA story. 
       Context:
       Protagonist: ${state.identity}
       Setting: ${state.placement}
@@ -45,28 +50,41 @@ export namespace StoryPageNode {
       Previous story content: ${state.storyPages.join("\n\n")}
 
       Rules:
-      - Continue the story.
       - Use second person singular.
-      - Decide wheter the story should end or continue, increasing the likelyhood of it ending by 10% for each new page.
+      - Decide wheter the story should end or continue (chance of ending is ${state.currentPage} in 10).
       - If the story ends, the final line must be "The End".
-      - If the story continues, the final two lines must be two markdown checkboxes representing actions the protagonist can take (e.g., "- [ ] Option 1\n- [ ] Option 2").
+      - If the story continues, the final lines must be a numbered list of markdown checkboxes representing 2 or 3 actions the protagonist can choose from (e.g., "1. [ ] Option 1\n2. [ ] Option 2").
       - Do not include any other text outside the story and the options/end marker.`;
 
       const messages = [
-        { role: "user", content: prompt }
+        { role: "user", content: prompt },
       ];
 
-      const reply = await utils.chat(state.selectedModel, messages);
+      const reply = await utils.chat(
+        state.ollamaHost,
+        state.selectedModel,
+        messages,
+      );
       const newPage = reply.trim();
       const updatedStoryPages = [...state.storyPages, newPage];
       const fullStory = updatedStoryPages.join("\n\n");
-      
-      utils.print(`\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`);
+
+      utils.print(
+        `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
+      );
 
       if (fullStory.trim().endsWith("The End")) {
-        return new Next(edges.onPageComplete, { ...state, storyPages: updatedStoryPages, currentPage: state.currentPage + 1 });
+        return new Next(edges.onPageComplete, {
+          ...state,
+          storyPages: updatedStoryPages,
+          currentPage: state.currentPage + 1,
+        });
       } else {
-        return new Next(edges.onDecisionRequired, { ...state, storyPages: updatedStoryPages, currentPage: state.currentPage + 1 });
+        return new Next(edges.onDecisionRequired, {
+          ...state,
+          storyPages: updatedStoryPages,
+          currentPage: state.currentPage + 1,
+        });
       }
     };
   }
