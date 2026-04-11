@@ -12,6 +12,7 @@ export interface State {
   placement: string;
   circumstances: string;
   storyPages: string[];
+  currentPage: number;
 }
 
 const initialState: State = {
@@ -20,6 +21,7 @@ const initialState: State = {
   placement: "",
   circumstances: "",
   storyPages: [],
+  currentPage: 1,
 };
 
 const nodes: Record<string, Nextable<State>> = {

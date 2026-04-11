@@ -8,6 +8,7 @@ export namespace StoryPageNode {
     placement: string;
     circumstances: string;
     storyPages: string[];
+    currentPage: number;
   }
 
   export type Edges<S extends State> = {
@@ -60,12 +61,12 @@ export namespace StoryPageNode {
       const updatedStoryPages = [...state.storyPages, newPage];
       const fullStory = updatedStoryPages.join("\n\n");
       
-      utils.print(`\n--- New Page ---\n${newPage}\n---------------`);
+      utils.print(`\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`);
 
       if (fullStory.trim().endsWith("The End")) {
-        return new Next(edges.onPageComplete, { ...state, storyPages: updatedStoryPages });
+        return new Next(edges.onPageComplete, { ...state, storyPages: updatedStoryPages, currentPage: state.currentPage + 1 });
       } else {
-        return new Next(edges.onDecisionRequired, { ...state, storyPages: updatedStoryPages });
+        return new Next(edges.onDecisionRequired, { ...state, storyPages: updatedStoryPages, currentPage: state.currentPage + 1 });
       }
     };
   }

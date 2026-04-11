@@ -7,6 +7,7 @@ export namespace StoryDecisionNode {
     placement: string;
     circumstances: string;
     storyPages: string[];
+    currentPage: number;
   }
 
   export type Edges<S extends State> = {
