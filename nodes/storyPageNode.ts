@@ -1,5 +1,5 @@
 import { Next, Nextable } from "../ambler.ts";
-import { Ollama } from "npm:ollama";
+import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export namespace StoryPageNode {
   export interface State {
@@ -29,9 +29,7 @@ export namespace StoryPageNode {
 
   const defaultUtils: Utils = {
     chat: async (host, model, messages) => {
-      const ollama = new Ollama({ host });
-      const response = await ollama.chat({ model, messages });
-      return response.message.content;
+      return await ollamaChat(host, model, messages);
     },
     readLine: async (msg: string) => prompt(msg),
     print: (msg: string) => console.log(msg),

@@ -5,13 +5,15 @@ import { Nextable } from "../ambler.ts";
 Deno.test("chatResponseNode should send messages to chat, print reply, and append to history", async () => {
   const initialState: ChatResponseNode.State = {
     messages: [{ role: "user", content: "Hello" }],
+    ollamaHost: "http://localhost:11434",
+    selectedModel: "llama3.2",
   };
   let captured: ChatResponseNode.State | undefined;
   let printed: string | undefined;
   const capture: Nextable<ChatResponseNode.State> = async (s) => { captured = s; return null; };
 
   const utils: ChatResponseNode.Utils = {
-    chat: async (_messages) => "Hi there!",
+    chat: async (_messages, _host, _model) => "Hi there!",
     print: (msg) => { printed = msg; },
   };
 
@@ -33,12 +35,21 @@ Deno.test("chatResponseNode should pass the full message history to the chat uti
       { role: "assistant", content: "Hi!" },
       { role: "user", content: "How are you?" },
     ],
+    ollamaHost: "http://localhost:11434",
+    selectedModel: "llama3.2",
   };
   let receivedMessages: ChatResponseNode.Message[] | undefined;
+  let receivedHost: string | undefined;
+  let receivedModel: string | undefined;
   const capture: Nextable<ChatResponseNode.State> = async (_s) => null;
 
   const utils: ChatResponseNode.Utils = {
-    chat: async (messages) => { receivedMessages = messages; return "I'm fine!"; },
+    chat: async (messages, host, model) => {
+      receivedMessages = messages;
+      receivedHost = host;
+      receivedModel = model;
+      return "I'm fine!";
+    },
     print: () => {},
   };
 
@@ -48,4 +59,6 @@ Deno.test("chatResponseNode should pass the full message history to the chat uti
 
   assertEquals(receivedMessages?.length, 3);
   assertEquals(receivedMessages?.[2], { role: "user", content: "How are you?" });
+  assertEquals(receivedHost, "http://localhost:11434");
+  assertEquals(receivedModel, "llama3.2");
 });

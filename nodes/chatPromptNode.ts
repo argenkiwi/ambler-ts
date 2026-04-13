@@ -37,7 +37,10 @@ export namespace ChatPromptNode {
       if (QUIT_WORDS.has(trimmed.toLowerCase())) {
         return new Next(edges.onQuit, state);
       }
-      const messages: Message[] = [...state.messages, { role: "user", content: trimmed }];
+      const messages: Message[] = [
+        ...state.messages,
+        { role: "user", content: trimmed },
+      ];
       return new Next(edges.onChat, { ...state, messages });
     };
   }

@@ -5,7 +5,6 @@ import { StoryIntroNode } from "../nodes/storyIntroNode.ts";
 import { StoryPageNode } from "../nodes/storyPageNode.ts";
 import { StoryDecisionNode } from "../nodes/storyDecisionNode.ts";
 import { StorySaveNode } from "../nodes/storySaveNode.ts";
-import { StopNode } from "../nodes/stopNode.ts";
 
 export interface State {
   ollamaHost: string;
