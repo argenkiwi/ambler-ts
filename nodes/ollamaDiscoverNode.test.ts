@@ -1,0 +1,62 @@
+import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { OllamaDiscoverNode } from "./ollamaDiscoverNode.ts";
+import { Nextable } from "../ambler.ts";
+
+const baseState: OllamaDiscoverNode.State = { ollamaHost: "" };
+
+Deno.test("ollamaDiscoverNode should set ollamaHost when a candidate host is reachable", async () => {
+  let capturedState: OllamaDiscoverNode.State | undefined;
+  const captureNext: Nextable<OllamaDiscoverNode.State> = async (s) => {
+    capturedState = s;
+    return null;
+  };
+
+  const utils: OllamaDiscoverNode.Utils = {
+    tryHost: async (host) => host === "http://localhost:11434",
+    readLine: async (_msg) => null,
+    print: () => {},
+  };
+
+  const result = await OllamaDiscoverNode.create({ onDiscovered: captureNext }, utils)(baseState);
+
+  if (!result) throw new Error("Expected Next, got null");
+  await result.run();
+
+  assertEquals(capturedState?.ollamaHost, "http://localhost:11434");
+});
+
+Deno.test("ollamaDiscoverNode should return null when no host found and readLine returns null", async () => {
+  const utils: OllamaDiscoverNode.Utils = {
+    tryHost: async (_host) => false,
+    readLine: async (_msg) => null,
+    print: () => {},
+  };
+
+  const result = await OllamaDiscoverNode.create(
+    { onDiscovered: async (_s) => null },
+    utils,
+  )(baseState);
+
+  assertEquals(result, null);
+});
+
+Deno.test("ollamaDiscoverNode should use manual host when no candidate is reachable", async () => {
+  let capturedState: OllamaDiscoverNode.State | undefined;
+  const captureNext: Nextable<OllamaDiscoverNode.State> = async (s) => {
+    capturedState = s;
+    return null;
+  };
+
+  const utils: OllamaDiscoverNode.Utils = {
+    tryHost: async (_host) => false,
+    readLine: async (_msg) => "  http://192.168.1.5:11434  ",
+    print: () => {},
+  };
+
+  const result = await OllamaDiscoverNode.create({ onDiscovered: captureNext }, utils)(baseState);
+
+  if (!result) throw new Error("Expected Next, got null");
+  await result.run();
+
+  assertEquals(capturedState?.ollamaHost, "http://192.168.1.5:11434");
+});

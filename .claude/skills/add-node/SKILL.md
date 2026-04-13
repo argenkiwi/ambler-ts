@@ -98,50 +98,7 @@ export namespace <Name>Node {
 
 ## 3. Create `nodes/<name>Node.test.ts`
 
-Write one `Deno.test` per meaningful branch of logic (one per edge + one per error/edge case).
-
-```typescript
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { <Name>Node } from "./<name>Node.ts";
-import { Nextable } from "../ambler.ts";
-
-Deno.test("<name>Node should <behavior> when <condition>", async () => {
-  const initialState: <Name>Node.State = { /* ... */ };
-  let capturedState: <Name>Node.State | undefined;
-
-  // Capture function to observe state after transition.
-  const captureNext: Nextable<<Name>Node.State> = async (s) => {
-    capturedState = s;
-    return null;
-  };
-  // For edges that should NOT be taken in this test, use a no-op or a throw:
-  // const captureOther: Nextable<<Name>Node.State> = async (_s) => null;
-
-  const utils: <Name>Node.Utils = {
-    print: () => {},
-    // Override each util to be deterministic and side-effect-free.
-  };
-
-  const nextResult = await <Name>Node.create(
-    { onSuccess: captureNext /*, onError: captureOther */ },
-    utils,
-  )(initialState);
-
-  if (!nextResult) throw new Error("Expected Next, got null");
-  await nextResult.run();  // Drives state into captureNext.
-
-  assertEquals(capturedState?.someField, expectedValue);
-});
-```
-
-### Test rules
-
-- **Import `assertEquals` from `https://deno.land/std@0.224.0/assert/mod.ts`** — same version as the rest of the project.
-- **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
-- **One test per edge/branch** — cover every `return new Next(...)` line and the `null` case for terminal nodes.
-- **Use closure variables to capture state** — declare `let capturedState` before the test, assign inside `captureNext`, assert after `nextResult.run()`.
-- **Guard against unexpected `null`** — always check `if (!nextResult) throw new Error(...)` before calling `.run()`, unless you are testing a terminal node that must return `null` (in which case assert `assertEquals(nextResult, null)`).
-- **Test names follow the pattern**: `"<name>Node should <expected behavior> when <condition>"`.
+Use the `/add-node-test` skill to generate the test file for this node.
 
 ---
 
