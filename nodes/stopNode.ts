@@ -15,7 +15,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<null> => {
+  return async (state: S) => {
     utils.print(`Final count: ${state.count}`);
     return null;
   };

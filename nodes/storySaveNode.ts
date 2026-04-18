@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint } from "../ambler.ts";
+import { next, Nextable, defaultPrint } from "../ambler.ts";
 import fs from "node:fs/promises";
 
 export interface State {
@@ -31,7 +31,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const fullStory = state.storyPages.join("\n\n");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `story-${timestamp}`;

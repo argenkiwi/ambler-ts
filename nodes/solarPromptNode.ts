@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   solarPrompt: string;
@@ -22,7 +22,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     utils.print("\n--- Solar Prompt Input ---");
     const promptText = await utils.readLine("Enter your solar prompt: ");
     if (promptText === null) return null;

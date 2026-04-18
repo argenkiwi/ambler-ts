@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -38,7 +38,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}

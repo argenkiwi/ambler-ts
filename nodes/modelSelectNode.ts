@@ -1,5 +1,5 @@
 import { Ollama } from 'npm:ollama'
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -30,7 +30,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));

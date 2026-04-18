@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -24,7 +24,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const identity = await utils.readLine("Who is the protagonist? ");
     const placement = await utils.readLine("Where and when does the story take place? ");
     const circumstances = await utils.readLine("What is happening? ");

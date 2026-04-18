@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   generatedStory: string;
@@ -34,7 +34,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const input = await utils.readLine("Would you like to save this story? (y/n): ");
     if (input?.toLowerCase() === "y") {
       const success = await utils.saveToFile(state.generatedStory);

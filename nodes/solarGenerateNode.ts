@@ -1,5 +1,5 @@
 import { Ollama } from 'npm:ollama';
-import { next, Next, Nextable, defaultPrint } from "../ambler.ts";
+import { next, Nextable, defaultPrint } from "../ambler.ts";
 
 export interface State {
   ollamaHost: string;
@@ -50,7 +50,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     utils.print("\nGenerating your solarpunk story... (this may take a moment)");
     try {
       const story = await utils.generateStory(

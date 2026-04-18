@@ -13,7 +13,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (_state: S): Promise<null> => {
+  return async (_state: S) => {
     utils.print("Goodbye!");
     return null;
   };

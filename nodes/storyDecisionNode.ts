@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -28,7 +28,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
     if (!lastPage) return null;
 

@@ -1,4 +1,4 @@
-import { next, Next, Nextable, defaultPrint } from "../ambler.ts";
+import { next, Nextable, defaultPrint } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -25,7 +25,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<Next<S> | null> => {
+  return async (state: S) => {
     utils.print(`Current count: ${state.count}`);
     await utils.sleep(1000);
     const nextState = { ...state, count: state.count + 1 };
