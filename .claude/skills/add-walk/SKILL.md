@@ -3,7 +3,7 @@ name: add-walk
 description: Creates a new Ambler walk; the TypeScript wiring file (walks/<name>.ts) and the Markdown specification (specs/<name>.md). Ensures any required nodes exist or creates them. Use this when the user wants to add a new state-machine program to the project.
 metadata:
   author: leandro
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Add Walk
@@ -30,46 +30,43 @@ The canonical reference is `walks/counter.ts` and `specs/counter.md`.
 For each node the walk requires:
 
 - Check if a file `nodes/<nodeName>.ts` already exists (use Glob).
-- If it does **not** exist, create it **before** writing the walk. Follow the Node Namespace Pattern below.
-- Also create `nodes/<nodeName>_test.ts` for every new node and verify tests pass with `deno test nodes/<nodeName>_test.ts`.
+- If it does **not** exist, create it **before** writing the walk. Follow the Node Pattern below.
+- Also create `nodes/<nodeName>.test.ts` for every new node and verify tests pass with `deno test nodes/<nodeName>.test.ts`.
 
-### Node Namespace Pattern
+### Node Pattern
 
-Every node in `nodes/` follows this exact structure:
+Every node in `nodes/` uses flat module-level exports — no namespace wrapper. Walks import with `import * as MyNode from "../nodes/myNode.ts"`.
 
 ```typescript
 // nodes/myNode.ts
-import { Next, Nextable } from "../ambler.ts";
+import { next, Nextable, defaultPrint } from "../ambler.ts";
 
-export namespace MyNode {
-  export interface State {
-    // Only the properties this node uses
-    field: string;
-  }
+export interface State {
+  // Only the properties this node uses
+  field: string;
+}
 
-  export type Edges<S extends State> = {
-    onSuccess: Nextable<S>;
-    onError: Nextable<S>;
+export type Edges<S extends State> = {
+  onSuccess: Nextable<S>;
+  onError: Nextable<S>;
+};
+
+export type Utils = {
+  print: (msg: string) => void;
+};
+
+const defaultUtils: Utils = {
+  print: defaultPrint,
+};
+
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+): Nextable<S> {
+  return async (state: S) => {
+    utils.print(`...`);
+    return next(edges.onSuccess, state);
   };
-
-  export type Utils = {
-    print: (msg: string) => void;
-  };
-
-  const defaultUtils: Utils = {
-    print: (msg: string) => console.log(msg),
-  };
-
-  export function create<S extends State>(
-    edges: Edges<S>,
-    utils: Utils = defaultUtils,
-  ): Nextable<S> {
-    return async (state: S): Promise<Next<S> | null> => {
-      // Node logic here
-      utils.print(`...`);
-      return new Next(edges.onSuccess, state);
-    };
-  }
 }
 ```
 
@@ -79,7 +76,7 @@ export namespace MyNode {
 export function create<S extends State>(
   utils: Utils = defaultUtils,
 ): Nextable<S> {
-  return async (state: S): Promise<null> => {
+  return async (state: S) => {
     utils.print(`Done: ${state.field}`);
     return null;
   };
@@ -89,12 +86,12 @@ export function create<S extends State>(
 ### Node Test Pattern
 
 ```typescript
-// nodes/myNode_test.ts
+// nodes/myNode.test.ts
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { MyNode } from "./myNode.ts";
+import * as MyNode from "./myNode.ts";
 import { Nextable } from "../ambler.ts";
 
-Deno.test("MyNode should transition to onSuccess", async () => {
+Deno.test("myNode should transition to onSuccess", async () => {
   let captured: MyNode.State | undefined;
   const capture: Nextable<MyNode.State> = async (s) => { captured = s; return null; };
 
@@ -102,10 +99,13 @@ Deno.test("MyNode should transition to onSuccess", async () => {
     print: () => {},
   };
 
-  const next = await MyNode.create({ onSuccess: capture, onError: async () => null }, mockUtils)(
-    { field: "test" },
-  );
-  await next?.run();
+  const nextResult = await MyNode.create(
+    { onSuccess: capture, onError: async () => null },
+    mockUtils,
+  )({ field: "test" });
+
+  if (!nextResult) throw new Error("Expected Next, got null");
+  await nextResult.run();
 
   assertEquals(captured?.field, "test");
 });
@@ -116,6 +116,7 @@ Deno.test("MyNode should transition to onSuccess", async () => {
 - Inject all side-effects via `Utils` — never call `console.log`, `prompt`, `Math.random`, etc. directly.
 - Never hardcode transitions; always use the `edges` parameter.
 - Never use `export default`.
+- Use `next(edges.onEdgeName, newState)` (function call) to transition — not `new Next(...)`.
 
 ---
 
@@ -162,13 +163,11 @@ Follow the exact format of `specs/counter.md`:
 
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
-Use the Wiring Pattern from `AGENTS.md`:
-
 ```typescript
 import { amble, node, Nextable } from "../ambler.ts";
-import { NodeA } from "../nodes/nodeA.ts";
-import { NodeB } from "../nodes/nodeB.ts";
-import { NodeC } from "../nodes/nodeC.ts";
+import * as NodeA from "../nodes/nodeA.ts";
+import * as NodeB from "../nodes/nodeB.ts";
+import * as NodeC from "../nodes/nodeC.ts";
 
 export interface State {
   field: string;
@@ -178,7 +177,6 @@ const initialState: State = {
   field: "initial",
 };
 
-// Wire the graph using a record to store node factories
 const nodes: Record<string, Nextable<State>> = {
   start: node(() => NodeA.create({ onSuccess: nodes.next, onError: nodes.start })),
   next:  node(() => NodeB.create({ onComplete: nodes.stop })),
@@ -192,6 +190,7 @@ if (import.meta.main) {
 
 **Key rules:**
 - Import `amble`, `node`, `Nextable` from `../ambler.ts`.
+- Import each node module with `import * as <Name>Node from "../nodes/<name>Node.ts"`.
 - Define `State` interface and `initialState` at the top of the file.
 - Use `Record<string, Nextable<State>>` for the `nodes` object.
 - Always wrap node creation in `node(() => ...)` to handle circular/forward references.
@@ -222,7 +221,7 @@ Before finishing, confirm:
 - [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
 - [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
-- [ ] Every new node has a `nodes/<nodeName>_test.ts` with at least one test.
+- [ ] Every new node has a `nodes/<nodeName>.test.ts` with at least one test.
 - [ ] All tests pass.
 - [ ] The walk runs end-to-end without errors.
 
@@ -237,5 +236,4 @@ Before finishing, confirm:
 | `nodes/startNode.ts` | Example node with input + error handling |
 | `nodes/countNode.ts` | Example node with randomized transition |
 | `nodes/stopNode.ts` | Example terminal node (returns `null`) |
-| `ambler.ts` | Core primitives: `Nextable`, `Next`, `node`, `amble` |
-| `AGENTS.md` | Project standards and patterns |
+| `ambler.ts` | Core primitives: `Nextable`, `Next`, `next`, `node`, `amble` |

@@ -1,7 +1,7 @@
 
 # Program Specifications
 
-This program is a simple counter application that demonstrate the use of `ambler.py` for defining program stages and transitions.
+This program is a simple counter application that demonstrates the use of `ambler.ts` for defining program stages and transitions.
 
 ## Shared State
 
