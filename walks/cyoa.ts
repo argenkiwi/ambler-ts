@@ -1,10 +1,10 @@
 import { amble, Nextable, node } from "../ambler.ts";
-import { OllamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
-import { ModelSelectNode } from "../nodes/modelSelectNode.ts";
-import { StoryIntroNode } from "../nodes/storyIntroNode.ts";
-import { StoryPageNode } from "../nodes/storyPageNode.ts";
-import { StoryDecisionNode } from "../nodes/storyDecisionNode.ts";
-import { StorySaveNode } from "../nodes/storySaveNode.ts";
+import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
+import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
+import * as StoryIntroNode from "../nodes/storyIntroNode.ts";
+import * as StoryPageNode from "../nodes/storyPageNode.ts";
+import * as StoryDecisionNode from "../nodes/storyDecisionNode.ts";
+import * as StorySaveNode from "../nodes/storySaveNode.ts";
 
 export interface State {
   ollamaHost: string;
@@ -42,7 +42,7 @@ const nodes: Record<string, Nextable<State>> = {
     StoryDecisionNode.create({ onDecisionMade: nodes.page })
   ),
   save: node(() =>
-    StorySaveNode.create({ onSaveComplete: (state: State) => null })
+    StorySaveNode.create({ onSaveComplete: async (_state: State) => null })
   ),
 };
 

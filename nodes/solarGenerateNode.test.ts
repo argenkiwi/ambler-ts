@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { SolarGenerateNode } from "./solarGenerateNode.ts";
+import * as SolarGenerateNode from "./solarGenerateNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: SolarGenerateNode.State = {

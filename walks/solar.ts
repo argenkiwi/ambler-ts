@@ -1,9 +1,9 @@
 import { amble, Nextable, node } from "../ambler.ts";
-import { OllamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
-import { ModelSelectNode } from "../nodes/modelSelectNode.ts";
-import { SolarPromptNode } from "../nodes/solarPromptNode.ts";
-import { SolarGenerateNode } from "../nodes/solarGenerateNode.ts";
-import { SolarSaveNode } from "../nodes/solarSaveNode.ts";
+import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
+import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
+import * as SolarPromptNode from "../nodes/solarPromptNode.ts";
+import * as SolarGenerateNode from "../nodes/solarGenerateNode.ts";
+import * as SolarSaveNode from "../nodes/solarSaveNode.ts";
 
 export interface State {
   ollamaHost: string;

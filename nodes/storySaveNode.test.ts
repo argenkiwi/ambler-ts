@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { StorySaveNode } from "./storySaveNode.ts";
+import * as StorySaveNode from "./storySaveNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: StorySaveNode.State = {

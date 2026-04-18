@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { OllamaDiscoverNode } from "./ollamaDiscoverNode.ts";
+import * as OllamaDiscoverNode from "./ollamaDiscoverNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: OllamaDiscoverNode.State = { ollamaHost: "" };

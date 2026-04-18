@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { StopNode } from "./stopNode.ts";
+import * as StopNode from "./stopNode.ts";
 
 Deno.test("stopNode should print final count and return null", async () => {
   const initialState: StopNode.State = { count: 15 };

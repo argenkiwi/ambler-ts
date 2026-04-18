@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ChatResponseNode } from "./chatResponseNode.ts";
+import * as ChatResponseNode from "./chatResponseNode.ts";
 import { Nextable } from "../ambler.ts";
 
 Deno.test("chatResponseNode should send messages to chat, print reply, and append to history", async () => {

@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { CountNode } from "./countNode.ts";
+import * as CountNode from "./countNode.ts";
 import { Nextable } from "../ambler.ts";
 
 Deno.test("countNode should increment count and transition to onCount if random > 0.5", async () => {

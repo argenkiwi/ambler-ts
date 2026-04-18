@@ -1,7 +1,7 @@
 import { amble, node, Nextable } from "../ambler.ts";
-import { StartNode } from "../nodes/startNode.ts";
-import { CountNode } from "../nodes/countNode.ts";
-import { StopNode } from "../nodes/stopNode.ts";
+import * as StartNode from "../nodes/startNode.ts";
+import * as CountNode from "../nodes/countNode.ts";
+import * as StopNode from "../nodes/stopNode.ts";
 
 export interface State {
   count: number;

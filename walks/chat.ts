@@ -1,9 +1,9 @@
 import { amble, node, Nextable } from "../ambler.ts";
-import { OllamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
-import { ModelSelectNode } from "../nodes/modelSelectNode.ts";
-import { ChatPromptNode } from "../nodes/chatPromptNode.ts";
-import { ChatResponseNode } from "../nodes/chatResponseNode.ts";
-import { ChatByeNode } from "../nodes/chatByeNode.ts";
+import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
+import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
+import * as ChatPromptNode from "../nodes/chatPromptNode.ts";
+import * as ChatResponseNode from "../nodes/chatResponseNode.ts";
+import * as ChatByeNode from "../nodes/chatByeNode.ts";
 
 export interface State {
   ollamaHost: string;

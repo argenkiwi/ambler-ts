@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { SolarSaveNode } from "./solarSaveNode.ts";
+import * as SolarSaveNode from "./solarSaveNode.ts";
 
 const baseState: SolarSaveNode.State = {
   generatedStory: "Once upon a time in a solarpunk world...",

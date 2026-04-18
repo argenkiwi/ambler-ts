@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ModelSelectNode } from "./modelSelectNode.ts";
+import * as ModelSelectNode from "./modelSelectNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: ModelSelectNode.State = {

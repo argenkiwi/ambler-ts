@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ChatPromptNode } from "./chatPromptNode.ts";
+import * as ChatPromptNode from "./chatPromptNode.ts";
 import { Nextable } from "../ambler.ts";
 
 Deno.test("chatPromptNode should transition to onChat with user message appended", async () => {

@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { StartNode } from "./startNode.ts";
+import * as StartNode from "./startNode.ts";
 import { Nextable } from "../ambler.ts";
 
 Deno.test("startNode should transition to onSuccess with 0 if input is empty", async () => {
