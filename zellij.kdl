@@ -17,6 +17,8 @@ layout {
     }
 
     tab name="Pi" {
-        pane command="./container.sh"
+        pane command="sh" {
+            args "./container.sh"
+        }
     }
 }
