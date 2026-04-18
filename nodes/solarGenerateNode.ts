@@ -46,30 +46,29 @@ Conclude with a brief, reflective epilogue (200 words) showing the ongoing reali
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    utils.print("\nGenerating your solarpunk story... (this may take a moment)");
-    try {
-      const story = await utils.generateStory(
-        state.ollamaHost,
-        state.selectedModel,
-        state.solarPrompt,
-      );
+): Nextable<S> =>
+async (state: S) => {
+  utils.print("\nGenerating your solarpunk story... (this may take a moment)");
+  try {
+    const story = await utils.generateStory(
+      state.ollamaHost,
+      state.selectedModel,
+      state.solarPrompt,
+    );
 
-      utils.print("\n--- GENERATED STORY ---");
-      utils.print(story);
-      utils.print("\n--- END OF STORY ---");
+    utils.print("\n--- GENERATED STORY ---");
+    utils.print(story);
+    utils.print("\n--- END OF STORY ---");
 
-      return next(edges.onGenerateComplete, {
-        ...state,
-        generatedStory: story,
-      });
-    } catch (error) {
-      utils.print(`Error generating story: ${error}`);
-      return null;
-    }
-  };
-}
+    return next(edges.onGenerateComplete, {
+      ...state,
+      generatedStory: story,
+    });
+  } catch (error) {
+    utils.print(`Error generating story: ${error}`);
+    return null;
+  }
+};

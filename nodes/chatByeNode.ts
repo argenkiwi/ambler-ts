@@ -10,11 +10,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (_state: S) => {
-    utils.print("Goodbye!");
-    return null;
-  };
-}
+): Nextable<S> =>
+async (_state: S) => {
+  utils.print("Goodbye!");
+  return null;
+};

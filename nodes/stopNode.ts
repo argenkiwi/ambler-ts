@@ -1,4 +1,4 @@
-import { Nextable, defaultPrint } from "../ambler.ts";
+import { defaultPrint, Nextable } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -12,11 +12,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    utils.print(`Final count: ${state.count}`);
-    return null;
-  };
-}
+): Nextable<S> =>
+async (state: S) => {
+  utils.print(`Final count: ${state.count}`);
+  return null;
+};

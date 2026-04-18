@@ -23,23 +23,22 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State>(
+export const create = <S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    const input = await utils.readLine("You: ");
-    if (input === null) {
-      return next(edges.onQuit, state);
-    }
-    const trimmed = input.trim();
-    if (QUIT_WORDS.has(trimmed.toLowerCase())) {
-      return next(edges.onQuit, state);
-    }
-    const messages: Message[] = [
-      ...state.messages,
-      { role: "user", content: trimmed },
-    ];
-    return next(edges.onChat, { ...state, messages });
-  };
-}
+): Nextable<S> =>
+async (state: S) => {
+  const input = await utils.readLine("You: ");
+  if (input === null) {
+    return next(edges.onQuit, state);
+  }
+  const trimmed = input.trim();
+  if (QUIT_WORDS.has(trimmed.toLowerCase())) {
+    return next(edges.onQuit, state);
+  }
+  const messages: Message[] = [
+    ...state.messages,
+    { role: "user", content: trimmed },
+  ];
+  return next(edges.onChat, { ...state, messages });
+};

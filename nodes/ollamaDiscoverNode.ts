@@ -35,24 +35,23 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    utils.print("Searching for Ollama server...");
+): Nextable<S> =>
+async (state: S) => {
+  utils.print("Searching for Ollama server...");
 
-    for (const host of CANDIDATE_HOSTS) {
-      if (await utils.tryHost(host)) {
-        utils.print(`Found Ollama server at ${host}`);
-        return next(edges.onDiscovered, { ...state, ollamaHost: host });
-      }
+  for (const host of CANDIDATE_HOSTS) {
+    if (await utils.tryHost(host)) {
+      utils.print(`Found Ollama server at ${host}`);
+      return next(edges.onDiscovered, { ...state, ollamaHost: host });
     }
+  }
 
-    utils.print("No Ollama server found automatically.");
-    const input = await utils.readLine("Enter Ollama host URL (e.g. http://192.168.1.5:11434): ");
-    if (input === null) return null;
+  utils.print("No Ollama server found automatically.");
+  const input = await utils.readLine("Enter Ollama host URL (e.g. http://192.168.1.5:11434): ");
+  if (input === null) return null;
 
-    return next(edges.onDiscovered, { ...state, ollamaHost: input.trim() });
-  };
-}
+  return next(edges.onDiscovered, { ...state, ollamaHost: input.trim() });
+};

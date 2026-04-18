@@ -27,22 +27,21 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    const fullStory = state.storyPages.join("\n\n");
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `story-${timestamp}`;
+): Nextable<S> =>
+async (state: S) => {
+  const fullStory = state.storyPages.join("\n\n");
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `story-${timestamp}`;
 
-    try {
-      await utils.saveFile(filename, fullStory);
-      utils.print(`Story saved to cyoa/${filename}.md`);
-    } catch (err) {
-      utils.print(`Error saving story: ${err}`);
-    }
+  try {
+    await utils.saveFile(filename, fullStory);
+    utils.print(`Story saved to cyoa/${filename}.md`);
+  } catch (err) {
+    utils.print(`Error saving story: ${err}`);
+  }
 
-    return next(edges.onSaveComplete, state);
-  };
-}
+  return next(edges.onSaveComplete, state);
+};

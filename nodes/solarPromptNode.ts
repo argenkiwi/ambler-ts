@@ -18,15 +18,14 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(
+export const create = <S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
-  return async (state: S) => {
-    utils.print("\n--- Solar Prompt Input ---");
-    const promptText = await utils.readLine("Enter your solar prompt: ");
-    if (promptText === null) return null;
+): Nextable<S> =>
+async (state: S) => {
+  utils.print("\n--- Solar Prompt Input ---");
+  const promptText = await utils.readLine("Enter your solar prompt: ");
+  if (promptText === null) return null;
 
-    return next(edges.onPromptComplete, { ...state, solarPrompt: promptText });
-  };
-}
+  return next(edges.onPromptComplete, { ...state, solarPrompt: promptText });
+};
