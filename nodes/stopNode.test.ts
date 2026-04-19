@@ -11,7 +11,7 @@ Deno.test("stopNode should print final count and return null", async () => {
     },
   };
 
-  const nextResult = await StopNode.create(utils)(initialState);
+  const nextResult = StopNode.create(utils)(initialState);
 
   assertEquals(nextResult, null);
   assertEquals(capturedMessage, "Final count: 15");

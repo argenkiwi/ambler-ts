@@ -1,7 +1,9 @@
-export type Nextable<S> = (state: S) => Promise<Next<S> | null>;
+export type MaybePromise<T> = T | Promise<T>;
+
+export type Nextable<S> = (state: S) => MaybePromise<Next<S> | null>;
 
 export interface Next<S> {
-  run(): Promise<Next<S> | null>;
+  run(): MaybePromise<Next<S> | null>;
 }
 
 export function next<S>(nextFunc: Nextable<S>, state: S): Next<S> {
