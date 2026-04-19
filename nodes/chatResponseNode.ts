@@ -25,13 +25,12 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const reply = await utils.chat(
       state.messages,
       state.ollamaHost,
-      state.selectedModel,
+      state.selectedModel
     );
     utils.print(`Assistant: ${reply}`);
     const messages: Message[] = [
@@ -40,3 +39,4 @@ export const create =
     ];
     return next(edges.onPrompt, { ...state, messages });
   };
+}

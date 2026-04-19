@@ -24,9 +24,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
     if (!lastPage) return null;
 
@@ -50,7 +49,7 @@ export const create =
     let selectedIdx: number;
     while (true) {
       const input = await utils.readLine(
-        `Select option (1-${options.length}): `,
+        `Select option (1-${options.length}): `
       );
       if (input === null) return null;
       const parsed = parseInt(input);
@@ -66,7 +65,7 @@ export const create =
     const lineIndexInLines = checkboxLines[selectedIdx - 1];
     updatedLines[lineIndexInLines] = lines[lineIndexInLines].replace(
       ". [ ]",
-      ". [x]",
+      ". [x]"
     );
 
     const updatedLastPage = updatedLines.join("\n");
@@ -80,3 +79,4 @@ export const create =
       storyPages: updatedStoryPages,
     });
   };
+}

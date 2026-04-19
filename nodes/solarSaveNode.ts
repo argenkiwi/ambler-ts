@@ -30,11 +30,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const input = await utils.readLine(
-      "Would you like to save this story? (y/n): ",
+      "Would you like to save this story? (y/n): "
     );
     if (input?.toLowerCase() === "y") {
       const success = await utils.saveToFile(state.generatedStory);
@@ -48,3 +47,4 @@ export const create =
     edges.onSaveComplete(state);
     return null;
   };
+}

@@ -34,9 +34,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}
@@ -55,14 +54,14 @@ export const create =
     const reply = await utils.chat(
       state.ollamaHost,
       state.selectedModel,
-      messages,
+      messages
     );
 
     const newPage = reply.trim();
     const updatedStoryPages = [...state.storyPages, newPage];
     const fullStory = updatedStoryPages.join("\n\n");
     utils.print(
-      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
+      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`
     );
 
     if (fullStory.trim().endsWith("The End")) {
@@ -79,3 +78,4 @@ export const create =
       });
     }
   };
+}

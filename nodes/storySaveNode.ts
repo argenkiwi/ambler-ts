@@ -27,9 +27,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const fullStory = state.storyPages.join("\n\n");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `story-${timestamp}`;
@@ -43,3 +42,4 @@ export const create =
 
     return next(edges.onSaveComplete, state);
   };
+}

@@ -20,12 +20,11 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const identity = await utils.readLine("Who is the protagonist? ");
     const placement = await utils.readLine(
-      "Where and when does the story take place? ",
+      "Where and when does the story take place? "
     );
     const circumstances = await utils.readLine("What is happening? ");
 
@@ -40,3 +39,4 @@ export const create =
       circumstances: circumstances.trim(),
     });
   };
+}

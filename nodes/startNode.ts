@@ -19,9 +19,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const input = await utils.readLine("Enter a starting number: ");
 
     if (input === null || input === "") {
@@ -36,3 +35,4 @@ export const create =
 
     return next(edges.onSuccess, { ...state, count: n });
   };
+}

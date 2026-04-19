@@ -21,9 +21,8 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     utils.print(`Current count: ${state.count}`);
     await utils.sleep(1000);
     const nextState = { ...state, count: state.count + 1 };
@@ -34,3 +33,4 @@ export const create =
       return next(edges.onStop, nextState);
     }
   };
+}

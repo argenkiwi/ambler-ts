@@ -23,9 +23,8 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const input = await utils.readLine("You: ");
     if (input === null) {
       return next(edges.onQuit, state);
@@ -40,3 +39,4 @@ export const create =
     ];
     return next(edges.onChat, { ...state, messages });
   };
+}

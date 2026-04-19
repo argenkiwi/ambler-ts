@@ -12,8 +12,9 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  (utils: Utils = defaultUtils) => async <S extends State>(state: S) => {
+export function create(utils: Utils = defaultUtils) {
+  return async <S extends State>(state: S) => {
     utils.print(`Final count: ${state.count}`);
     return null;
   };
+}

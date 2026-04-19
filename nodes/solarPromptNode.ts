@@ -18,12 +18,12 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     utils.print("\n--- Solar Prompt Input ---");
     const promptText = await utils.readLine("Enter your solar prompt: ");
     if (promptText === null) return null;
 
     return next(edges.onPromptComplete, { ...state, solarPrompt: promptText });
   };
+}

@@ -34,9 +34,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     utils.print("Searching for Ollama server...");
 
     for (const host of CANDIDATE_HOSTS) {
@@ -48,9 +47,10 @@ export const create =
 
     utils.print("No Ollama server found automatically.");
     const input = await utils.readLine(
-      "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
+      "Enter Ollama host URL (e.g. http://192.168.1.5:11434): "
     );
     if (input === null) return null;
 
     return next(edges.onDiscovered, { ...state, ollamaHost: input.trim() });
   };
+}

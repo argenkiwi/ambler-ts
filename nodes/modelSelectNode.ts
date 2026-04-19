@@ -26,9 +26,8 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
-  async (state: S) => {
+export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return async (state: S) => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
@@ -45,3 +44,4 @@ export const create =
     utils.print(`Selected model: ${models[index]}`);
     return next(edges.onSelect, { ...state, selectedModel: models[index] });
   };
+}

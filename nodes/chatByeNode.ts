@@ -10,8 +10,9 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create =
-  <S extends State>(utils: Utils = defaultUtils) => async (_state: S) => {
+export function create<S extends State>(utils: Utils = defaultUtils) {
+  return async (_state: S) => {
     utils.print("Goodbye!");
     return null;
   };
+}
