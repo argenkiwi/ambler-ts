@@ -1,4 +1,4 @@
-import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -34,12 +34,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create = <S extends State>(
-  edges: Edges<S>,
-  utils: Utils = defaultUtils,
-): Nextable<S> =>
-async (state: S) => {
-  const prompt = `Write a page (max 280 characters) of a CYOA story.
+export const create =
+  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
+  async (state: S) => {
+    const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}
       Setting: ${state.placement}
@@ -53,34 +51,31 @@ async (state: S) => {
       - If the story continues, the final lines must be a numbered list of markdown checkboxes representing 2 or 3 actions the protagonist can choose from (e.g., "1. [ ] Option 1\n2. [ ] Option 2").
       - Do not include any other text outside the story and the options/end marker.`;
 
-  const messages = [
-    { role: "user", content: prompt },
-  ];
+    const messages = [{ role: "user", content: prompt }];
+    const reply = await utils.chat(
+      state.ollamaHost,
+      state.selectedModel,
+      messages,
+    );
 
-  const reply = await utils.chat(
-    state.ollamaHost,
-    state.selectedModel,
-    messages,
-  );
-  const newPage = reply.trim();
-  const updatedStoryPages = [...state.storyPages, newPage];
-  const fullStory = updatedStoryPages.join("\n\n");
+    const newPage = reply.trim();
+    const updatedStoryPages = [...state.storyPages, newPage];
+    const fullStory = updatedStoryPages.join("\n\n");
+    utils.print(
+      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
+    );
 
-  utils.print(
-    `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
-  );
-
-  if (fullStory.trim().endsWith("The End")) {
-    return next(edges.onPageComplete, {
-      ...state,
-      storyPages: updatedStoryPages,
-      currentPage: state.currentPage + 1,
-    });
-  } else {
-    return next(edges.onDecisionRequired, {
-      ...state,
-      storyPages: updatedStoryPages,
-      currentPage: state.currentPage + 1,
-    });
-  }
-};
+    if (fullStory.trim().endsWith("The End")) {
+      return next(edges.onPageComplete, {
+        ...state,
+        storyPages: updatedStoryPages,
+        currentPage: state.currentPage + 1,
+      });
+    } else {
+      return next(edges.onDecisionRequired, {
+        ...state,
+        storyPages: updatedStoryPages,
+        currentPage: state.currentPage + 1,
+      });
+    }
+  };

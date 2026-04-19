@@ -1,4 +1,4 @@
-import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -19,22 +19,20 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create = <S extends State>(
-  edges: Edges<S>,
-  utils: Utils = defaultUtils,
-): Nextable<S> =>
-async (state: S) => {
-  const input = await utils.readLine("Enter a starting number: ");
+export const create =
+  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
+  async (state: S) => {
+    const input = await utils.readLine("Enter a starting number: ");
 
-  if (input === null || input === "") {
-    return next(edges.onSuccess, { ...state, count: 0 });
-  }
+    if (input === null || input === "") {
+      return next(edges.onSuccess, { ...state, count: 0 });
+    }
 
-  const n = parseInt(input);
-  if (isNaN(n)) {
-    utils.print("Error: Invalid input. Please enter a number.");
-    return next(edges.onError, state);
-  }
+    const n = parseInt(input);
+    if (isNaN(n)) {
+      utils.print("Error: Invalid input. Please enter a number.");
+      return next(edges.onError, state);
+    }
 
-  return next(edges.onSuccess, { ...state, count: n });
-};
+    return next(edges.onSuccess, { ...state, count: n });
+  };

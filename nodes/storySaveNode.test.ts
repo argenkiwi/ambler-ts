@@ -10,44 +10,60 @@ const baseState: StorySaveNode.State = {
   storyPages: ["Page one.", "Page two."],
 };
 
-Deno.test("storySaveNode should call saveFile with joined pages and transition onSaveComplete", async () => {
-  let savedContent: string | undefined;
-  let capturedState: StorySaveNode.State | undefined;
-  const captureNext: Nextable<StorySaveNode.State> = async (s) => {
-    capturedState = s;
-    return null;
-  };
+Deno.test(
+  "storySaveNode should call saveFile with joined pages and transition onSaveComplete",
+  async () => {
+    let savedContent: string | undefined;
+    let capturedState: StorySaveNode.State | undefined;
+    const captureNext: Nextable<StorySaveNode.State> = async (s) => {
+      capturedState = s;
+      return null;
+    };
 
-  const utils: StorySaveNode.Utils = {
-    saveFile: async (_filename, content) => { savedContent = content; },
-    print: () => {},
-  };
+    const utils: StorySaveNode.Utils = {
+      saveFile: async (_filename, content) => {
+        savedContent = content;
+      },
+      print: () => {},
+    };
 
-  const result = await StorySaveNode.create({ onSaveComplete: captureNext }, utils)(baseState);
+    const result = await StorySaveNode.create(
+      { onSaveComplete: captureNext },
+      utils,
+    )(baseState);
 
-  if (!result) throw new Error("Expected Next, got null");
-  await result.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result.run();
 
-  assertEquals(savedContent, "Page one.\n\nPage two.");
-  assertEquals(capturedState?.storyPages, baseState.storyPages);
-});
+    assertEquals(savedContent, "Page one.\n\nPage two.");
+    assertEquals(capturedState?.storyPages, baseState.storyPages);
+  },
+);
 
-Deno.test("storySaveNode should still transition onSaveComplete when saveFile throws", async () => {
-  let capturedState: StorySaveNode.State | undefined;
-  const captureNext: Nextable<StorySaveNode.State> = async (s) => {
-    capturedState = s;
-    return null;
-  };
+Deno.test(
+  "storySaveNode should still transition onSaveComplete when saveFile throws",
+  async () => {
+    let capturedState: StorySaveNode.State | undefined;
+    const captureNext: Nextable<StorySaveNode.State> = async (s) => {
+      capturedState = s;
+      return null;
+    };
 
-  const utils: StorySaveNode.Utils = {
-    saveFile: async (_filename, _content) => { throw new Error("disk full"); },
-    print: () => {},
-  };
+    const utils: StorySaveNode.Utils = {
+      saveFile: async (_filename, _content) => {
+        throw new Error("disk full");
+      },
+      print: () => {},
+    };
 
-  const result = await StorySaveNode.create({ onSaveComplete: captureNext }, utils)(baseState);
+    const result = await StorySaveNode.create(
+      { onSaveComplete: captureNext },
+      utils,
+    )(baseState);
 
-  if (!result) throw new Error("Expected Next, got null");
-  await result.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result.run();
 
-  assertEquals(capturedState?.storyPages, baseState.storyPages);
-});
+    assertEquals(capturedState?.storyPages, baseState.storyPages);
+  },
+);

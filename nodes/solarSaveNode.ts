@@ -1,4 +1,4 @@
-import { Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { defaultPrint, defaultReadLine } from "../ambler.ts";
 
 export interface State {
   generatedStory: string;
@@ -30,21 +30,21 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create = <S extends State>(
-  edges: Edges<S>,
-  utils: Utils = defaultUtils,
-): Nextable<S> =>
-async (state: S) => {
-  const input = await utils.readLine("Would you like to save this story? (y/n): ");
-  if (input?.toLowerCase() === "y") {
-    const success = await utils.saveToFile(state.generatedStory);
-    if (!success) {
-      utils.print("Failed to save the story.");
+export const create =
+  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
+  async (state: S) => {
+    const input = await utils.readLine(
+      "Would you like to save this story? (y/n): ",
+    );
+    if (input?.toLowerCase() === "y") {
+      const success = await utils.saveToFile(state.generatedStory);
+      if (!success) {
+        utils.print("Failed to save the story.");
+      }
+    } else {
+      utils.print("Story not saved.");
     }
-  } else {
-    utils.print("Story not saved.");
-  }
 
-  edges.onSaveComplete(state);
-  return null;
-};
+    edges.onSaveComplete(state);
+    return null;
+  };

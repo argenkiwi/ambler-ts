@@ -6,7 +6,9 @@ Deno.test("chatByeNode should print goodbye and return null", async () => {
   let printed: string | undefined;
 
   const utils: ChatByeNode.Utils = {
-    print: (msg) => { printed = msg; },
+    print: (msg) => {
+      printed = msg;
+    },
   };
 
   const result = await ChatByeNode.create(utils)(initialState);

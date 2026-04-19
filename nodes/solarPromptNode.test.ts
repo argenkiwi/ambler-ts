@@ -4,36 +4,48 @@ import { Nextable } from "../ambler.ts";
 
 const baseState: SolarPromptNode.State = { solarPrompt: "" };
 
-Deno.test("solarPromptNode should return null when readLine returns null", async () => {
-  const utils: SolarPromptNode.Utils = {
-    readLine: async (_msg) => null,
-    print: () => {},
-  };
+Deno.test(
+  "solarPromptNode should return null when readLine returns null",
+  async () => {
+    const utils: SolarPromptNode.Utils = {
+      readLine: async (_msg) => null,
+      print: () => {},
+    };
 
-  const result = await SolarPromptNode.create(
-    { onPromptComplete: async (_s) => null },
-    utils,
-  )(baseState);
+    const result = await SolarPromptNode.create(
+      { onPromptComplete: async (_s) => null },
+      utils,
+    )(baseState);
 
-  assertEquals(result, null);
-});
+    assertEquals(result, null);
+  },
+);
 
-Deno.test("solarPromptNode should set solarPrompt and transition onPromptComplete", async () => {
-  let capturedState: SolarPromptNode.State | undefined;
-  const captureNext: Nextable<SolarPromptNode.State> = async (s) => {
-    capturedState = s;
-    return null;
-  };
+Deno.test(
+  "solarPromptNode should set solarPrompt and transition onPromptComplete",
+  async () => {
+    let capturedState: SolarPromptNode.State | undefined;
+    const captureNext: Nextable<SolarPromptNode.State> = async (s) => {
+      capturedState = s;
+      return null;
+    };
 
-  const utils: SolarPromptNode.Utils = {
-    readLine: async (_msg) => "A community rebuilds after a storm",
-    print: () => {},
-  };
+    const utils: SolarPromptNode.Utils = {
+      readLine: async (_msg) => "A community rebuilds after a storm",
+      print: () => {},
+    };
 
-  const result = await SolarPromptNode.create({ onPromptComplete: captureNext }, utils)(baseState);
+    const result = await SolarPromptNode.create(
+      { onPromptComplete: captureNext },
+      utils,
+    )(baseState);
 
-  if (!result) throw new Error("Expected Next, got null");
-  await result.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result.run();
 
-  assertEquals(capturedState?.solarPrompt, "A community rebuilds after a storm");
-});
+    assertEquals(
+      capturedState?.solarPrompt,
+      "A community rebuilds after a storm",
+    );
+  },
+);

@@ -6,7 +6,9 @@ Deno.test("stopNode should print final count and return null", async () => {
   let capturedMessage: string | undefined;
 
   const utils: StopNode.Utils = {
-    print: (msg: string) => { capturedMessage = msg; },
+    print: (msg: string) => {
+      capturedMessage = msg;
+    },
   };
 
   const nextResult = await StopNode.create(utils)(initialState);

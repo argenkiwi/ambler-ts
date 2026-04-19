@@ -1,4 +1,4 @@
-import { amble, node, Nextable } from "../ambler.ts";
+import { amble, Nextable, node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as ChatPromptNode from "../nodes/chatPromptNode.ts";
@@ -18,9 +18,13 @@ const initialState: State = {
 };
 
 const nodes: Record<string, Nextable<State>> = {
-  start: node(() => OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect })),
+  start: node(() =>
+    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect }),
+  ),
   modelSelect: node(() => ModelSelectNode.create({ onSelect: nodes.prompt })),
-  prompt: node(() => ChatPromptNode.create({ onChat: nodes.response, onQuit: nodes.bye })),
+  prompt: node(() =>
+    ChatPromptNode.create({ onChat: nodes.response, onQuit: nodes.bye }),
+  ),
   response: node(() => ChatResponseNode.create({ onPrompt: nodes.prompt })),
   bye: node(() => ChatByeNode.create()),
 };

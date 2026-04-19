@@ -1,4 +1,4 @@
-import { next, Nextable, defaultPrint, defaultReadLine } from "../ambler.ts";
+import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -20,23 +20,23 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export const create = <S extends State>(
-  edges: Edges<S>,
-  utils: Utils = defaultUtils,
-): Nextable<S> =>
-async (state: S) => {
-  const identity = await utils.readLine("Who is the protagonist? ");
-  const placement = await utils.readLine("Where and when does the story take place? ");
-  const circumstances = await utils.readLine("What is happening? ");
+export const create =
+  <S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) =>
+  async (state: S) => {
+    const identity = await utils.readLine("Who is the protagonist? ");
+    const placement = await utils.readLine(
+      "Where and when does the story take place? ",
+    );
+    const circumstances = await utils.readLine("What is happening? ");
 
-  if (identity === null || placement === null || circumstances === null) {
-    return null;
-  }
+    if (identity === null || placement === null || circumstances === null) {
+      return null;
+    }
 
-  return next(edges.onIntroComplete, {
-    ...state,
-    identity: identity.trim(),
-    placement: placement.trim(),
-    circumstances: circumstances.trim(),
-  });
-};
+    return next(edges.onIntroComplete, {
+      ...state,
+      identity: identity.trim(),
+      placement: placement.trim(),
+      circumstances: circumstances.trim(),
+    });
+  };
