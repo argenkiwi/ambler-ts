@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as ChatResponseNode from "./chatResponseNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -12,13 +12,13 @@ Deno.test(
     };
     let captured: ChatResponseNode.State | undefined;
     let printed: string | undefined;
-    const capture: Nextable<ChatResponseNode.State> = async (s) => {
+    const capture: Nextable<ChatResponseNode.State> = (s) => {
       captured = s;
       return null;
     };
 
     const utils: ChatResponseNode.Utils = {
-      chat: async (_messages, _host, _model) => "Hi there!",
+      chat: (_messages, _host, _model) => Promise.resolve("Hi there!"),
       print: (msg) => {
         printed = msg;
       },
@@ -54,14 +54,14 @@ Deno.test(
     let receivedMessages: ChatResponseNode.Message[] | undefined;
     let receivedHost: string | undefined;
     let receivedModel: string | undefined;
-    const capture: Nextable<ChatResponseNode.State> = async (_s) => null;
+    const capture: Nextable<ChatResponseNode.State> = (_s) => null;
 
     const utils: ChatResponseNode.Utils = {
-      chat: async (messages, host, model) => {
+      chat: (messages, host, model) => {
         receivedMessages = messages;
         receivedHost = host;
         receivedModel = model;
-        return "I'm fine!";
+        return Promise.resolve("I'm fine!");
       },
       print: () => {},
     };

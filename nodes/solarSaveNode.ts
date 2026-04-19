@@ -1,4 +1,6 @@
-import { defaultPrint, defaultReadLine } from "../ambler.ts";
+import { MaybePromise } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export interface State {
   generatedStory: string;
@@ -9,8 +11,8 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  saveToFile: (content: string) => Promise<boolean>;
-  readLine: (msg: string) => Promise<string | null>;
+  saveToFile: (content: string) => MaybePromise<boolean>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -30,10 +32,13 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const input = await utils.readLine(
-      "Would you like to save this story? (y/n): "
+      "Would you like to save this story? (y/n): ",
     );
     if (input?.toLowerCase() === "y") {
       const success = await utils.saveToFile(state.generatedStory);

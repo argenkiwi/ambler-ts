@@ -1,5 +1,6 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
-import { defaultPrint, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export type Message = { role: string; content: string };
 
@@ -14,7 +15,11 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  chat: (messages: Message[], host: string, model: string) => Promise<string>;
+  chat: (
+    messages: Message[],
+    host: string,
+    model: string,
+  ) => Promise<string>;
   print: (msg: string) => void;
 };
 
@@ -25,12 +30,15 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const reply = await utils.chat(
       state.messages,
       state.ollamaHost,
-      state.selectedModel
+      state.selectedModel,
     );
     utils.print(`Assistant: ${reply}`);
     const messages: Message[] = [

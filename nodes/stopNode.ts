@@ -1,4 +1,4 @@
-import { defaultPrint } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   count: number;

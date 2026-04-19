@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as StoryIntroNode from "./storyIntroNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 const baseState: StoryIntroNode.State = {
   identity: "",
@@ -12,12 +12,12 @@ Deno.test(
   "storyIntroNode should return null when identity readLine returns null",
   async () => {
     const utils: StoryIntroNode.Utils = {
-      readLine: async (_msg) => null,
+      readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = await StoryIntroNode.create(
-      { onIntroComplete: async (_s) => null },
+      { onIntroComplete: (_s) => null },
       utils,
     )(baseState);
 
@@ -35,7 +35,7 @@ Deno.test(
     };
 
     const result = await StoryIntroNode.create(
-      { onIntroComplete: async (_s) => null },
+      { onIntroComplete: (_s) => null },
       utils,
     )(baseState);
 
@@ -48,7 +48,7 @@ Deno.test(
   async () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
-      readLine: async (_msg) => {
+      readLine: (_msg) => {
         const responses = ["Ada", "London, 1842", null];
         return responses[call++];
       },
@@ -56,7 +56,7 @@ Deno.test(
     };
 
     const result = await StoryIntroNode.create(
-      { onIntroComplete: async (_s) => null },
+      { onIntroComplete: (_s) => null },
       utils,
     )(baseState);
 

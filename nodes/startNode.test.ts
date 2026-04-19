@@ -1,19 +1,19 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as StartNode from "./startNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test(
   "startNode should transition to onSuccess with 0 if input is empty",
   async () => {
     const initialState: StartNode.State = { count: 0 };
     let capturedState: StartNode.State | undefined;
-    const captureNext: Nextable<StartNode.State> = async (s) => {
+    const captureNext: Nextable<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: StartNode.Utils = {
-      readLine: async () => "",
+      readLine: () => "",
       print: () => {},
     };
 
@@ -34,13 +34,13 @@ Deno.test(
   async () => {
     const initialState: StartNode.State = { count: 0 };
     let capturedState: StartNode.State | undefined;
-    const captureNext: Nextable<StartNode.State> = async (s) => {
+    const captureNext: Nextable<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: StartNode.Utils = {
-      readLine: async () => "42",
+      readLine: () => "42",
       print: () => {},
     };
 
@@ -61,16 +61,16 @@ Deno.test(
   async () => {
     const initialState: StartNode.State = { count: 123 };
     let capturedState: StartNode.State | undefined;
-    const captureSuccess: Nextable<StartNode.State> = async (_s) => {
+    const captureSuccess: Nextable<StartNode.State> = (_s) => {
       return null;
     };
-    const captureError: Nextable<StartNode.State> = async (s) => {
+    const captureError: Nextable<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: StartNode.Utils = {
-      readLine: async () => "abc",
+      readLine: () => "abc",
       print: () => {},
     };
 

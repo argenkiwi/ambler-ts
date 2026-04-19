@@ -1,5 +1,7 @@
-import { Ollama } from "npm:ollama";
-import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
+import { Ollama } from "ollama";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   selectedModel: string;
@@ -12,7 +14,7 @@ export type Edges<S extends State> = {
 
 export type Utils = {
   listModels: (host: string) => Promise<string[]>;
-  readLine: (msg: string) => Promise<string | null>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -26,7 +28,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");

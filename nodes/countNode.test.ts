@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as CountNode from "./countNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -7,7 +7,7 @@ Deno.test(
   async () => {
     const initialState: CountNode.State = { count: 5 };
     let capturedState: CountNode.State | undefined;
-    const captureNext: Nextable<CountNode.State> = async (s) => {
+    const captureNext: Nextable<CountNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -35,10 +35,10 @@ Deno.test(
   async () => {
     const initialState: CountNode.State = { count: 10 };
     let capturedState: CountNode.State | undefined;
-    const captureCount: Nextable<CountNode.State> = async (_s) => {
+    const captureCount: Nextable<CountNode.State> = (_s) => {
       return null;
     };
-    const captureStop: Nextable<CountNode.State> = async (s) => {
+    const captureStop: Nextable<CountNode.State> = (s) => {
       capturedState = s;
       return null;
     };

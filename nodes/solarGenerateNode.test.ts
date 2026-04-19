@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as SolarGenerateNode from "./solarGenerateNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 const baseState: SolarGenerateNode.State = {
   ollamaHost: "http://localhost:11434",
@@ -13,14 +13,14 @@ Deno.test(
   "solarGenerateNode should set generatedStory and transition onGenerateComplete",
   async () => {
     let capturedState: SolarGenerateNode.State | undefined;
-    const captureNext: Nextable<SolarGenerateNode.State> = async (s) => {
+    const captureNext: Nextable<SolarGenerateNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: SolarGenerateNode.Utils = {
-      generateStory: async (_host, _model, _prompt) =>
-        "Once upon a time in a solarpunk world...",
+      generateStory: (_host, _model, _prompt) =>
+        Promise.resolve("Once upon a time in a solarpunk world..."),
       print: () => {},
     };
 
@@ -43,14 +43,14 @@ Deno.test(
   "solarGenerateNode should return null when generateStory throws",
   async () => {
     const utils: SolarGenerateNode.Utils = {
-      generateStory: async (_host, _model, _prompt) => {
+      generateStory: (_host, _model, _prompt) => {
         throw new Error("model unavailable");
       },
       print: () => {},
     };
 
     const result = await SolarGenerateNode.create(
-      { onGenerateComplete: async (_s) => null },
+      { onGenerateComplete: (_s) => null },
       utils,
     )(baseState);
 

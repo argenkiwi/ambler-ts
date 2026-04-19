@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as StoryDecisionNode from "./storyDecisionNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert/equals";
 
 const baseState: StoryDecisionNode.State = {
   selectedModel: "llama3",
@@ -16,12 +16,12 @@ Deno.test(
   "storyDecisionNode should return null when storyPages is empty",
   async () => {
     const utils: StoryDecisionNode.Utils = {
-      readLine: async (_msg) => null,
+      readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = await StoryDecisionNode.create(
-      { onDecisionMade: async (_s) => null },
+      { onDecisionMade: (_s) => null },
       utils,
     )(baseState);
 
@@ -33,14 +33,14 @@ Deno.test(
   "storyDecisionNode should transition with unchanged state when no checkboxes found",
   async () => {
     let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Nextable<StoryDecisionNode.State> = async (s) => {
+    const captureNext: Nextable<StoryDecisionNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const state = { ...baseState, storyPages: ["You reach the end. The End"] };
     const utils: StoryDecisionNode.Utils = {
-      readLine: async (_msg) => null,
+      readLine: (_msg) => null,
       print: () => {},
     };
 
@@ -67,12 +67,12 @@ Deno.test(
     };
 
     const utils: StoryDecisionNode.Utils = {
-      readLine: async (_msg) => null,
+      readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = await StoryDecisionNode.create(
-      { onDecisionMade: async (_s) => null },
+      { onDecisionMade: (_s) => null },
       utils,
     )(state);
 
@@ -93,7 +93,7 @@ Deno.test(
     const state = { ...baseState, storyPages: [page] };
 
     const utils: StoryDecisionNode.Utils = {
-      readLine: async (_msg) => "2",
+      readLine: (_msg) => "2",
       print: () => {},
     };
 
@@ -103,7 +103,7 @@ Deno.test(
     )(state);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    else await result.run();
 
     const updatedPage = capturedState?.storyPages[0] ?? "";
     assertEquals(updatedPage.includes("2. [x] Go right"), true);
@@ -125,7 +125,7 @@ Deno.test(
 
     let call = 0;
     const utils: StoryDecisionNode.Utils = {
-      readLine: async (_msg) => ["bad", "99", "1"][call++],
+      readLine: (_msg) => ["bad", "99", "1"][call++],
       print: () => {},
     };
 

@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as SolarSaveNode from "./solarSaveNode.ts";
 
 const baseState: SolarSaveNode.State = {
@@ -12,8 +12,8 @@ Deno.test(
     let callbackState: SolarSaveNode.State | undefined;
 
     const utils: SolarSaveNode.Utils = {
-      readLine: async (_msg) => "y",
-      saveToFile: async (content) => {
+      readLine: (_msg) => "y",
+      saveToFile: (content) => {
         savedContent = content;
         return true;
       },
@@ -42,8 +42,8 @@ Deno.test(
     let callbackState: SolarSaveNode.State | undefined;
 
     const utils: SolarSaveNode.Utils = {
-      readLine: async (_msg) => "n",
-      saveToFile: async (_content) => {
+      readLine: (_msg) => "n",
+      saveToFile: (_content) => {
         saveCalled = true;
         return true;
       },
@@ -72,8 +72,8 @@ Deno.test(
     let callbackState: SolarSaveNode.State | undefined;
 
     const utils: SolarSaveNode.Utils = {
-      readLine: async (_msg) => "y",
-      saveToFile: async (_content) => false,
+      readLine: (_msg) => "y",
+      saveToFile: (_content) => false,
       print: (msg) => printed.push(msg),
     };
 

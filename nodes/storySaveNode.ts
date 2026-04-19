@@ -1,5 +1,6 @@
-import { defaultPrint, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 import fs from "node:fs/promises";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   selectedModel: string;
@@ -27,7 +28,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const fullStory = state.storyPages.join("\n\n");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

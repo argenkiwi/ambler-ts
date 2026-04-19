@@ -1,4 +1,6 @@
-import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -22,7 +24,7 @@ export type Utils = {
     model: string,
     messages: { role: string; content: string }[],
   ) => Promise<string>;
-  readLine: (msg: string) => Promise<string | null>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -34,7 +36,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
@@ -54,14 +59,14 @@ export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultU
     const reply = await utils.chat(
       state.ollamaHost,
       state.selectedModel,
-      messages
+      messages,
     );
 
     const newPage = reply.trim();
     const updatedStoryPages = [...state.storyPages, newPage];
     const fullStory = updatedStoryPages.join("\n\n");
     utils.print(
-      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`
+      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
     );
 
     if (fullStory.trim().endsWith("The End")) {

@@ -1,5 +1,6 @@
-import { Ollama } from "npm:ollama";
-import { defaultPrint, next, Nextable } from "../ambler.ts";
+import { Ollama } from "ollama";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   ollamaHost: string;
@@ -17,7 +18,7 @@ export type Utils = {
     host: string,
     model: string,
     prompt: string,
-  ) => Promise<string>;
+  ) => MaybePromise<string>;
   print: (msg: string) => void;
 };
 
@@ -51,16 +52,19 @@ Conclude with a brief, reflective epilogue (200 words) showing the ongoing reali
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     utils.print(
-      "\nGenerating your solarpunk story... (this may take a moment)"
+      "\nGenerating your solarpunk story... (this may take a moment)",
     );
     try {
       const story = await utils.generateStory(
         state.ollamaHost,
         state.selectedModel,
-        state.solarPrompt
+        state.solarPrompt,
       );
 
       utils.print("\n--- GENERATED STORY ---");

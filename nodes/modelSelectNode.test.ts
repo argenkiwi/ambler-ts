@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as ModelSelectNode from "./modelSelectNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -13,13 +13,13 @@ Deno.test(
   "modelSelectNode should return null when readLine returns null",
   async () => {
     const utils: ModelSelectNode.Utils = {
-      listModels: async (_host) => models,
-      readLine: async (_msg) => null,
+      listModels: (_host) => Promise.resolve(models),
+      readLine: (_msg) => Promise.resolve(null),
       print: () => {},
     };
 
     const result = await ModelSelectNode.create(
-      { onSelect: async (_s) => null },
+      { onSelect: (_s) => null },
       utils,
     )(baseState);
 
@@ -31,14 +31,14 @@ Deno.test(
   "modelSelectNode should transition with unchanged state when input is NaN",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = async (s) => {
+    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: ModelSelectNode.Utils = {
-      listModels: async (_host) => models,
-      readLine: async (_msg) => "abc",
+      listModels: (_host) => Promise.resolve(models),
+      readLine: (_msg) => Promise.resolve("abc"),
       print: () => {},
     };
 
@@ -58,14 +58,14 @@ Deno.test(
   "modelSelectNode should transition with unchanged state when index is out of range",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = async (s) => {
+    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: ModelSelectNode.Utils = {
-      listModels: async (_host) => models,
-      readLine: async (_msg) => "99",
+      listModels: (_host) => Promise.resolve(models),
+      readLine: (_msg) => Promise.resolve("99"),
       print: () => {},
     };
 
@@ -85,14 +85,14 @@ Deno.test(
   "modelSelectNode should set selectedModel when valid index is given",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = async (s) => {
+    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: ModelSelectNode.Utils = {
-      listModels: async (_host) => models,
-      readLine: async (_msg) => "1",
+      listModels: (_host) => Promise.resolve(models),
+      readLine: (_msg) => Promise.resolve("1"),
       print: () => {},
     };
 

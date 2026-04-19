@@ -1,4 +1,6 @@
-import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export interface State {
   ollamaHost: string;
@@ -10,7 +12,7 @@ export type Edges<S extends State> = {
 
 export type Utils = {
   tryHost: (host: string) => Promise<boolean>;
-  readLine: (msg: string) => Promise<string | null>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -34,7 +36,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     utils.print("Searching for Ollama server...");
 
@@ -47,7 +52,7 @@ export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultU
 
     utils.print("No Ollama server found automatically.");
     const input = await utils.readLine(
-      "Enter Ollama host URL (e.g. http://192.168.1.5:11434): "
+      "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
     );
     if (input === null) return null;
 

@@ -10,9 +10,8 @@ export function next<S>(nextFunc: Nextable<S>, state: S): Next<S> {
   return { run: () => nextFunc(state) };
 }
 
-export const defaultPrint = (msg: string): void => console.log(msg);
-export const defaultReadLine = async (msg: string): Promise<string | null> =>
-  prompt(msg);
+export { defaultPrint } from "./utils/defaultPrint.ts";
+export { defaultReadLine } from "./utils/defaultReadLine.ts";
 
 export function node<S>(factory: () => Nextable<S>): Nextable<S> {
   return (state: S) => factory()(state);

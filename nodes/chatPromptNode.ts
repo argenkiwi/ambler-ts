@@ -1,4 +1,6 @@
-import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export type Message = { role: string; content: string };
 
@@ -12,7 +14,7 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (prompt: string) => Promise<string | null>;
+  readLine: (prompt: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -23,7 +25,10 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const input = await utils.readLine("You: ");
     if (input === null) {

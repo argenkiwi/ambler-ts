@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as StoryPageNode from "./storyPageNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 const baseState: StoryPageNode.State = {
   selectedModel: "llama3",
@@ -22,14 +22,14 @@ Deno.test(
     };
 
     const utils: StoryPageNode.Utils = {
-      chat: async (_host, _model, _messages) =>
-        "You discovered the secret. The End",
-      readLine: async (_msg) => null,
+      chat: (_host, _model, _messages) =>
+        Promise.resolve("You discovered the secret. The End"),
+      readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = await StoryPageNode.create(
-      { onPageComplete: captureNext, onDecisionRequired: async (_s) => null },
+      { onPageComplete: captureNext, onDecisionRequired: (_s) => null },
       utils,
     )(baseState);
 
@@ -56,13 +56,13 @@ Deno.test(
 
     const reply = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const utils: StoryPageNode.Utils = {
-      chat: async (_host, _model, _messages) => reply,
-      readLine: async (_msg) => null,
+      chat: (_host, _model, _messages) => Promise.resolve(reply),
+      readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = await StoryPageNode.create(
-      { onPageComplete: async (_s) => null, onDecisionRequired: captureNext },
+      { onPageComplete: (_s) => null, onDecisionRequired: captureNext },
       utils,
     )(baseState);
 

@@ -1,4 +1,6 @@
-import { defaultPrint, defaultReadLine, next, Nextable } from "../ambler.ts";
+import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
+import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export interface State {
   selectedModel: string;
@@ -15,7 +17,7 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (msg: string) => Promise<string | null>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -24,7 +26,10 @@ const defaultUtils: Utils = {
   print: defaultPrint,
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
     if (!lastPage) return null;
@@ -49,7 +54,7 @@ export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultU
     let selectedIdx: number;
     while (true) {
       const input = await utils.readLine(
-        `Select option (1-${options.length}): `
+        `Select option (1-${options.length}): `,
       );
       if (input === null) return null;
       const parsed = parseInt(input);
@@ -65,7 +70,7 @@ export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultU
     const lineIndexInLines = checkboxLines[selectedIdx - 1];
     updatedLines[lineIndexInLines] = lines[lineIndexInLines].replace(
       ". [ ]",
-      ". [x]"
+      ". [x]",
     );
 
     const updatedLastPage = updatedLines.join("\n");

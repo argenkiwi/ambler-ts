@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as ChatPromptNode from "./chatPromptNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -7,18 +7,18 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let captured: ChatPromptNode.State | undefined;
-    const capture: Nextable<ChatPromptNode.State> = async (s) => {
+    const capture: Nextable<ChatPromptNode.State> = (s) => {
       captured = s;
       return null;
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => "Hello",
+      readLine: () => "Hello",
       print: () => {},
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: capture, onQuit: async () => null },
+      { onChat: capture, onQuit: () => null },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
@@ -33,18 +33,18 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = async (_s) => {
+    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => "bye",
+      readLine: () => "bye",
       print: () => {},
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: async () => null, onQuit: captureQuit },
+      { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
@@ -65,12 +65,12 @@ Deno.test(
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => "exit",
+      readLine: () => "exit",
       print: () => {},
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: async () => null, onQuit: captureQuit },
+      { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
@@ -96,7 +96,7 @@ Deno.test(
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: async () => null, onQuit: captureQuit },
+      { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
@@ -111,18 +111,18 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = async (_s) => {
+    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => null,
+      readLine: () => null,
       print: () => {},
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: async () => null, onQuit: captureQuit },
+      { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
@@ -142,18 +142,18 @@ Deno.test(
       ],
     };
     let captured: ChatPromptNode.State | undefined;
-    const capture: Nextable<ChatPromptNode.State> = async (s) => {
+    const capture: Nextable<ChatPromptNode.State> = (s) => {
       captured = s;
       return null;
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => "Second message",
+      readLine: () => "Second message",
       print: () => {},
     };
 
     const next = await ChatPromptNode.create(
-      { onChat: capture, onQuit: async () => null },
+      { onChat: capture, onQuit: () => null },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");

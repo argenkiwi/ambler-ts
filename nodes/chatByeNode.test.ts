@@ -1,7 +1,7 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as ChatByeNode from "./chatByeNode.ts";
 
-Deno.test("chatByeNode should print goodbye and return null", async () => {
+Deno.test("chatByeNode should print goodbye and return null", () => {
   const initialState = {};
   let printed: string | undefined;
 

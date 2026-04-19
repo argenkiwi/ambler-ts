@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as OllamaDiscoverNode from "./ollamaDiscoverNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -8,14 +8,14 @@ Deno.test(
   "ollamaDiscoverNode should set ollamaHost when a candidate host is reachable",
   async () => {
     let capturedState: OllamaDiscoverNode.State | undefined;
-    const captureNext: Nextable<OllamaDiscoverNode.State> = async (s) => {
+    const captureNext: Nextable<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: OllamaDiscoverNode.Utils = {
-      tryHost: async (host) => host === "http://localhost:11434",
-      readLine: async (_msg) => null,
+      tryHost: (host) => Promise.resolve(host === "http://localhost:11434"),
+      readLine: (_msg) => Promise.resolve(null),
       print: () => {},
     };
 
@@ -35,13 +35,13 @@ Deno.test(
   "ollamaDiscoverNode should return null when no host found and readLine returns null",
   async () => {
     const utils: OllamaDiscoverNode.Utils = {
-      tryHost: async (_host) => false,
-      readLine: async (_msg) => null,
+      tryHost: (_host) => Promise.resolve(false),
+      readLine: (_msg) => Promise.resolve(null),
       print: () => {},
     };
 
     const result = await OllamaDiscoverNode.create(
-      { onDiscovered: async (_s) => null },
+      { onDiscovered: (_s) => null },
       utils,
     )(baseState);
 
@@ -53,14 +53,14 @@ Deno.test(
   "ollamaDiscoverNode should use manual host when no candidate is reachable",
   async () => {
     let capturedState: OllamaDiscoverNode.State | undefined;
-    const captureNext: Nextable<OllamaDiscoverNode.State> = async (s) => {
+    const captureNext: Nextable<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     const utils: OllamaDiscoverNode.Utils = {
-      tryHost: async (_host) => false,
-      readLine: async (_msg) => "  http://192.168.1.5:11434  ",
+      tryHost: (_host) => Promise.resolve(false),
+      readLine: (_msg) => Promise.resolve("  http://192.168.1.5:11434  "),
       print: () => {},
     };
 

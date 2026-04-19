@@ -1,4 +1,5 @@
-import { defaultPrint, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
+import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   count: number;
@@ -21,7 +22,10 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export function create<S extends State>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S extends State>(
+  edges: Edges<S>,
+  utils: Utils = defaultUtils,
+) {
   return async (state: S) => {
     utils.print(`Current count: ${state.count}`);
     await utils.sleep(1000);
