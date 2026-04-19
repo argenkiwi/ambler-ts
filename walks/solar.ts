@@ -21,17 +21,17 @@ const initialState: State = {
 
 const nodes: Record<string, Nextable<State>> = {
   start: node(() =>
-    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect }),
+    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect })
   ),
   modelSelect: node(() => ModelSelectNode.create({ onSelect: nodes.prompt })),
   prompt: node(() =>
-    SolarPromptNode.create({ onPromptComplete: nodes.generate }),
+    SolarPromptNode.create({ onPromptComplete: nodes.generate })
   ),
   generate: node(() =>
-    SolarGenerateNode.create({ onGenerateComplete: nodes.save }),
+    SolarGenerateNode.create({ onGenerateComplete: nodes.save })
   ),
   save: node(() =>
-    SolarSaveNode.create({ onSaveComplete: (state: State) => null }),
+    SolarSaveNode.create({ onSaveComplete: (state: State) => null })
   ),
 };
 

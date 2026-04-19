@@ -14,10 +14,10 @@ const initialState: State = {
 // Wire the graph using a record to store node factories
 const nodes: Record<string, Nextable<State>> = {
   start: node(() =>
-    StartNode.create({ onSuccess: nodes.count, onError: nodes.start }),
+    StartNode.create({ onSuccess: nodes.count, onError: nodes.start })
   ),
   count: node(() =>
-    CountNode.create({ onCount: nodes.count, onStop: nodes.stop }),
+    CountNode.create({ onCount: nodes.count, onStop: nodes.stop })
   ),
   stop: node(() => StopNode.create()),
 };

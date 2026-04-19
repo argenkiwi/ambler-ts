@@ -28,7 +28,7 @@ const initialState: State = {
 
 const nodes: Record<string, Nextable<State>> = {
   start: node(() =>
-    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect }),
+    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect })
   ),
   modelSelect: node(() => ModelSelectNode.create({ onSelect: nodes.intro })),
   intro: node(() => StoryIntroNode.create({ onIntroComplete: nodes.page })),
@@ -36,13 +36,13 @@ const nodes: Record<string, Nextable<State>> = {
     StoryPageNode.create({
       onPageComplete: nodes.save,
       onDecisionRequired: nodes.decision,
-    }),
+    })
   ),
   decision: node(() =>
-    StoryDecisionNode.create({ onDecisionMade: nodes.page }),
+    StoryDecisionNode.create({ onDecisionMade: nodes.page })
   ),
   save: node(() =>
-    StorySaveNode.create({ onSaveComplete: async (_state: State) => null }),
+    StorySaveNode.create({ onSaveComplete: async (_state: State) => null })
   ),
 };
 

@@ -11,8 +11,7 @@ const defaultUtils: Utils = {
 };
 
 export const create =
-  <S extends State>(utils: Utils = defaultUtils) =>
-  async (_state: S) => {
+  <S extends State>(utils: Utils = defaultUtils) => async (_state: S) => {
     utils.print("Goodbye!");
     return null;
   };

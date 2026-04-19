@@ -24,7 +24,8 @@ export type Utils = {
 const defaultUtils: Utils = {
   generateStory: async (host, model, prompt) => {
     const ollama = new Ollama({ host });
-    const systemPrompt = `You are an expert narrative engine specialized in the Solarpunk genre. Your task is to take a given "Solar Prompt" and transform it into a richly detailed, emotionally resonant short story that adheres strictly to the core tenets of the Solarpunk movement.
+    const systemPrompt =
+      `You are an expert narrative engine specialized in the Solarpunk genre. Your task is to take a given "Solar Prompt" and transform it into a richly detailed, emotionally resonant short story that adheres strictly to the core tenets of the Solarpunk movement.
 
 **INPUT:** ${prompt}
 

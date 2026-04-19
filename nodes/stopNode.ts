@@ -13,8 +13,7 @@ const defaultUtils: Utils = {
 };
 
 export const create =
-  (utils: Utils = defaultUtils) =>
-  async <S extends State>(state: S) => {
+  (utils: Utils = defaultUtils) => async <S extends State>(state: S) => {
     utils.print(`Final count: ${state.count}`);
     return null;
   };
