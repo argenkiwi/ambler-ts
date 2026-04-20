@@ -1,11 +1,11 @@
 import { amble, node, Nextable } from "../ambler.ts";
-import { CheckM3UFileNode } from "../nodes/checkM3UFileNode.ts";
-import { ReadM3UFileNode } from "../nodes/readM3UFileNode.ts";
-import { PromptResolveNode } from "../nodes/promptResolveNode.ts";
-import { ResolveUrlsNode } from "../nodes/resolveUrlsNode.ts";
-import { SaveM3UFileNode } from "../nodes/saveM3UFileNode.ts";
-import { PromptDownloadNode } from "../nodes/promptDownloadNode.ts";
-import { DownloadFilesNode } from "../nodes/downloadFilesNode.ts";
+import * as CheckM3UFileNode from "../nodes/checkM3UFileNode.ts";
+import * as ReadM3UFileNode from "../nodes/readM3UFileNode.ts";
+import * as PromptResolveNode from "../nodes/promptResolveNode.ts";
+import * as ResolveUrlsNode from "../nodes/resolveUrlsNode.ts";
+import * as SaveM3UFileNode from "../nodes/saveM3UFileNode.ts";
+import * as PromptDownloadNode from "../nodes/promptDownloadNode.ts";
+import * as DownloadFilesNode from "../nodes/downloadFilesNode.ts";
 
 export interface State {
   m3uFilePath: string;

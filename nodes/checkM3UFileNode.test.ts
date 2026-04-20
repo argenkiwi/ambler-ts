@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { CheckM3UFileNode } from "./checkM3UFileNode.ts";
+import * as CheckM3UFileNode from "./checkM3UFileNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: CheckM3UFileNode.State = { m3uFilePath: "", urls: [] };

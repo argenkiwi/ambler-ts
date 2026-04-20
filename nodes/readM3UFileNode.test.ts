@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ReadM3UFileNode } from "./readM3UFileNode.ts";
+import * as ReadM3UFileNode from "./readM3UFileNode.ts";
 import { Nextable } from "../ambler.ts";
 
 const baseState: ReadM3UFileNode.State = {

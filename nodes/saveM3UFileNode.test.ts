@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { SaveM3UFileNode } from "./saveM3UFileNode.ts";
+import * as SaveM3UFileNode from "./saveM3UFileNode.ts";
 import { Nextable } from "../ambler.ts";
 
 Deno.test("saveM3UFileNode: writes urls joined by newlines to filePath", async () => {
