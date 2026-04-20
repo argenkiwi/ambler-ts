@@ -1,5 +1,3 @@
-import { defaultPrint } from "../utils/defaultPrint.ts";
-
 export interface State {
   count: number;
 }
@@ -9,7 +7,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create(utils: Utils = defaultUtils) {

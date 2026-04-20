@@ -1,6 +1,5 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
 import { next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export type Message = { role: string; content: string };
 
@@ -27,7 +26,7 @@ const defaultUtils: Utils = {
   chat: async (messages: Message[], host: string, model: string) => {
     return await ollamaChat(host, model, messages);
   },
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

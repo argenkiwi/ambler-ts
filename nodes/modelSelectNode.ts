@@ -1,7 +1,5 @@
 import { Ollama } from "ollama";
 import { MaybePromise, next, Nextable } from "../ambler.ts";
-import { defaultReadLine } from "../utils/defaultReadLine.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   selectedModel: string;
@@ -24,8 +22,8 @@ const defaultUtils: Utils = {
     const response = await ollama.list();
     return response.models.map((m) => m.name);
   },
-  readLine: defaultReadLine,
-  print: defaultPrint,
+  readLine: (msg) => prompt(msg),
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

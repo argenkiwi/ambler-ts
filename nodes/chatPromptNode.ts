@@ -1,6 +1,4 @@
 import { MaybePromise, next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
-import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export type Message = { role: string; content: string };
 
@@ -14,13 +12,13 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (prompt: string) => MaybePromise<string | null>;
+  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
 const defaultUtils: Utils = {
-  readLine: defaultReadLine,
-  print: defaultPrint,
+  readLine: (msg) => prompt(msg),
+  print: (msg) => console.log(msg),
 };
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);

@@ -1,6 +1,4 @@
 import { MaybePromise } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
-import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export interface State {
   generatedStory: string;
@@ -28,8 +26,8 @@ const defaultUtils: Utils = {
       return false;
     }
   },
-  readLine: defaultReadLine,
-  print: defaultPrint,
+  readLine: (msg) => prompt(msg),
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

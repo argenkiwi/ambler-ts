@@ -1,11 +1,9 @@
-import { defaultPrint } from "../utils/defaultPrint.ts";
-
 export type Utils = {
   print: (msg: string) => void;
 };
 
 const defaultUtils: Utils = {
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create<S>(utils: Utils = defaultUtils) {

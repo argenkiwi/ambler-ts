@@ -1,5 +1,4 @@
 import { next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   count: number;
@@ -17,7 +16,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
   sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
   random: () => Math.random(),
 };

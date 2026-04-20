@@ -1,6 +1,5 @@
 import { Ollama } from "ollama";
 import { MaybePromise, next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   ollamaHost: string;
@@ -49,7 +48,7 @@ Conclude with a brief, reflective epilogue (200 words) showing the ongoing reali
     });
     return response.response;
   },
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

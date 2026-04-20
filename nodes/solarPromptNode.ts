@@ -1,6 +1,4 @@
 import { MaybePromise, next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
-import { defaultReadLine } from "../utils/defaultReadLine.ts";
 
 export interface State {
   solarPrompt: string;
@@ -16,8 +14,8 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  readLine: defaultReadLine,
-  print: defaultPrint,
+  readLine: (msg) => prompt(msg),
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

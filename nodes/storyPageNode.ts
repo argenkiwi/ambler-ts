@@ -1,6 +1,4 @@
 import { MaybePromise, next, Nextable } from "../ambler.ts";
-import { defaultPrint } from "../utils/defaultPrint.ts";
-import { defaultReadLine } from "../utils/defaultReadLine.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -32,8 +30,8 @@ const defaultUtils: Utils = {
   chat: async (host, model, messages) => {
     return await ollamaChat(host, model, messages);
   },
-  readLine: defaultReadLine,
-  print: defaultPrint,
+  readLine: (msg) => prompt(msg),
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(

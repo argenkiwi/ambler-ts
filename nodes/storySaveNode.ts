@@ -1,6 +1,5 @@
 import { next, Nextable } from "../ambler.ts";
 import fs from "node:fs/promises";
-import { defaultPrint } from "../utils/defaultPrint.ts";
 
 export interface State {
   selectedModel: string;
@@ -25,7 +24,7 @@ const defaultUtils: Utils = {
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(`${dir}/${filename}.md`, content);
   },
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(
