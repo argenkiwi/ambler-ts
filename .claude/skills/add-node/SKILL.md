@@ -29,7 +29,9 @@ If any of the above is unclear, ask the user before writing code.
 Use the following structure exactly. Do not deviate from naming conventions.
 
 ```typescript
-import { next, Nextable, defaultPrint } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
+// Also import MaybePromise if any util can be sync or async:
+// import { next, Nextable, MaybePromise } from "../ambler.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
@@ -46,14 +48,14 @@ export type Utils = {
   // One field per side-effectful operation.
   // Use function signatures that match real stdlib equivalents.
   print: (msg: string) => void;
-  // readLine: (prompt: string) => Promise<string | null>;
+  // readLine: (prompt: string) => MaybePromise<string | null>;
   // sleep: (ms: number) => Promise<void>;
   // random: () => number;
 };
 
 const defaultUtils: Utils = {
-  print: defaultPrint,
-  // readLine: defaultReadLine,  // import defaultReadLine from "../ambler.ts"
+  print: (msg) => console.log(msg),
+  // readLine: (msg) => prompt(msg),
   // sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
   // random: () => Math.random(),
 };
@@ -84,7 +86,7 @@ export function create<S extends State>(
 
 ### Key rules
 
-- **Always import from `"../ambler.ts"`** — import `next` and `Nextable` always; import `defaultPrint` and/or `defaultReadLine` as needed for `defaultUtils`.
+- **Always import from `"../ambler.ts"`** — import `next` and `Nextable` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes with no edges may not need any import from `ambler.ts`.
 - **Do not import `Next`** — the return type of the inner function is inferred from `Nextable<S>`; no explicit annotation is needed.
 - **Exports are flat at module level** — no namespace wrapper. Walks import the module with `import * as MyNode from "../nodes/myNode.ts"`, which gives `MyNode.State`, `MyNode.create`, etc.
 - **`State` is a minimum interface** — only include fields this node actually uses. The generic `S extends State` allows the walk to pass a richer state type without breaking the type system.

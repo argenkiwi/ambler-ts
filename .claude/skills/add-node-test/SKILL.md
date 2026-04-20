@@ -27,7 +27,7 @@ If any of the above is unclear, read the node file first.
 Write one `Deno.test` per meaningful branch of logic (one per edge + one per error/edge case).
 
 ```typescript
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as <Name>Node from "./<name>Node.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -62,7 +62,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 
 ### Test rules
 
-- **Import `assertEquals` from `https://deno.land/std@0.224.0/assert/mod.ts`** — same version as the rest of the project.
+- **Import `assertEquals` from `@std/assert`** — same as the rest of the project.
 - **Import the node with `import * as <Name>Node`** — matches the flat module-level export pattern; gives access to `<Name>Node.State`, `<Name>Node.Utils`, `<Name>Node.create`, etc.
 - **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
 - **One test per edge/branch** — cover every `return next(...)` line and the `null` case for terminal nodes.

@@ -39,7 +39,7 @@ Every node in `nodes/` uses flat module-level exports — no namespace wrapper. 
 
 ```typescript
 // nodes/myNode.ts
-import { next, Nextable, defaultPrint } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   // Only the properties this node uses
@@ -56,7 +56,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  print: defaultPrint,
+  print: (msg) => console.log(msg),
 };
 
 export function create<S extends State>(
@@ -87,7 +87,7 @@ export function create<S extends State>(
 
 ```typescript
 // nodes/myNode.test.ts
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as MyNode from "./myNode.ts";
 import { Nextable } from "../ambler.ts";
 
