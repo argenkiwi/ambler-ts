@@ -2,6 +2,16 @@
 
 Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as graphs. These programs, called **walks**, are composed of individual **nodes** and **edges**, enabling the creation of complex command-line applications and agentic workflows.
 
+## Starting a New Project
+
+To bootstrap a new Ambler project in an empty directory, run `init.ts` from this repo:
+
+```bash
+deno run --allow-write --allow-read init.ts <target-dir>
+```
+
+This creates the folder structure (`nodes/`, `walks/`, `specs/`), copies `ambler.ts`, generates a minimal `deno.json`, and installs the agent skills — ready to use with no sample code.
+
 ## Goals
 
 The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic as a series of nodes, it becomes possible for an agent to:
