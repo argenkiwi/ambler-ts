@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as ReadM3UFileNode from "./readM3UFileNode.ts";
 import { Nextable } from "../ambler.ts";
 
@@ -9,7 +9,7 @@ const baseState: ReadM3UFileNode.State = {
 
 function makeUtils(content: string): ReadM3UFileNode.Utils {
   return {
-    readFile: async () => content,
+    readFile: () => Promise.resolve(content),
     print: () => {},
   };
 }
@@ -23,7 +23,7 @@ Deno.test("readM3UFileNode: parses URLs and ignores comments/empty lines", async
 
   const content = "#EXTM3U\nhttps://example.com/song.mp3\n\n# comment\nhttps://other.com/track.mp3\n";
   const next = await ReadM3UFileNode.create(
-    { onHasKhinsider: async () => null, onNoKhinsider: captureNext },
+    { onHasKhinsider: () => null, onNoKhinsider: captureNext },
     makeUtils(content),
   )(baseState);
 
@@ -38,14 +38,14 @@ Deno.test("readM3UFileNode: parses URLs and ignores comments/empty lines", async
 
 Deno.test("readM3UFileNode: transitions to onHasKhinsider when khinsider URL found", async () => {
   let wentToKhinsider = false;
-  const khinsiderNext: Nextable<ReadM3UFileNode.State> = async () => {
+  const khinsiderNext: Nextable<ReadM3UFileNode.State> = () => {
     wentToKhinsider = true;
     return null;
   };
 
   const khinsiderUrl = "https://downloads.khinsider.com/game-soundtracks/album/game/01.mp3";
   const next = await ReadM3UFileNode.create(
-    { onHasKhinsider: khinsiderNext, onNoKhinsider: async () => null },
+    { onHasKhinsider: khinsiderNext, onNoKhinsider: () => null },
     makeUtils(khinsiderUrl),
   )(baseState);
 
@@ -57,13 +57,13 @@ Deno.test("readM3UFileNode: transitions to onHasKhinsider when khinsider URL fou
 
 Deno.test("readM3UFileNode: transitions to onNoKhinsider when no khinsider URLs", async () => {
   let wentToNoKhinsider = false;
-  const noKhinsiderNext: Nextable<ReadM3UFileNode.State> = async () => {
+  const noKhinsiderNext: Nextable<ReadM3UFileNode.State> = () => {
     wentToNoKhinsider = true;
     return null;
   };
 
   const next = await ReadM3UFileNode.create(
-    { onHasKhinsider: async () => null, onNoKhinsider: noKhinsiderNext },
+    { onHasKhinsider: () => null, onNoKhinsider: noKhinsiderNext },
     makeUtils("https://example.com/song.mp3"),
   )(baseState);
 

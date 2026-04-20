@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import * as SaveM3UFileNode from "./saveM3UFileNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("saveM3UFileNode: writes urls joined by newlines to filePath", async () => {
   let writtenPath: string | undefined;
@@ -12,15 +12,16 @@ Deno.test("saveM3UFileNode: writes urls joined by newlines to filePath", async (
   };
 
   const utils: SaveM3UFileNode.Utils = {
-    writeFile: async (path, content) => {
-      writtenPath = path;
-      writtenContent = content;
-    },
+    writeFile: (path, content) =>
+      Promise.resolve().then(() => {
+        writtenPath = path;
+        writtenContent = content;
+      }),
     print: () => {},
   };
 
   const next = await SaveM3UFileNode.create(
-    { onSuccess: async () => null },
+    { onSuccess: () => null },
     utils,
   )(state);
 
@@ -32,7 +33,7 @@ Deno.test("saveM3UFileNode: writes urls joined by newlines to filePath", async (
 
 Deno.test("saveM3UFileNode: transitions to onSuccess with same state", async () => {
   let captured: SaveM3UFileNode.State | undefined;
-  const captureNext: Nextable<SaveM3UFileNode.State> = async (s) => {
+  const captureNext: Nextable<SaveM3UFileNode.State> = (s) => {
     captured = s;
     return null;
   };

@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { PromptResolveNode } from "./promptResolveNode.ts";
+import * as PromptResolveNode from "./promptResolveNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 const baseState: PromptResolveNode.State = {
   m3uFilePath: "playlist.m3u",
@@ -9,30 +9,30 @@ const baseState: PromptResolveNode.State = {
 
 Deno.test("promptResolveNode: terminates on 'n'", async () => {
   const result = await PromptResolveNode.create(
-    { onYes: async () => null },
-    { readLine: async () => "n", print: () => {} },
+    { onYes:  () => null },
+    { readLine:  () => Promise.resolve("n"), print: () => {} },
   )(baseState);
   assertEquals(result, null);
 });
 
 Deno.test("promptResolveNode: terminates on 'no'", async () => {
   const result = await PromptResolveNode.create(
-    { onYes: async () => null },
-    { readLine: async () => "no", print: () => {} },
+    { onYes:  () => null },
+    { readLine:  () => Promise.resolve("no"), print: () => {} },
   )(baseState);
   assertEquals(result, null);
 });
 
 Deno.test("promptResolveNode: transitions to onYes on 'y'", async () => {
   let captured: PromptResolveNode.State | undefined;
-  const captureNext: Nextable<PromptResolveNode.State> = async (s) => {
+  const captureNext: Nextable<PromptResolveNode.State> =  (s) => {
     captured = s;
     return null;
   };
 
   const next = await PromptResolveNode.create(
     { onYes: captureNext },
-    { readLine: async () => "y", print: () => {} },
+    { readLine:  () => Promise.resolve("y"), print: () => {} },
   )(baseState);
 
   if (!next) throw new Error("Expected Next, got null");
@@ -44,7 +44,7 @@ Deno.test("promptResolveNode: transitions to onYes on 'y'", async () => {
 Deno.test("promptResolveNode: loops on invalid input, then accepts 'yes'", async () => {
   let callCount = 0;
   let wentToYes = false;
-  const captureNext: Nextable<PromptResolveNode.State> = async () => {
+  const captureNext: Nextable<PromptResolveNode.State> =  () => {
     wentToYes = true;
     return null;
   };
@@ -53,7 +53,7 @@ Deno.test("promptResolveNode: loops on invalid input, then accepts 'yes'", async
   const next = await PromptResolveNode.create(
     { onYes: captureNext },
     {
-      readLine: async () => inputs[callCount++] ?? null,
+      readLine:  () => Promise.resolve(inputs[callCount++] ?? null),
       print: () => {},
     },
   )(baseState);

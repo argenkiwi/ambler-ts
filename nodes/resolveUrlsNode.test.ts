@@ -1,13 +1,14 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ResolveUrlsNode } from "./resolveUrlsNode.ts";
+import * as ResolveUrlsNode from "./resolveUrlsNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
-const KHINSIDER_URL = "https://downloads.khinsider.com/game-soundtracks/game/01.mp3";
+const KHINSIDER_URL =
+  "https://downloads.khinsider.com/game-soundtracks/game/01.mp3";
 const OTHER_URL = "https://example.com/song.mp3";
 
 Deno.test("resolveUrlsNode: resolves khinsider URLs and passes through others", async () => {
   let captured: ResolveUrlsNode.State | undefined;
-  const captureNext: Nextable<ResolveUrlsNode.State> = async (s) => {
+  const captureNext: Nextable<ResolveUrlsNode.State> = (s) => {
     captured = s;
     return null;
   };
@@ -18,11 +19,13 @@ Deno.test("resolveUrlsNode: resolves khinsider URLs and passes through others", 
   };
 
   const utils: ResolveUrlsNode.Utils = {
-    resolveKhinsiderUrl: async (_url) => "https://cdn.example.com/01.mp3",
+    resolveKhinsiderUrl: (_url) => Promise.resolve("https://cdn.example.com/01.mp3"),
     print: () => {},
   };
 
-  const next = await ResolveUrlsNode.create({ onSuccess: captureNext }, utils)(state);
+  const next = await ResolveUrlsNode.create({ onSuccess: captureNext }, utils)(
+    state,
+  );
 
   if (!next) throw new Error("Expected Next, got null");
   await next.run();
@@ -32,7 +35,7 @@ Deno.test("resolveUrlsNode: resolves khinsider URLs and passes through others", 
 
 Deno.test("resolveUrlsNode: passes through all non-khinsider URLs unchanged", async () => {
   let captured: ResolveUrlsNode.State | undefined;
-  const captureNext: Nextable<ResolveUrlsNode.State> = async (s) => {
+  const captureNext: Nextable<ResolveUrlsNode.State> = (s) => {
     captured = s;
     return null;
   };
@@ -49,7 +52,9 @@ Deno.test("resolveUrlsNode: passes through all non-khinsider URLs unchanged", as
     print: () => {},
   };
 
-  const next = await ResolveUrlsNode.create({ onSuccess: captureNext }, utils)(state);
+  const next = await ResolveUrlsNode.create({ onSuccess: captureNext }, utils)(
+    state,
+  );
 
   if (!next) throw new Error("Expected Next, got null");
   await next.run();

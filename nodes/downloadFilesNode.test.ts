@@ -1,11 +1,12 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { DownloadFilesNode } from "./downloadFilesNode.ts";
+
+import * as DownloadFilesNode from "./downloadFilesNode.ts";
 import { Nextable } from "../ambler.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("downloadFilesNode: downloads files, removes original, updates state", async () => {
   let removedPath: string | undefined;
   let captured: DownloadFilesNode.State | undefined;
-  const captureNext: Nextable<DownloadFilesNode.State> = async (s) => {
+  const captureNext: Nextable<DownloadFilesNode.State> =  (s) => {
     captured = s;
     return null;
   };
@@ -19,8 +20,8 @@ Deno.test("downloadFilesNode: downloads files, removes original, updates state",
   };
 
   const utils: DownloadFilesNode.Utils = {
-    downloadFile: async (url, folder) => `${folder}/${url.split("/").pop()}`,
-    remove: async (path) => { removedPath = path; },
+    downloadFile: (url, folder) => Promise.resolve(`${folder}/${url.split("/").pop()}`),
+    remove: (path) => Promise.resolve().then(() => { removedPath = path; }),
     print: () => {},
   };
 
