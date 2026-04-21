@@ -59,7 +59,7 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = async (_s) => {
+    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
@@ -85,13 +85,13 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = async (_s) => {
+    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
 
     const utils: ChatPromptNode.Utils = {
-      readLine: async () => "quit",
+      readLine: () => "quit",
       print: () => {},
     };
 

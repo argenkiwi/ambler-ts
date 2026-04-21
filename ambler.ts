@@ -1,4 +1,4 @@
-export type MaybePromise<T> = T | Promise<T>;
+type MaybePromise<T> = T | Promise<T>;
 
 export type Nextable<S> = (state: S) => MaybePromise<Next<S> | null>;
 

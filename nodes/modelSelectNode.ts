@@ -1,5 +1,5 @@
 import { Ollama } from "ollama";
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -12,7 +12,7 @@ export type Edges<S extends State> = {
 
 export type Utils = {
   listModels: (host: string) => Promise<string[]>;
-  readLine: (msg: string) => MaybePromise<string | null>;
+  readLine: (msg: string) => string | null;
   print: (msg: string) => void;
 };
 
@@ -35,7 +35,7 @@ export function create<S extends State>(
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
 
-    const input = await utils.readLine("Select model index: ");
+    const input = utils.readLine("Select model index: ");
     if (input === null) return null;
 
     const index = parseInt(input);

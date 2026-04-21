@@ -1,4 +1,4 @@
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -10,7 +10,7 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (msg: string) => MaybePromise<string | null>;
+  readLine: (msg: string) => string | null;
   print: (msg: string) => void;
 };
 
@@ -23,8 +23,8 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
-    const input = await utils.readLine("Enter a starting number: ");
+  return (state: S) => {
+    const input = utils.readLine("Enter a starting number: ");
 
     if (input === null || input === "") {
       return next(edges.onSuccess, { ...state, count: 0 });

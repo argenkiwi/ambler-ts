@@ -1,5 +1,5 @@
 import { Ollama } from "ollama";
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   ollamaHost: string;
@@ -17,7 +17,7 @@ export type Utils = {
     host: string,
     model: string,
     prompt: string,
-  ) => MaybePromise<string>;
+  ) => Promise<string>;
   print: (msg: string) => void;
 };
 

@@ -13,8 +13,8 @@ Deno.test(
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
-      saveToFile: (content) => {
-        savedContent = content;
+      saveToFile: async (content) => {
+        savedContent = await Promise.resolve(content);
         return true;
       },
       print: () => {},
@@ -43,8 +43,8 @@ Deno.test(
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "n",
-      saveToFile: (_content) => {
-        saveCalled = true;
+      saveToFile: async (_content) => {
+        saveCalled = await Promise.resolve(true);
         return true;
       },
       print: () => {},
@@ -73,7 +73,7 @@ Deno.test(
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
-      saveToFile: (_content) => false,
+      saveToFile: async (_content) => await Promise.resolve(false),
       print: (msg) => printed.push(msg),
     };
 

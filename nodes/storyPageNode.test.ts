@@ -16,7 +16,7 @@ Deno.test(
   "storyPageNode should transition onPageComplete when reply ends with 'The End'",
   async () => {
     let capturedState: StoryPageNode.State | undefined;
-    const captureNext: Nextable<StoryPageNode.State> = async (s) => {
+    const captureNext: Nextable<StoryPageNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -24,7 +24,6 @@ Deno.test(
     const utils: StoryPageNode.Utils = {
       chat: (_host, _model, _messages) =>
         Promise.resolve("You discovered the secret. The End"),
-      readLine: (_msg) => null,
       print: () => {},
     };
 
@@ -49,7 +48,7 @@ Deno.test(
   "storyPageNode should transition onDecisionRequired when reply has options",
   async () => {
     let capturedState: StoryPageNode.State | undefined;
-    const captureNext: Nextable<StoryPageNode.State> = async (s) => {
+    const captureNext: Nextable<StoryPageNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -57,7 +56,6 @@ Deno.test(
     const reply = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const utils: StoryPageNode.Utils = {
       chat: (_host, _model, _messages) => Promise.resolve(reply),
-      readLine: (_msg) => null,
       print: () => {},
     };
 

@@ -1,5 +1,3 @@
-import { MaybePromise } from "../ambler.ts";
-
 export interface State {
   generatedStory: string;
 }
@@ -9,8 +7,8 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  saveToFile: (content: string) => MaybePromise<boolean>;
-  readLine: (msg: string) => MaybePromise<string | null>;
+  saveToFile: (content: string) => Promise<boolean>;
+  readLine: (msg: string) => string | null;
   print: (msg: string) => void;
 };
 
@@ -35,8 +33,8 @@ export function create<S extends State>(
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {
-    const input = await utils.readLine(
-      "Would you like to save this story? (y/n): ",
+    const input = utils.readLine(
+      "Would you like to save this story? (y/n): "
     );
     if (input?.toLowerCase() === "y") {
       const success = await utils.saveToFile(state.generatedStory);

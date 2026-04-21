@@ -1,4 +1,4 @@
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -15,7 +15,7 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (msg: string) => MaybePromise<string | null>;
+  readLine: (msg: string) => string | null;
   print: (msg: string) => void;
 };
 
@@ -28,7 +28,7 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return (state: S) => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
     if (!lastPage) return null;
 
@@ -51,7 +51,7 @@ export function create<S extends State>(
 
     let selectedIdx: number;
     while (true) {
-      const input = await utils.readLine(
+      const input = utils.readLine(
         `Select option (1-${options.length}): `,
       );
       if (input === null) return null;

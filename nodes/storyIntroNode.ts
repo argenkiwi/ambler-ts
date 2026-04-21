@@ -1,4 +1,4 @@
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -11,7 +11,7 @@ export type Edges<S extends State> = {
 };
 
 export type Utils = {
-  readLine: (msg: string) => MaybePromise<string | null>;
+  readLine: (msg: string) => string | null;
   print: (msg: string) => void;
 };
 
@@ -24,12 +24,12 @@ export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
-    const identity = await utils.readLine("Who is the protagonist? ");
-    const placement = await utils.readLine(
+  return (state: S) => {
+    const identity = utils.readLine("Who is the protagonist? ");
+    const placement = utils.readLine(
       "Where and when does the story take place? ",
     );
-    const circumstances = await utils.readLine("What is happening? ");
+    const circumstances = utils.readLine("What is happening? ");
 
     if (identity === null || placement === null || circumstances === null) {
       return null;

@@ -1,4 +1,4 @@
-import { MaybePromise, next, Nextable } from "../ambler.ts";
+import { next, Nextable } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -22,7 +22,6 @@ export type Utils = {
     model: string,
     messages: { role: string; content: string }[],
   ) => Promise<string>;
-  readLine: (msg: string) => MaybePromise<string | null>;
   print: (msg: string) => void;
 };
 
@@ -30,7 +29,6 @@ const defaultUtils: Utils = {
   chat: async (host, model, messages) => {
     return await ollamaChat(host, model, messages);
   },
-  readLine: (msg) => prompt(msg),
   print: (msg) => console.log(msg),
 };
 

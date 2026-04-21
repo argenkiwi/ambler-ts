@@ -30,7 +30,7 @@ Deno.test(
   async () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
-      readLine: async (_msg) => (call++ === 0 ? "Ada" : null),
+      readLine: (_msg) => (call++ === 0 ? "Ada" : null),
       print: () => {},
     };
 
@@ -68,14 +68,14 @@ Deno.test(
   "storyIntroNode should set identity, placement, and circumstances trimmed",
   async () => {
     let capturedState: StoryIntroNode.State | undefined;
-    const captureNext: Nextable<StoryIntroNode.State> = async (s) => {
+    const captureNext: Nextable<StoryIntroNode.State> = (s) => {
       capturedState = s;
       return null;
     };
 
     let call = 0;
     const utils: StoryIntroNode.Utils = {
-      readLine: async (_msg) =>
+      readLine: (_msg) =>
         ["  Ada  ", "  London, 1842  ", "  Inventing the engine  "][call++],
       print: () => {},
     };

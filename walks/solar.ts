@@ -31,7 +31,7 @@ const nodes: Record<string, Nextable<State>> = {
     SolarGenerateNode.create({ onGenerateComplete: nodes.save })
   ),
   save: node(() =>
-    SolarSaveNode.create({ onSaveComplete: (state: State) => null })
+    SolarSaveNode.create({ onSaveComplete: (_state: State) => null })
   ),
 };
 

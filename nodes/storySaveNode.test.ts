@@ -45,7 +45,7 @@ Deno.test(
   "storySaveNode should still transition onSaveComplete when saveFile throws",
   async () => {
     let capturedState: StorySaveNode.State | undefined;
-    const captureNext: Nextable<StorySaveNode.State> = async (s) => {
+    const captureNext: Nextable<StorySaveNode.State> = (s) => {
       capturedState = s;
       return null;
     };

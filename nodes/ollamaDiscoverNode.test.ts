@@ -15,7 +15,7 @@ Deno.test(
 
     const utils: OllamaDiscoverNode.Utils = {
       tryHost: (host) => Promise.resolve(host === "http://localhost:11434"),
-      readLine: (_msg) => Promise.resolve(null),
+      readLine: (_msg) => null,
       print: () => {},
     };
 
@@ -36,7 +36,7 @@ Deno.test(
   async () => {
     const utils: OllamaDiscoverNode.Utils = {
       tryHost: (_host) => Promise.resolve(false),
-      readLine: (_msg) => Promise.resolve(null),
+      readLine: (_msg) => null,
       print: () => {},
     };
 
@@ -60,7 +60,7 @@ Deno.test(
 
     const utils: OllamaDiscoverNode.Utils = {
       tryHost: (_host) => Promise.resolve(false),
-      readLine: (_msg) => Promise.resolve("  http://192.168.1.5:11434  "),
+      readLine: (_msg) => "  http://192.168.1.5:11434  ",
       print: () => {},
     };
 

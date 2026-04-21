@@ -14,7 +14,7 @@ Deno.test(
   async () => {
     const utils: ModelSelectNode.Utils = {
       listModels: (_host) => Promise.resolve(models),
-      readLine: (_msg) => Promise.resolve(null),
+      readLine: (_msg) => null,
       print: () => {},
     };
 
@@ -38,7 +38,7 @@ Deno.test(
 
     const utils: ModelSelectNode.Utils = {
       listModels: (_host) => Promise.resolve(models),
-      readLine: (_msg) => Promise.resolve("abc"),
+      readLine: (_msg) => "abc",
       print: () => {},
     };
 
@@ -65,7 +65,7 @@ Deno.test(
 
     const utils: ModelSelectNode.Utils = {
       listModels: (_host) => Promise.resolve(models),
-      readLine: (_msg) => Promise.resolve("99"),
+      readLine: (_msg) => "99",
       print: () => {},
     };
 
@@ -92,7 +92,7 @@ Deno.test(
 
     const utils: ModelSelectNode.Utils = {
       listModels: (_host) => Promise.resolve(models),
-      readLine: (_msg) => Promise.resolve("1"),
+      readLine: (_msg) => "1",
       print: () => {},
     };
 
