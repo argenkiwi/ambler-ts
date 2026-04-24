@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get install -y curl zstd && \
     curl -fsSL https://ollama.com/install.sh | sh
 
+# Install Deno and the Pi Coding Agent.
 RUN npm i -g deno @mariozechner/pi-coding-agent
 
 # Set working directory
