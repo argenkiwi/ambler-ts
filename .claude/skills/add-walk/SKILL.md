@@ -39,7 +39,7 @@ Every node in `nodes/` uses flat module-level exports — no namespace wrapper. 
 
 ```typescript
 // nodes/myNode.ts
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export interface State {
   // Only the properties this node uses
@@ -47,8 +47,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onSuccess: Nextable<S>;
-  onError: Nextable<S>;
+  onSuccess: Node<S>;
+  onError: Node<S>;
 };
 
 export type Utils = {
@@ -62,7 +62,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     utils.print(`...`);
     return next(edges.onSuccess, state);
@@ -75,7 +75,7 @@ export function create<S extends State>(
 ```typescript
 export function create<S extends State>(
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     utils.print(`Done: ${state.field}`);
     return null;
@@ -89,11 +89,11 @@ export function create<S extends State>(
 // nodes/myNode.test.ts
 import { assertEquals } from "@std/assert";
 import * as MyNode from "./myNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test("myNode should transition to onSuccess", async () => {
   let captured: MyNode.State | undefined;
-  const capture: Nextable<MyNode.State> = async (s) => { captured = s; return null; };
+  const capture: Node<MyNode.State> = async (s) => { captured = s; return null; };
 
   const mockUtils: MyNode.Utils = {
     print: () => {},
@@ -105,7 +105,7 @@ Deno.test("myNode should transition to onSuccess", async () => {
   )({ field: "test" });
 
   if (!nextResult) throw new Error("Expected Next, got null");
-  await nextResult.run();
+  await nextResult();
 
   assertEquals(captured?.field, "test");
 });
@@ -164,7 +164,7 @@ Follow the exact format of `specs/counter.md`:
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { amble, node, Nextable } from "../ambler.ts";
+import { amble, node, Node } from "../ambler.ts";
 import * as NodeA from "../nodes/nodeA.ts";
 import * as NodeB from "../nodes/nodeB.ts";
 import * as NodeC from "../nodes/nodeC.ts";
@@ -177,7 +177,7 @@ const initialState: State = {
   field: "initial",
 };
 
-const nodes: Record<string, Nextable<State>> = {
+const nodes: Record<string, Node<State>> = {
   start: node(() => NodeA.create({ onSuccess: nodes.next, onError: nodes.start })),
   next:  node(() => NodeB.create({ onComplete: nodes.stop })),
   stop:  node(() => NodeC.create()),
@@ -189,10 +189,10 @@ if (import.meta.main) {
 ```
 
 **Key rules:**
-- Import `amble`, `node`, `Nextable` from `../ambler.ts`.
+- Import `amble`, `node`, `Node` from `../ambler.ts`.
 - Import each node module with `import * as <Name>Node from "../nodes/<name>Node.ts"`.
 - Define `State` interface and `initialState` at the top of the file.
-- Use `Record<string, Nextable<State>>` for the `nodes` object.
+- Use `Record<string, Node<State>>` for the `nodes` object.
 - Always wrap node creation in `node(() => ...)` to handle circular/forward references.
 - Include the `if (import.meta.main)` guard.
 
@@ -236,4 +236,4 @@ Before finishing, confirm:
 | `nodes/startNode.ts` | Example node with input + error handling |
 | `nodes/countNode.ts` | Example node with randomized transition |
 | `nodes/stopNode.ts` | Example terminal node (returns `null`) |
-| `ambler.ts` | Core primitives: `Nextable`, `Next`, `next`, `node`, `amble` |
+| `ambler.ts` | Core primitives: `Node`, `Next`, `next`, `node`, `amble` |

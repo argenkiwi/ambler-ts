@@ -16,7 +16,7 @@ Before writing any code, determine:
 
 - **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>Node.ts`.
 - **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches. Other walk-level state fields flow through untouched via the `S extends State` generic.
-- **Edges**: What named transitions can this node take? Terminal nodes have no edges and always return `null`. Non-terminal nodes declare an `Edges<S extends State>` type whose values are `Nextable<S>`.
+- **Edges**: What named transitions can this node take? Terminal nodes have no edges and always return `null`. Non-terminal nodes declare an `Edges<S extends State>` type whose values are `Node<S>`.
 - **Utils**: What side-effectful operations does the node perform? List them (e.g., `print`, `readLine`, `sleep`, `random`, `fetch`). Each becomes a field on the `Utils` type with a sensible production default in `defaultUtils`.
 - **Behavior**: What does the node do, step by step, and how does it choose which edge to follow?
 
@@ -29,9 +29,9 @@ If any of the above is unclear, ask the user before writing code.
 Use the following structure exactly. Do not deviate from naming conventions.
 
 ```typescript
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 // Also import MaybePromise if any util can be sync or async:
-// import { next, Nextable, MaybePromise } from "../ambler.ts";
+// import { next, Node, MaybePromise } from "../ambler.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
@@ -40,8 +40,8 @@ export interface State {
 
 // Omit Edges entirely for terminal nodes.
 export type Edges<S extends State> = {
-  onSuccess: Nextable<S>;  // rename/add edge names as appropriate
-  // onError: Nextable<S>;
+  onSuccess: Node<S>;  // rename/add edge names as appropriate
+  // onError: Node<S>;
 };
 
 export type Utils = {
@@ -64,7 +64,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     // Node logic here.
     // Always spread state when updating: { ...state, field: newValue }
@@ -76,7 +76,7 @@ export function create<S extends State>(
 // Terminal node variant (no edges — replace the above with this):
 // export function create<S extends State>(
 //   utils: Utils = defaultUtils,
-// ): Nextable<S> {
+// ): Node<S> {
 //   return async (state: S) => {
 //     // Terminal logic.
 //     return null;
@@ -86,8 +86,8 @@ export function create<S extends State>(
 
 ### Key rules
 
-- **Always import from `"../ambler.ts"`** — import `next` and `Nextable` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes with no edges may not need any import from `ambler.ts`.
-- **Do not import `Next`** — the return type of the inner function is inferred from `Nextable<S>`; no explicit annotation is needed.
+- **Always import from `"../ambler.ts"`** — import `next` and `Node` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes with no edges may not need any import from `ambler.ts`.
+- **Do not import `Next`** — the return type of the inner function is inferred from `Node<S>`; no explicit annotation is needed.
 - **Exports are flat at module level** — no namespace wrapper. Walks import the module with `import * as MyNode from "../nodes/myNode.ts"`, which gives `MyNode.State`, `MyNode.create`, etc.
 - **`State` is a minimum interface** — only include fields this node actually uses. The generic `S extends State` allows the walk to pass a richer state type without breaking the type system.
 - **`Edges<S extends State>` uses the same generic** so that edge functions accept the full walk state, not just the node's minimum state.

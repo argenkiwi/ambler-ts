@@ -22,8 +22,8 @@ deno run walks/counter.ts
 
 **Ambler** is a Deno/TypeScript state machine framework. The core execution model lives in `ambler.ts`:
 
-- `Nextable<S>` — a function `(state: S) => Promise<Next<S> | null>` representing a node in the graph
-- `Next<S>` — wraps the next `Nextable` and updated state; calling `.run()` advances the machine
+- `Node<S>` — a function `(state: S) => MaybePromise<Next<S> | null>` representing a node in the graph
+- `Next<S>` — a plain function; calling it advances the machine to the next step
 - `node(factory)` — wraps a node factory so it re-runs each time (enabling cyclic graphs without circular reference issues)
 - `amble(start, initialState)` — drives the machine until a node returns `null`
 

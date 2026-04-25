@@ -29,19 +29,19 @@ Write one `Deno.test` per meaningful branch of logic (one per edge + one per err
 ```typescript
 import { assertEquals } from "@std/assert";
 import * as <Name>Node from "./<name>Node.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: <Name>Node.State = { /* ... */ };
   let capturedState: <Name>Node.State | undefined;
 
   // Capture function to observe state after transition.
-  const captureNext: Nextable<<Name>Node.State> = async (s) => {
+  const captureNext: Node<<Name>Node.State> = async (s) => {
     capturedState = s;
     return null;
   };
   // For edges that should NOT be taken in this test, use a no-op or a throw:
-  // const captureOther: Nextable<<Name>Node.State> = async (_s) => null;
+  // const captureOther: Node<<Name>Node.State> = async (_s) => null;
 
   const utils: <Name>Node.Utils = {
     print: () => {},
@@ -54,7 +54,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
   )(initialState);
 
   if (!nextResult) throw new Error("Expected Next, got null");
-  await nextResult.run();  // Drives state into captureNext.
+  await nextResult();  // Drives state into captureNext.
 
   assertEquals(capturedState?.someField, expectedValue);
 });
@@ -66,8 +66,8 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 - **Import the node with `import * as <Name>Node`** — matches the flat module-level export pattern; gives access to `<Name>Node.State`, `<Name>Node.Utils`, `<Name>Node.create`, etc.
 - **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
 - **One test per edge/branch** — cover every `return next(...)` line and the `null` case for terminal nodes.
-- **Use closure variables to capture state** — declare `let capturedState` before the test, assign inside `captureNext`, assert after `nextResult.run()`.
-- **Guard against unexpected `null`** — always check `if (!nextResult) throw new Error(...)` before calling `.run()`, unless you are testing a terminal node that must return `null` (in which case assert `assertEquals(nextResult, null)`).
+- **Use closure variables to capture state** — declare `let capturedState` before the test, assign inside `captureNext`, assert after `nextResult()`.
+- **Guard against unexpected `null`** — always check `if (!nextResult) throw new Error(...)` before calling it, unless you are testing a terminal node that must return `null` (in which case assert `assertEquals(nextResult, null)`).
 - **Test names follow the pattern**: `"<name>Node should <expected behavior> when <condition>"`.
 
 ---

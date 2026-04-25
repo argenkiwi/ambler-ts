@@ -58,26 +58,76 @@ for (const dir of dirs) {
 // ─── File contents ───────────────────────────────────────────────────────────
 
 const AMBLER_TS =
-  `export type MaybePromise<T> = T | Promise<T>;
+  `/**
+ * Represents a value that can be either a synchronous value or a Promise of that value.
+ */
+export type MaybePromise<T> = T | Promise<T>;
 
-export type Nextable<S> = (state: S) => MaybePromise<Next<S> | null>;
+/**
+ * A function that represents a node in the state machine.
+ * Given the current state, it returns the next step in the machine or null if the machine should terminate.
+ *
+ * @template S The type of the machine's state.
+ */
+export type Node<S> = (state: S) => MaybePromise<Next<S> | null>;
 
-export interface Next<S> {
-  run(): MaybePromise<Next<S> | null>;
+/**
+ * Represents the result of a node's execution. Calling it advances to the next step.
+ * A plain function type avoids the object allocation of an interface or class.
+ *
+ * @template S The type of the machine's state.
+ */
+export type Next<S> = () => MaybePromise<Next<S> | null>;
+
+/**
+ * Wraps a {@link Node} function and a state into a {@link Next} function.
+ * This allows for easier creation of transitions.
+ *
+ * @template S The type of the machine's state.
+ * @param node The function representing the next node.
+ * @param state The current state of the machine.
+ * @returns A {@link Next} function that, when invoked, executes the provided {@link Node}.
+ */
+export function next<S>(node: Node<S>, state: S): Next<S> {
+  return () => node(state);
 }
 
-export function next<S>(nextFunc: Nextable<S>, state: S): Next<S> {
-  return { run: () => nextFunc(state) };
+/**
+ * Lazily instantiates a node from a factory and caches the result for reuse.
+ * The factory is not called until the node is first entered during \`amble\` execution,
+ * which breaks circular dependency cycles in the wiring graph. Subsequent visits
+ * reuse the cached node instance, avoiding redundant allocations on every transition.
+ *
+ * @template S The type of the machine's state.
+ * @param factory A function that returns a {@link Node} function when invoked.
+ * @returns A {@link Node} function that lazily initializes and caches the underlying node.
+ */
+export function node<S>(factory: () => Node<S>): Node<S> {
+  let cached: Node<S> | null = null;
+
+  return (state: S) => {
+    if (cached === null) {
+      cached = factory();
+    }
+
+    return cached(state);
+  };
 }
 
-export function node<S>(factory: () => Nextable<S>): Nextable<S> {
-  return (state: S) => factory()(state);
-}
-
-export async function amble<S>(initial: Nextable<S>, state: S): Promise<void> {
-  let step: Next<S> | null = await initial(state);
-  while (step) {
-    step = await step.run();
+/**
+ * The main execution loop that drives the state machine.
+ * It starts with the initial node and continues to execute subsequent nodes until
+ * a node returns null.
+ *
+ * @template S The type of the machine's state.
+ * @param initial The first node in the state machine.
+ * @param state The initial state of the machine.
+ * @returns A promise that resolves when the state machine completes.
+ */
+export async function amble<S>(initial: Node<S>, state: S): Promise<void> {
+  let next: Next<S> | null = await initial(state);
+  while (next) {
+    next = await next();
   }
 }
 `;
@@ -112,8 +162,8 @@ deno run walks/<name>.ts
 
 **Ambler** is a Deno/TypeScript state machine framework. The core execution model lives in \`ambler.ts\`:
 
-- \`Nextable<S>\` — a function \`(state: S) => Promise<Next<S> | null>\` representing a node in the graph
-- \`Next<S>\` — wraps the next \`Nextable\` and updated state; calling \`.run()\` advances the machine
+- \`Node<S>\` — a function \`(state: S) => MaybePromise<Next<S> | null>\` representing a node in the graph
+- \`Next<S>\` — a plain function; calling it advances the machine to the next step
 - \`node(factory)\` — wraps a node factory so it re-runs each time (enabling cyclic graphs without circular reference issues)
 - \`amble(start, initialState)\` — drives the machine until a node returns \`null\`
 
@@ -145,7 +195,7 @@ Before writing any code, determine:
 
 - **Node name**: The purpose of the node (e.g., \`retry\`, \`prompt\`, \`validate\`). The file will be named \`<name>Node.ts\`.
 - **State shape**: What fields does this node read or mutate? Every node has a minimum \`State\` interface that must include the fields it touches. Other walk-level state fields flow through untouched via the \`S extends State\` generic.
-- **Edges**: What named transitions can this node take? Terminal nodes have no edges and always return \`null\`. Non-terminal nodes declare an \`Edges<S extends State>\` type whose values are \`Nextable<S>\`.
+- **Edges**: What named transitions can this node take? Terminal nodes have no edges and always return \`null\`. Non-terminal nodes declare an \`Edges<S extends State>\` type whose values are \`Node<S>\`.
 - **Utils**: What side-effectful operations does the node perform? List them (e.g., \`print\`, \`readLine\`, \`sleep\`, \`random\`, \`fetch\`). Each becomes a field on the \`Utils\` type with a sensible production default in \`defaultUtils\`.
 - **Behavior**: What does the node do, step by step, and how does it choose which edge to follow?
 
@@ -158,9 +208,9 @@ If any of the above is unclear, ask the user before writing code.
 Use the following structure exactly. Do not deviate from naming conventions.
 
 \`\`\`typescript
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 // Also import MaybePromise if any util can be sync or async:
-// import { next, Nextable, MaybePromise } from "../ambler.ts";
+// import { next, Node, MaybePromise } from "../ambler.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
@@ -169,8 +219,8 @@ export interface State {
 
 // Omit Edges entirely for terminal nodes.
 export type Edges<S extends State> = {
-  onSuccess: Nextable<S>;  // rename/add edge names as appropriate
-  // onError: Nextable<S>;
+  onSuccess: Node<S>;  // rename/add edge names as appropriate
+  // onError: Node<S>;
 };
 
 export type Utils = {
@@ -193,7 +243,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     // Node logic here.
     // Always spread state when updating: { ...state, field: newValue }
@@ -205,7 +255,7 @@ export function create<S extends State>(
 // Terminal node variant (no edges — replace the above with this):
 // export function create<S extends State>(
 //   utils: Utils = defaultUtils,
-// ): Nextable<S> {
+// ): Node<S> {
 //   return async (state: S) => {
 //     // Terminal logic.
 //     return null;
@@ -215,8 +265,8 @@ export function create<S extends State>(
 
 ### Key rules
 
-- **Always import from \`"../ambler.ts"\`** — import \`next\` and \`Nextable\` for non-terminal nodes. Import \`MaybePromise\` if any util type is sync-or-async (e.g. \`readLine\`). Terminal nodes with no edges may not need any import from \`ambler.ts\`.
-- **Do not import \`Next\`** — the return type of the inner function is inferred from \`Nextable<S>\`; no explicit annotation is needed.
+- **Always import from \`"../ambler.ts"\`** — import \`next\` and \`Node\` for non-terminal nodes. Import \`MaybePromise\` if any util type is sync-or-async (e.g. \`readLine\`). Terminal nodes with no edges may not need any import from \`ambler.ts\`.
+- **Do not import \`Next\`** — the return type of the inner function is inferred from \`Node<S>\`; no explicit annotation is needed.
 - **Exports are flat at module level** — no namespace wrapper. Walks import the module with \`import * as MyNode from "../nodes/myNode.ts"\`, which gives \`MyNode.State\`, \`MyNode.create\`, etc.
 - **\`State\` is a minimum interface** — only include fields this node actually uses. The generic \`S extends State\` allows the walk to pass a richer state type without breaking the type system.
 - **\`Edges<S extends State>\` uses the same generic** so that edge functions accept the full walk state, not just the node's minimum state.
@@ -287,19 +337,19 @@ Write one \`Deno.test\` per meaningful branch of logic (one per edge + one per e
 \`\`\`typescript
 import { assertEquals } from "@std/assert";
 import * as <Name>Node from "./<name>Node.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: <Name>Node.State = { /* ... */ };
   let capturedState: <Name>Node.State | undefined;
 
   // Capture function to observe state after transition.
-  const captureNext: Nextable<<Name>Node.State> = async (s) => {
+  const captureNext: Node<<Name>Node.State> = async (s) => {
     capturedState = s;
     return null;
   };
   // For edges that should NOT be taken in this test, use a no-op or a throw:
-  // const captureOther: Nextable<<Name>Node.State> = async (_s) => null;
+  // const captureOther: Node<<Name>Node.State> = async (_s) => null;
 
   const utils: <Name>Node.Utils = {
     print: () => {},
@@ -312,7 +362,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
   )(initialState);
 
   if (!nextResult) throw new Error("Expected Next, got null");
-  await nextResult.run();  // Drives state into captureNext.
+  await nextResult();  // Drives state into captureNext.
 
   assertEquals(capturedState?.someField, expectedValue);
 });
@@ -324,8 +374,8 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 - **Import the node with \`import * as <Name>Node\`** — matches the flat module-level export pattern; gives access to \`<Name>Node.State\`, \`<Name>Node.Utils\`, \`<Name>Node.create\`, etc.
 - **Mock all \`Utils\`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
 - **One test per edge/branch** — cover every \`return next(...)\` line and the \`null\` case for terminal nodes.
-- **Use closure variables to capture state** — declare \`let capturedState\` before the test, assign inside \`captureNext\`, assert after \`nextResult.run()\`.
-- **Guard against unexpected \`null\`** — always check \`if (!nextResult) throw new Error(...)\` before calling \`.run()\`, unless you are testing a terminal node that must return \`null\` (in which case assert \`assertEquals(nextResult, null)\`).
+- **Use closure variables to capture state** — declare \`let capturedState\` before the test, assign inside \`captureNext\`, assert after \`nextResult()\`.
+- **Guard against unexpected \`null\`** — always check \`if (!nextResult) throw new Error(...)\` before calling it, unless you are testing a terminal node that must return \`null\` (in which case assert \`assertEquals(nextResult, null)\`).
 - **Test names follow the pattern**: \`"<name>Node should <expected behavior> when <condition>"\`.
 
 ---
@@ -382,7 +432,7 @@ Every node in \`nodes/\` uses flat module-level exports — no namespace wrapper
 
 \`\`\`typescript
 // nodes/myNode.ts
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export interface State {
   // Only the properties this node uses
@@ -390,8 +440,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onSuccess: Nextable<S>;
-  onError: Nextable<S>;
+  onSuccess: Node<S>;
+  onError: Node<S>;
 };
 
 export type Utils = {
@@ -405,7 +455,7 @@ const defaultUtils: Utils = {
 export function create<S extends State>(
   edges: Edges<S>,
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     utils.print(\`...\`);
     return next(edges.onSuccess, state);
@@ -418,7 +468,7 @@ export function create<S extends State>(
 \`\`\`typescript
 export function create<S extends State>(
   utils: Utils = defaultUtils,
-): Nextable<S> {
+): Node<S> {
   return async (state: S) => {
     utils.print(\`Done: \${state.field}\`);
     return null;
@@ -432,11 +482,11 @@ export function create<S extends State>(
 // nodes/myNode.test.ts
 import { assertEquals } from "@std/assert";
 import * as MyNode from "./myNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test("myNode should transition to onSuccess", async () => {
   let captured: MyNode.State | undefined;
-  const capture: Nextable<MyNode.State> = async (s) => { captured = s; return null; };
+  const capture: Node<MyNode.State> = async (s) => { captured = s; return null; };
 
   const mockUtils: MyNode.Utils = {
     print: () => {},
@@ -448,7 +498,7 @@ Deno.test("myNode should transition to onSuccess", async () => {
   )({ field: "test" });
 
   if (!nextResult) throw new Error("Expected Next, got null");
-  await nextResult.run();
+  await nextResult();
 
   assertEquals(captured?.field, "test");
 });
@@ -507,7 +557,7 @@ Follow this exact format:
 ## Step 4 — Create the Wiring File (\`walks/<name>.ts\`)
 
 \`\`\`typescript
-import { amble, node, Nextable } from "../ambler.ts";
+import { amble, node, Node } from "../ambler.ts";
 import * as NodeA from "../nodes/nodeA.ts";
 import * as NodeB from "../nodes/nodeB.ts";
 import * as NodeC from "../nodes/nodeC.ts";
@@ -520,7 +570,7 @@ const initialState: State = {
   field: "initial",
 };
 
-const nodes: Record<string, Nextable<State>> = {
+const nodes: Record<string, Node<State>> = {
   start: node(() => NodeA.create({ onSuccess: nodes.next, onError: nodes.start })),
   next:  node(() => NodeB.create({ onComplete: nodes.stop })),
   stop:  node(() => NodeC.create()),
@@ -532,10 +582,10 @@ if (import.meta.main) {
 \`\`\`
 
 **Key rules:**
-- Import \`amble\`, \`node\`, \`Nextable\` from \`../ambler.ts\`.
+- Import \`amble\`, \`node\`, \`Node\` from \`../ambler.ts\`.
 - Import each node module with \`import * as <Name>Node from "../nodes/<name>Node.ts"\`.
 - Define \`State\` interface and \`initialState\` at the top of the file.
-- Use \`Record<string, Nextable<State>>\` for the \`nodes\` object.
+- Use \`Record<string, Node<State>>\` for the \`nodes\` object.
 - Always wrap node creation in \`node(() => ...)\` to handle circular/forward references.
 - Include the \`if (import.meta.main)\` guard.
 
