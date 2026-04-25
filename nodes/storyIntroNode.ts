@@ -1,4 +1,4 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -7,7 +7,7 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onIntroComplete: Nextable<S>;
+  onIntroComplete: Node<S>;
 };
 
 export type Utils = {

@@ -1,11 +1,11 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export interface State {
   solarPrompt: string;
 }
 
 export type Edges<S extends State> = {
-  onPromptComplete: Nextable<S>;
+  onPromptComplete: Node<S>;
 };
 
 export type Utils = {

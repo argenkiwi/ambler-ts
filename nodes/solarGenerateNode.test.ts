@@ -1,5 +1,5 @@
 import * as SolarGenerateNode from "./solarGenerateNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: SolarGenerateNode.State = {
@@ -13,7 +13,7 @@ Deno.test(
   "solarGenerateNode should set generatedStory and transition onGenerateComplete",
   async () => {
     let capturedState: SolarGenerateNode.State | undefined;
-    const captureNext: Nextable<SolarGenerateNode.State> = (s) => {
+    const captureNext: Node<SolarGenerateNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -30,7 +30,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(
       capturedState?.generatedStory,

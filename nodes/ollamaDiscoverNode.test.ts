@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as OllamaDiscoverNode from "./ollamaDiscoverNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 const baseState: OllamaDiscoverNode.State = { ollamaHost: "" };
 
@@ -8,7 +8,7 @@ Deno.test(
   "ollamaDiscoverNode should set ollamaHost when a candidate host is reachable",
   async () => {
     let capturedState: OllamaDiscoverNode.State | undefined;
-    const captureNext: Nextable<OllamaDiscoverNode.State> = (s) => {
+    const captureNext: Node<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -25,7 +25,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.ollamaHost, "http://localhost:11434");
   },
@@ -53,7 +53,7 @@ Deno.test(
   "ollamaDiscoverNode should use manual host when no candidate is reachable",
   async () => {
     let capturedState: OllamaDiscoverNode.State | undefined;
-    const captureNext: Nextable<OllamaDiscoverNode.State> = (s) => {
+    const captureNext: Node<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -70,7 +70,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.ollamaHost, "http://192.168.1.5:11434");
   },

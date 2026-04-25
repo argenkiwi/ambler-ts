@@ -1,4 +1,4 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -12,8 +12,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onPageComplete: Nextable<S>;
-  onDecisionRequired: Nextable<S>;
+  onPageComplete: Node<S>;
+  onDecisionRequired: Node<S>;
 };
 
 export type Utils = {

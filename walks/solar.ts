@@ -1,4 +1,4 @@
-import { amble, Nextable, node } from "../ambler.ts";
+import { amble, Node, node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as SolarPromptNode from "../nodes/solarPromptNode.ts";
@@ -19,7 +19,7 @@ const initialState: State = {
   generatedStory: "",
 };
 
-const nodes: Record<string, Nextable<State>> = {
+const nodes: Record<string, Node<State>> = {
   start: node(() =>
     OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect })
   ),

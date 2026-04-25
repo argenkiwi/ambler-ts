@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as ChatResponseNode from "./chatResponseNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
@@ -12,7 +12,7 @@ Deno.test(
     };
     let captured: ChatResponseNode.State | undefined;
     let printed: string | undefined;
-    const capture: Nextable<ChatResponseNode.State> = (s) => {
+    const capture: Node<ChatResponseNode.State> = (s) => {
       captured = s;
       return null;
     };
@@ -29,7 +29,7 @@ Deno.test(
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(printed, "Assistant: Hi there!");
     assertEquals(captured?.messages, [
@@ -54,7 +54,7 @@ Deno.test(
     let receivedMessages: ChatResponseNode.Message[] | undefined;
     let receivedHost: string | undefined;
     let receivedModel: string | undefined;
-    const capture: Nextable<ChatResponseNode.State> = (_s) => null;
+    const capture: Node<ChatResponseNode.State> = (_s) => null;
 
     const utils: ChatResponseNode.Utils = {
       chat: (messages, host, model) => {
@@ -71,7 +71,7 @@ Deno.test(
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(receivedMessages?.length, 3);
     assertEquals(receivedMessages?.[2], {

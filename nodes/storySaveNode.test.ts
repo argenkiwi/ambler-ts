@@ -1,5 +1,5 @@
 import * as StorySaveNode from "./storySaveNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StorySaveNode.State = {
@@ -15,7 +15,7 @@ Deno.test(
   async () => {
     let savedContent: string | undefined;
     let capturedState: StorySaveNode.State | undefined;
-    const captureNext: Nextable<StorySaveNode.State> = (s) => {
+    const captureNext: Node<StorySaveNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -34,7 +34,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    result.run();
+    result();
 
     assertEquals(savedContent, "Page one.\n\nPage two.");
     assertEquals(capturedState?.storyPages, baseState.storyPages);
@@ -45,7 +45,7 @@ Deno.test(
   "storySaveNode should still transition onSaveComplete when saveFile throws",
   async () => {
     let capturedState: StorySaveNode.State | undefined;
-    const captureNext: Nextable<StorySaveNode.State> = (s) => {
+    const captureNext: Node<StorySaveNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -63,7 +63,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.storyPages, baseState.storyPages);
   },

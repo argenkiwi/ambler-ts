@@ -1,11 +1,11 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export interface State {
   ollamaHost: string;
 }
 
 export type Edges<S extends State> = {
-  onDiscovered: Nextable<S>;
+  onDiscovered: Node<S>;
 };
 
 export type Utils = {

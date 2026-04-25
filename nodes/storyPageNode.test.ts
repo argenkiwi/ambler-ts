@@ -1,5 +1,5 @@
 import * as StoryPageNode from "./storyPageNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StoryPageNode.State = {
@@ -16,7 +16,7 @@ Deno.test(
   "storyPageNode should transition onPageComplete when reply ends with 'The End'",
   async () => {
     let capturedState: StoryPageNode.State | undefined;
-    const captureNext: Nextable<StoryPageNode.State> = (s) => {
+    const captureNext: Node<StoryPageNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -33,7 +33,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.storyPages.length, 1);
     assertEquals(capturedState?.currentPage, 2);
@@ -48,7 +48,7 @@ Deno.test(
   "storyPageNode should transition onDecisionRequired when reply has options",
   async () => {
     let capturedState: StoryPageNode.State | undefined;
-    const captureNext: Nextable<StoryPageNode.State> = (s) => {
+    const captureNext: Node<StoryPageNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -65,7 +65,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.storyPages.length, 1);
     assertEquals(capturedState?.currentPage, 2);

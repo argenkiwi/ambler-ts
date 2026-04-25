@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as ModelSelectNode from "./modelSelectNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 const baseState: ModelSelectNode.State = {
   selectedModel: "",
@@ -31,7 +31,7 @@ Deno.test(
   "modelSelectNode should transition with unchanged state when input is NaN",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
+    const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -48,7 +48,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.selectedModel, "");
   },
@@ -58,7 +58,7 @@ Deno.test(
   "modelSelectNode should transition with unchanged state when index is out of range",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
+    const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -75,7 +75,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.selectedModel, "");
   },
@@ -85,7 +85,7 @@ Deno.test(
   "modelSelectNode should set selectedModel when valid index is given",
   async () => {
     let capturedState: ModelSelectNode.State | undefined;
-    const captureNext: Nextable<ModelSelectNode.State> = (s) => {
+    const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -102,7 +102,7 @@ Deno.test(
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.selectedModel, "mistral");
   },

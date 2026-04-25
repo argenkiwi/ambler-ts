@@ -1,13 +1,13 @@
 import { assertEquals } from "@std/assert";
 import * as ChatPromptNode from "./chatPromptNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 
 Deno.test(
   "chatPromptNode should transition to onChat with user message appended",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let captured: ChatPromptNode.State | undefined;
-    const capture: Nextable<ChatPromptNode.State> = (s) => {
+    const capture: Node<ChatPromptNode.State> = (s) => {
       captured = s;
       return null;
     };
@@ -17,12 +17,12 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
+    const next = ChatPromptNode.create(
       { onChat: capture, onQuit: () => null },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(captured?.messages, [{ role: "user", content: "Hello" }]);
   },
@@ -33,7 +33,7 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
+    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
@@ -48,7 +48,7 @@ Deno.test(
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(quitCalled, true);
   },
@@ -59,7 +59,7 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
+    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
@@ -74,7 +74,7 @@ Deno.test(
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(quitCalled, true);
   },
@@ -85,7 +85,7 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
+    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
@@ -95,12 +95,12 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
+    const next = ChatPromptNode.create(
       { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(quitCalled, true);
   },
@@ -111,7 +111,7 @@ Deno.test(
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
     let quitCalled = false;
-    const captureQuit: Nextable<ChatPromptNode.State> = (_s) => {
+    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
       return null;
     };
@@ -121,12 +121,12 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
+    const next = ChatPromptNode.create(
       { onChat: () => null, onQuit: captureQuit },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(quitCalled, true);
   },
@@ -142,7 +142,7 @@ Deno.test(
       ],
     };
     let captured: ChatPromptNode.State | undefined;
-    const capture: Nextable<ChatPromptNode.State> = (s) => {
+    const capture: Node<ChatPromptNode.State> = (s) => {
       captured = s;
       return null;
     };
@@ -152,12 +152,12 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
+    const next = ChatPromptNode.create(
       { onChat: capture, onQuit: () => null },
       utils,
     )(initialState);
     if (!next) throw new Error("Expected Next, got null");
-    await next.run();
+    await next();
 
     assertEquals(captured?.messages.length, 3);
     assertEquals(captured?.messages[2], {

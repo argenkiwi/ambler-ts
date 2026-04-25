@@ -1,5 +1,5 @@
 import * as StoryIntroNode from "./storyIntroNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StoryIntroNode.State = {
@@ -27,14 +27,14 @@ Deno.test(
 
 Deno.test(
   "storyIntroNode should return null when placement readLine returns null",
-  async () => {
+  () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) => (call++ === 0 ? "Ada" : null),
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: (_s) => null },
       utils,
     )(baseState);
@@ -55,7 +55,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: (_s) => null },
       utils,
     )(baseState);
@@ -68,7 +68,7 @@ Deno.test(
   "storyIntroNode should set identity, placement, and circumstances trimmed",
   async () => {
     let capturedState: StoryIntroNode.State | undefined;
-    const captureNext: Nextable<StoryIntroNode.State> = (s) => {
+    const captureNext: Node<StoryIntroNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -80,13 +80,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: captureNext },
       utils,
     )(baseState);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.identity, "Ada");
     assertEquals(capturedState?.placement, "London, 1842");

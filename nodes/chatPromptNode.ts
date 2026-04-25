@@ -1,4 +1,4 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -7,8 +7,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onChat: Nextable<S>;
-  onQuit: Nextable<S>;
+  onChat: Node<S>;
+  onQuit: Node<S>;
 };
 
 export type Utils = {

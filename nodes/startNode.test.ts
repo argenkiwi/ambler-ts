@@ -1,5 +1,5 @@
 import * as StartNode from "./startNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test(
@@ -7,7 +7,7 @@ Deno.test(
   async () => {
     const initialState: StartNode.State = { count: 0 };
     let capturedState: StartNode.State | undefined;
-    const captureNext: Nextable<StartNode.State> = (s) => {
+    const captureNext: Node<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -17,13 +17,13 @@ Deno.test(
       print: () => {},
     };
 
-    const nextResult = await StartNode.create(
+    const result = StartNode.create(
       { onSuccess: captureNext, onError: captureNext },
       utils,
     )(initialState);
 
-    if (!nextResult) throw new Error("Expected Next, got null");
-    await nextResult.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result();
 
     assertEquals(capturedState?.count, 0);
   },
@@ -34,7 +34,7 @@ Deno.test(
   async () => {
     const initialState: StartNode.State = { count: 0 };
     let capturedState: StartNode.State | undefined;
-    const captureNext: Nextable<StartNode.State> = (s) => {
+    const captureNext: Node<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -44,13 +44,13 @@ Deno.test(
       print: () => {},
     };
 
-    const nextResult = await StartNode.create(
+    const result = StartNode.create(
       { onSuccess: captureNext, onError: captureNext },
       utils,
     )(initialState);
 
-    if (!nextResult) throw new Error("Expected Next, got null");
-    await nextResult.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result();
 
     assertEquals(capturedState?.count, 42);
   },
@@ -61,10 +61,10 @@ Deno.test(
   async () => {
     const initialState: StartNode.State = { count: 123 };
     let capturedState: StartNode.State | undefined;
-    const captureSuccess: Nextable<StartNode.State> = (_s) => {
+    const captureSuccess: Node<StartNode.State> = (_s) => {
       return null;
     };
-    const captureError: Nextable<StartNode.State> = (s) => {
+    const captureError: Node<StartNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -74,13 +74,13 @@ Deno.test(
       print: () => {},
     };
 
-    const nextResult = await StartNode.create(
+    const result = StartNode.create(
       { onSuccess: captureSuccess, onError: captureError },
       utils,
     )(initialState);
 
-    if (!nextResult) throw new Error("Expected Next, got null");
-    await nextResult.run();
+    if (!result) throw new Error("Expected Next, got null");
+    await result();
 
     assertEquals(capturedState?.count, 123);
   },

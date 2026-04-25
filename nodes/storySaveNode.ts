@@ -1,4 +1,4 @@
-import { next, Nextable } from "../ambler.ts";
+import { next, Node } from "../ambler.ts";
 import fs from "node:fs/promises";
 
 export interface State {
@@ -10,7 +10,7 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onSaveComplete: Nextable<S>;
+  onSaveComplete: Node<S>;
 };
 
 export type Utils = {

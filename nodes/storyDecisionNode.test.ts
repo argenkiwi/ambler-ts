@@ -1,5 +1,5 @@
 import * as StoryDecisionNode from "./storyDecisionNode.ts";
-import { Nextable } from "../ambler.ts";
+import { Node } from "../ambler.ts";
 import { assertEquals } from "@std/assert/equals";
 
 const baseState: StoryDecisionNode.State = {
@@ -33,7 +33,7 @@ Deno.test(
   "storyDecisionNode should transition with unchanged state when no checkboxes found",
   async () => {
     let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Nextable<StoryDecisionNode.State> = (s) => {
+    const captureNext: Node<StoryDecisionNode.State> = (s) => {
       capturedState = s;
       return null;
     };
@@ -44,13 +44,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: captureNext },
       utils,
     )(state);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     assertEquals(capturedState?.storyPages, state.storyPages);
   },
@@ -71,7 +71,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: (_s) => null },
       utils,
     )(state);
@@ -84,7 +84,7 @@ Deno.test(
   "storyDecisionNode should mark selected checkbox and transition onDecisionMade",
   async () => {
     let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Nextable<StoryDecisionNode.State> = async (s) => {
+    const captureNext: Node<StoryDecisionNode.State> = async (s) => {
       capturedState = s;
       return null;
     };
@@ -97,13 +97,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: captureNext },
       utils,
     )(state);
 
     if (!result) throw new Error("Expected Next, got null");
-    else await result.run();
+    else await result();
 
     const updatedPage = capturedState?.storyPages[0] ?? "";
     assertEquals(updatedPage.includes("2. [x] Go right"), true);
@@ -115,7 +115,7 @@ Deno.test(
   "storyDecisionNode should retry on invalid input then accept valid input",
   async () => {
     let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Nextable<StoryDecisionNode.State> = async (s) => {
+    const captureNext: Node<StoryDecisionNode.State> = async (s) => {
       capturedState = s;
       return null;
     };
@@ -129,13 +129,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: captureNext },
       utils,
     )(state);
 
     if (!result) throw new Error("Expected Next, got null");
-    await result.run();
+    await result();
 
     const updatedPage = capturedState?.storyPages[0] ?? "";
     assertEquals(updatedPage.includes("1. [x] Option A"), true);
