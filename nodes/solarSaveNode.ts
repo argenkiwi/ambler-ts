@@ -1,9 +1,11 @@
+import { next, Node } from "../ambler.ts";
+
 export interface State {
   generatedStory: string;
 }
 
 export type Edges<S extends State> = {
-  onSaveComplete: (state: S) => void;
+  onSaveComplete: Node<S>;
 };
 
 export type Utils = {
@@ -45,7 +47,6 @@ export function create<S extends State>(
       utils.print("Story not saved.");
     }
 
-    edges.onSaveComplete(state);
-    return null;
+    return next(edges.onSaveComplete, state);
   };
 }

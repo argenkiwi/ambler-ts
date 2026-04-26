@@ -10,6 +10,7 @@ export interface State {
 
 export type Edges<S extends State> = {
   onGenerateComplete: Node<S>;
+  onError: Node<S>;
 };
 
 export type Utils = {
@@ -76,7 +77,7 @@ export function create<S extends State>(
       });
     } catch (error) {
       utils.print(`Error generating story: ${error}`);
-      return null;
+      return next(edges.onError, state);
     }
   };
 }

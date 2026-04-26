@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as ModelSelectNode from "./modelSelectNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 
 const baseState: ModelSelectNode.State = {
   selectedModel: "",
@@ -10,7 +10,7 @@ const baseState: ModelSelectNode.State = {
 const models = ["llama3", "mistral", "gemma"];
 
 Deno.test(
-  "modelSelectNode should return null when readLine returns null",
+  "modelSelectNode should call onCancel when readLine returns null",
   async () => {
     const utils: ModelSelectNode.Utils = {
       listModels: (_host) => Promise.resolve(models),
@@ -19,11 +19,15 @@ Deno.test(
     };
 
     const result = await ModelSelectNode.create(
-      { onSelect: (_s) => null },
+      { onSelect: (_s) => stop(), onCancel: () => stop() },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );
 
@@ -33,7 +37,7 @@ Deno.test(
     let capturedState: ModelSelectNode.State | undefined;
     const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: ModelSelectNode.Utils = {
@@ -43,11 +47,10 @@ Deno.test(
     };
 
     const result = await ModelSelectNode.create(
-      { onSelect: captureNext },
+      { onSelect: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.selectedModel, "");
@@ -60,7 +63,7 @@ Deno.test(
     let capturedState: ModelSelectNode.State | undefined;
     const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: ModelSelectNode.Utils = {
@@ -70,11 +73,10 @@ Deno.test(
     };
 
     const result = await ModelSelectNode.create(
-      { onSelect: captureNext },
+      { onSelect: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.selectedModel, "");
@@ -87,7 +89,7 @@ Deno.test(
     let capturedState: ModelSelectNode.State | undefined;
     const captureNext: Node<ModelSelectNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: ModelSelectNode.Utils = {
@@ -97,11 +99,10 @@ Deno.test(
     };
 
     const result = await ModelSelectNode.create(
-      { onSelect: captureNext },
+      { onSelect: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.selectedModel, "mistral");

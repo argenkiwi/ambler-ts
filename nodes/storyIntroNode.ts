@@ -8,6 +8,7 @@ export interface State {
 
 export type Edges<S extends State> = {
   onIntroComplete: Node<S>;
+  onCancel: Node<S>;
 };
 
 export type Utils = {
@@ -32,7 +33,7 @@ export function create<S extends State>(
     const circumstances = utils.readLine("What is happening? ");
 
     if (identity === null || placement === null || circumstances === null) {
-      return null;
+      return next(edges.onCancel, state);
     }
 
     return next(edges.onIntroComplete, {

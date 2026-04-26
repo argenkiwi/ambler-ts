@@ -1,5 +1,5 @@
 import * as StorySaveNode from "./storySaveNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StorySaveNode.State = {
@@ -17,7 +17,7 @@ Deno.test(
     let capturedState: StorySaveNode.State | undefined;
     const captureNext: Node<StorySaveNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StorySaveNode.Utils = {
@@ -33,8 +33,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
-    result();
+    await result();
 
     assertEquals(savedContent, "Page one.\n\nPage two.");
     assertEquals(capturedState?.storyPages, baseState.storyPages);
@@ -47,7 +46,7 @@ Deno.test(
     let capturedState: StorySaveNode.State | undefined;
     const captureNext: Node<StorySaveNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StorySaveNode.Utils = {
@@ -62,7 +61,6 @@ Deno.test(
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.storyPages, baseState.storyPages);

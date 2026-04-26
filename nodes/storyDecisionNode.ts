@@ -12,6 +12,8 @@ export interface State {
 
 export type Edges<S extends State> = {
   onDecisionMade: Node<S>;
+  onCancel: Node<S>;
+  onError: Node<S>;
 };
 
 export type Utils = {
@@ -30,7 +32,7 @@ export function create<S extends State>(
 ) {
   return (state: S) => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
-    if (!lastPage) return null;
+    if (!lastPage) return next(edges.onError, state);
 
     // Extract the checkboxes from the last page
     const lines = lastPage.split("\n");
@@ -54,7 +56,7 @@ export function create<S extends State>(
       const input = utils.readLine(
         `Select option (1-${options.length}): `,
       );
-      if (input === null) return null;
+      if (input === null) return next(edges.onCancel, state);
       const parsed = parseInt(input);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= options.length) {
         selectedIdx = parsed;

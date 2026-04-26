@@ -6,6 +6,7 @@ export interface State {
 
 export type Edges<S extends State> = {
   onPromptComplete: Node<S>;
+  onCancel: Node<S>;
 };
 
 export type Utils = {
@@ -25,7 +26,7 @@ export function create<S extends State>(
   return (state: S) => {
     utils.print("\n--- Solar Prompt Input ---");
     const promptText = utils.readLine("Enter your solar prompt: ");
-    if (promptText === null) return null;
+    if (promptText === null) return next(edges.onCancel, state);
 
     return next(edges.onPromptComplete, { ...state, solarPrompt: promptText });
   };

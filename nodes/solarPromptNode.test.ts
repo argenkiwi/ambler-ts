@@ -1,23 +1,27 @@
 import * as SolarPromptNode from "./solarPromptNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: SolarPromptNode.State = { solarPrompt: "" };
 
 Deno.test(
-  "solarPromptNode should return null when readLine returns null",
-  () => {
+  "solarPromptNode should call onCancel when readLine returns null",
+  async () => {
     const utils: SolarPromptNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
     const result = SolarPromptNode.create(
-      { onPromptComplete: (_s) => null },
+      { onPromptComplete: (_s) => stop(), onCancel: () => stop() },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );
 
@@ -27,7 +31,7 @@ Deno.test(
     let capturedState: SolarPromptNode.State | undefined;
     const captureNext: Node<SolarPromptNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: SolarPromptNode.Utils = {
@@ -36,12 +40,11 @@ Deno.test(
     };
 
     const result = SolarPromptNode.create(
-      { onPromptComplete: captureNext },
+      { onPromptComplete: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
-    await result();
+    await (await result)();
 
     assertEquals(
       capturedState?.solarPrompt,

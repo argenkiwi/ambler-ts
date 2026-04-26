@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as ChatPromptNode from "./chatPromptNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 
 Deno.test(
   "chatPromptNode should transition to onChat with user message appended",
@@ -9,7 +9,7 @@ Deno.test(
     let captured: ChatPromptNode.State | undefined;
     const capture: Node<ChatPromptNode.State> = (s) => {
       captured = s;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -17,12 +17,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = ChatPromptNode.create(
-      { onChat: capture, onQuit: () => null },
+    const result = ChatPromptNode.create(
+      { onChat: capture, onQuit: () => stop() },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await (await result)();
 
     assertEquals(captured?.messages, [{ role: "user", content: "Hello" }]);
   },
@@ -35,7 +34,7 @@ Deno.test(
     let quitCalled = false;
     const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -43,12 +42,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
-      { onChat: () => null, onQuit: captureQuit },
+    const result = await ChatPromptNode.create(
+      { onChat: () => stop(), onQuit: captureQuit },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await result();
 
     assertEquals(quitCalled, true);
   },
@@ -61,7 +59,7 @@ Deno.test(
     let quitCalled = false;
     const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -69,12 +67,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = await ChatPromptNode.create(
-      { onChat: () => null, onQuit: captureQuit },
+    const result = await ChatPromptNode.create(
+      { onChat: () => stop(), onQuit: captureQuit },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await result();
 
     assertEquals(quitCalled, true);
   },
@@ -87,7 +84,7 @@ Deno.test(
     let quitCalled = false;
     const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -95,12 +92,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = ChatPromptNode.create(
-      { onChat: () => null, onQuit: captureQuit },
+    const result = ChatPromptNode.create(
+      { onChat: () => stop(), onQuit: captureQuit },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await (await result)();
 
     assertEquals(quitCalled, true);
   },
@@ -113,7 +109,7 @@ Deno.test(
     let quitCalled = false;
     const captureQuit: Node<ChatPromptNode.State> = (_s) => {
       quitCalled = true;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -121,12 +117,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = ChatPromptNode.create(
-      { onChat: () => null, onQuit: captureQuit },
+    const result = ChatPromptNode.create(
+      { onChat: () => stop(), onQuit: captureQuit },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await (await result)();
 
     assertEquals(quitCalled, true);
   },
@@ -144,7 +139,7 @@ Deno.test(
     let captured: ChatPromptNode.State | undefined;
     const capture: Node<ChatPromptNode.State> = (s) => {
       captured = s;
-      return null;
+      return stop();
     };
 
     const utils: ChatPromptNode.Utils = {
@@ -152,12 +147,11 @@ Deno.test(
       print: () => {},
     };
 
-    const next = ChatPromptNode.create(
-      { onChat: capture, onQuit: () => null },
+    const result = ChatPromptNode.create(
+      { onChat: capture, onQuit: () => stop() },
       utils,
     )(initialState);
-    if (!next) throw new Error("Expected Next, got null");
-    await next();
+    await (await result)();
 
     assertEquals(captured?.messages.length, 3);
     assertEquals(captured?.messages[2], {

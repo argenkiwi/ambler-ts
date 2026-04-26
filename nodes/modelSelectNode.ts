@@ -8,6 +8,7 @@ export interface State {
 
 export type Edges<S extends State> = {
   onSelect: Node<S>;
+  onCancel: Node<S>;
 };
 
 export type Utils = {
@@ -36,7 +37,7 @@ export function create<S extends State>(
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
 
     const input = utils.readLine("Select model index: ");
-    if (input === null) return null;
+    if (input === null) return next(edges.onCancel, state);
 
     const index = parseInt(input);
     if (isNaN(index) || index < 0 || index >= models.length) {

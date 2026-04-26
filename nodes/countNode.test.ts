@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as CountNode from "./countNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 
 Deno.test(
   "countNode should increment count and transition to onCount if random > 0.5",
@@ -9,7 +9,7 @@ Deno.test(
     let capturedState: CountNode.State | undefined;
     const captureNext: Node<CountNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: CountNode.Utils = {
@@ -18,13 +18,12 @@ Deno.test(
       random: () => 0.6,
     };
 
-    const nextResult = await CountNode.create(
+    const result = await CountNode.create(
       { onCount: captureNext, onStop: captureNext },
       utils,
     )(initialState);
 
-    if (!nextResult) throw new Error("Expected Next, got null");
-    await nextResult();
+    await result();
 
     assertEquals(capturedState?.count, 6);
   },
@@ -36,11 +35,11 @@ Deno.test(
     const initialState: CountNode.State = { count: 10 };
     let capturedState: CountNode.State | undefined;
     const captureCount: Node<CountNode.State> = (_s) => {
-      return null;
+      return stop();
     };
     const captureStop: Node<CountNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: CountNode.Utils = {
@@ -49,13 +48,12 @@ Deno.test(
       random: () => 0.4,
     };
 
-    const nextResult = await CountNode.create(
+    const result = await CountNode.create(
       { onCount: captureCount, onStop: captureStop },
       utils,
     )(initialState);
 
-    if (!nextResult) throw new Error("Expected Next, got null");
-    await nextResult();
+    await result();
 
     assertEquals(capturedState?.count, 11);
   },

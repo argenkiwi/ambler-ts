@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as SolarSaveNode from "./solarSaveNode.ts";
+import { stop, Node } from "../ambler.ts";
 
 const baseState: SolarSaveNode.State = {
   generatedStory: "Once upon a time in a solarpunk world...",
@@ -11,6 +12,11 @@ Deno.test(
     let savedContent: string | undefined;
     let callbackState: SolarSaveNode.State | undefined;
 
+    const captureNext: Node<SolarSaveNode.State> = (s) => {
+      callbackState = s;
+      return stop();
+    };
+
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
       saveToFile: async (content) => {
@@ -21,15 +27,15 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      {
-        onSaveComplete: (s) => {
-          callbackState = s;
-        },
-      },
+      { onSaveComplete: captureNext },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
     assertEquals(savedContent, baseState.generatedStory);
     assertEquals(callbackState, baseState);
   },
@@ -41,6 +47,11 @@ Deno.test(
     let saveCalled = false;
     let callbackState: SolarSaveNode.State | undefined;
 
+    const captureNext: Node<SolarSaveNode.State> = (s) => {
+      callbackState = s;
+      return stop();
+    };
+
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "n",
       saveToFile: async (_content) => {
@@ -51,15 +62,15 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      {
-        onSaveComplete: (s) => {
-          callbackState = s;
-        },
-      },
+      { onSaveComplete: captureNext },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
     assertEquals(saveCalled, false);
     assertEquals(callbackState, baseState);
   },
@@ -71,6 +82,11 @@ Deno.test(
     const printed: string[] = [];
     let callbackState: SolarSaveNode.State | undefined;
 
+    const captureNext: Node<SolarSaveNode.State> = (s) => {
+      callbackState = s;
+      return stop();
+    };
+
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
       saveToFile: async (_content) => await Promise.resolve(false),
@@ -78,15 +94,15 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      {
-        onSaveComplete: (s) => {
-          callbackState = s;
-        },
-      },
+      { onSaveComplete: captureNext },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
     assertEquals(
       printed.some((m) => m.includes("Failed")),
       true,

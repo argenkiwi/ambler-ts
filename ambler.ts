@@ -5,11 +5,11 @@ export type MaybePromise<T> = T | Promise<T>;
 
 /**
  * A function that represents a node in the state machine.
- * Given the current state, it returns the next step in the machine or null if the machine should terminate.
+ * Given the current state, it returns the next step (an edge) in the machine.
  *
  * @template S The type of the machine's state.
  */
-export type Node<S> = (state: S) => MaybePromise<Next<S> | null>;
+export type Node<S> = (state: S) => MaybePromise<Next<S>>;
 
 /**
  * Represents the result of a node's execution. Calling it advances to the next step.
@@ -30,6 +30,16 @@ export type Next<S> = () => MaybePromise<Next<S> | null>;
  */
 export function next<S>(node: Node<S>, state: S): Next<S> {
   return () => node(state);
+}
+
+/**
+ * A terminal edge that signals the end of the walk.
+ *
+ * @template S The type of the machine's state.
+ * @returns A {@link Next} function that returns null, terminating the `amble` loop.
+ */
+export function stop<S>(): Next<S> {
+  return () => null;
 }
 
 /**

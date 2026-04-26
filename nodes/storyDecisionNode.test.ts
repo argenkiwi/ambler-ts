@@ -1,5 +1,5 @@
 import * as StoryDecisionNode from "./storyDecisionNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert/equals";
 
 const baseState: StoryDecisionNode.State = {
@@ -13,7 +13,7 @@ const baseState: StoryDecisionNode.State = {
 };
 
 Deno.test(
-  "storyDecisionNode should return null when storyPages is empty",
+  "storyDecisionNode should call onError when storyPages is empty",
   async () => {
     const utils: StoryDecisionNode.Utils = {
       readLine: (_msg) => null,
@@ -21,11 +21,19 @@ Deno.test(
     };
 
     const result = await StoryDecisionNode.create(
-      { onDecisionMade: (_s) => null },
+      {
+        onDecisionMade: (_s) => stop(),
+        onCancel: () => stop(),
+        onError: () => stop(),
+      },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );
 
@@ -35,7 +43,7 @@ Deno.test(
     let capturedState: StoryDecisionNode.State | undefined;
     const captureNext: Node<StoryDecisionNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const state = { ...baseState, storyPages: ["You reach the end. The End"] };
@@ -44,12 +52,11 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StoryDecisionNode.create(
-      { onDecisionMade: captureNext },
+    const result = await StoryDecisionNode.create(
+      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
       utils,
     )(state);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.storyPages, state.storyPages);
@@ -57,7 +64,7 @@ Deno.test(
 );
 
 Deno.test(
-  "storyDecisionNode should return null when readLine returns null",
+  "storyDecisionNode should call onCancel when readLine returns null",
   async () => {
     const state = {
       ...baseState,
@@ -71,12 +78,20 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StoryDecisionNode.create(
-      { onDecisionMade: (_s) => null },
+    const result = await StoryDecisionNode.create(
+      {
+        onDecisionMade: (_s) => stop(),
+        onCancel: () => stop(),
+        onError: () => stop(),
+      },
       utils,
     )(state);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );
 
@@ -86,7 +101,7 @@ Deno.test(
     let capturedState: StoryDecisionNode.State | undefined;
     const captureNext: Node<StoryDecisionNode.State> = async (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const page = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
@@ -97,13 +112,12 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StoryDecisionNode.create(
-      { onDecisionMade: captureNext },
+    const result = await StoryDecisionNode.create(
+      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
       utils,
     )(state);
 
-    if (!result) throw new Error("Expected Next, got null");
-    else await result();
+    await result();
 
     const updatedPage = capturedState?.storyPages[0] ?? "";
     assertEquals(updatedPage.includes("2. [x] Go right"), true);
@@ -117,7 +131,7 @@ Deno.test(
     let capturedState: StoryDecisionNode.State | undefined;
     const captureNext: Node<StoryDecisionNode.State> = async (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const page = "You must choose.\n1. [ ] Option A\n2. [ ] Option B";
@@ -129,12 +143,11 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StoryDecisionNode.create(
-      { onDecisionMade: captureNext },
+    const result = await StoryDecisionNode.create(
+      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
       utils,
     )(state);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     const updatedPage = capturedState?.storyPages[0] ?? "";

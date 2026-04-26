@@ -1,4 +1,4 @@
-import { amble, Node, node } from "../ambler.ts";
+import { amble, Node, node, stop } from "../ambler.ts";
 import * as StartNode from "../nodes/startNode.ts";
 import * as CountNode from "../nodes/countNode.ts";
 import * as StopNode from "../nodes/stopNode.ts";
@@ -19,7 +19,7 @@ const nodes: Record<string, Node<State>> = {
   count: node(() =>
     CountNode.create({ onCount: nodes.count, onStop: nodes.stop })
   ),
-  stop: node(() => StopNode.create()),
+  stop: node(() => StopNode.create({ onDone: () => stop() })),
 };
 
 if (import.meta.main) {

@@ -1,5 +1,5 @@
 import * as StoryPageNode from "./storyPageNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StoryPageNode.State = {
@@ -18,7 +18,7 @@ Deno.test(
     let capturedState: StoryPageNode.State | undefined;
     const captureNext: Node<StoryPageNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StoryPageNode.Utils = {
@@ -28,11 +28,14 @@ Deno.test(
     };
 
     const result = await StoryPageNode.create(
-      { onPageComplete: captureNext, onDecisionRequired: (_s) => null },
+      {
+        onPageComplete: captureNext,
+        onDecisionRequired: (_s) => stop(),
+        onError: () => stop(),
+      },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.storyPages.length, 1);
@@ -50,7 +53,7 @@ Deno.test(
     let capturedState: StoryPageNode.State | undefined;
     const captureNext: Node<StoryPageNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const reply = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
@@ -60,14 +63,44 @@ Deno.test(
     };
 
     const result = await StoryPageNode.create(
-      { onPageComplete: (_s) => null, onDecisionRequired: captureNext },
+      {
+        onPageComplete: (_s) => stop(),
+        onDecisionRequired: captureNext,
+        onError: () => stop(),
+      },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.storyPages.length, 1);
     assertEquals(capturedState?.currentPage, 2);
+  },
+);
+
+Deno.test(
+  "storyPageNode should call onError when chat throws",
+  async () => {
+    const utils: StoryPageNode.Utils = {
+      chat: (_host, _model, _messages) => {
+        throw new Error("connection failed");
+      },
+      print: () => {},
+    };
+
+    const result = await StoryPageNode.create(
+      {
+        onPageComplete: (_s) => stop(),
+        onDecisionRequired: (_s) => stop(),
+        onError: () => stop(),
+      },
+      utils,
+    )(baseState);
+
+    let next = await result();
+    while (typeof next === "function") {
+      next = await next();
+    }
+    assertEquals(next, null);
   },
 );

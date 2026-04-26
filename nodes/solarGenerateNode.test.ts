@@ -1,5 +1,5 @@
 import * as SolarGenerateNode from "./solarGenerateNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: SolarGenerateNode.State = {
@@ -15,7 +15,7 @@ Deno.test(
     let capturedState: SolarGenerateNode.State | undefined;
     const captureNext: Node<SolarGenerateNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: SolarGenerateNode.Utils = {
@@ -25,11 +25,10 @@ Deno.test(
     };
 
     const result = await SolarGenerateNode.create(
-      { onGenerateComplete: captureNext },
+      { onGenerateComplete: captureNext, onError: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(
@@ -40,7 +39,7 @@ Deno.test(
 );
 
 Deno.test(
-  "solarGenerateNode should return null when generateStory throws",
+  "solarGenerateNode should call onError when generateStory throws",
   async () => {
     const utils: SolarGenerateNode.Utils = {
       generateStory: (_host, _model, _prompt) => {
@@ -50,10 +49,14 @@ Deno.test(
     };
 
     const result = await SolarGenerateNode.create(
-      { onGenerateComplete: (_s) => null },
+      { onGenerateComplete: (_s) => stop(), onError: () => stop() },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );

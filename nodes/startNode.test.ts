@@ -1,5 +1,5 @@
 import * as StartNode from "./startNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test(
@@ -9,7 +9,7 @@ Deno.test(
     let capturedState: StartNode.State | undefined;
     const captureNext: Node<StartNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StartNode.Utils = {
@@ -17,12 +17,11 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StartNode.create(
+    const result = await StartNode.create(
       { onSuccess: captureNext, onError: captureNext },
       utils,
     )(initialState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.count, 0);
@@ -36,7 +35,7 @@ Deno.test(
     let capturedState: StartNode.State | undefined;
     const captureNext: Node<StartNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StartNode.Utils = {
@@ -44,12 +43,11 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StartNode.create(
+    const result = await StartNode.create(
       { onSuccess: captureNext, onError: captureNext },
       utils,
     )(initialState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.count, 42);
@@ -62,11 +60,11 @@ Deno.test(
     const initialState: StartNode.State = { count: 123 };
     let capturedState: StartNode.State | undefined;
     const captureSuccess: Node<StartNode.State> = (_s) => {
-      return null;
+      return stop();
     };
     const captureError: Node<StartNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: StartNode.Utils = {
@@ -74,12 +72,11 @@ Deno.test(
       print: () => {},
     };
 
-    const result = StartNode.create(
+    const result = await StartNode.create(
       { onSuccess: captureSuccess, onError: captureError },
       utils,
     )(initialState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.count, 123);

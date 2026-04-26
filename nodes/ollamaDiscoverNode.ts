@@ -6,6 +6,7 @@ export interface State {
 
 export type Edges<S extends State> = {
   onDiscovered: Node<S>;
+  onCancel: Node<S>;
 };
 
 export type Utils = {
@@ -52,7 +53,7 @@ export function create<S extends State>(
     const input = utils.readLine(
       "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
     );
-    if (input === null) return null;
+    if (input === null) return next(edges.onCancel, state);
 
     return next(edges.onDiscovered, { ...state, ollamaHost: input.trim() });
   };

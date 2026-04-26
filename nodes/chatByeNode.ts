@@ -1,3 +1,5 @@
+import { next, Node } from "../ambler.ts";
+
 export type Utils = {
   print: (msg: string) => void;
 };
@@ -6,9 +8,13 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S>(utils: Utils = defaultUtils) {
-  return (_state: S) => {
+export type Edges<S> = {
+  onDone: Node<S>;
+};
+
+export function create<S>(edges: Edges<S>, utils: Utils = defaultUtils) {
+  return (state: S) => {
     utils.print("Goodbye!");
-    return null;
+    return next(edges.onDone, state);
   };
 }

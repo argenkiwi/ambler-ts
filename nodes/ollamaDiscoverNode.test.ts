@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import * as OllamaDiscoverNode from "./ollamaDiscoverNode.ts";
-import { Node } from "../ambler.ts";
+import { Node, stop } from "../ambler.ts";
 
 const baseState: OllamaDiscoverNode.State = { ollamaHost: "" };
 
@@ -10,7 +10,7 @@ Deno.test(
     let capturedState: OllamaDiscoverNode.State | undefined;
     const captureNext: Node<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: OllamaDiscoverNode.Utils = {
@@ -20,11 +20,10 @@ Deno.test(
     };
 
     const result = await OllamaDiscoverNode.create(
-      { onDiscovered: captureNext },
+      { onDiscovered: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.ollamaHost, "http://localhost:11434");
@@ -32,7 +31,7 @@ Deno.test(
 );
 
 Deno.test(
-  "ollamaDiscoverNode should return null when no host found and readLine returns null",
+  "ollamaDiscoverNode should call onCancel when no host found and readLine returns null",
   async () => {
     const utils: OllamaDiscoverNode.Utils = {
       tryHost: (_host) => Promise.resolve(false),
@@ -41,11 +40,15 @@ Deno.test(
     };
 
     const result = await OllamaDiscoverNode.create(
-      { onDiscovered: (_s) => null },
+      { onDiscovered: (_s) => stop(), onCancel: () => stop() },
       utils,
     )(baseState);
 
-    assertEquals(result, null);
+    let step = await result();
+    while (typeof step === "function") {
+      step = await step();
+    }
+    assertEquals(step, null);
   },
 );
 
@@ -55,7 +58,7 @@ Deno.test(
     let capturedState: OllamaDiscoverNode.State | undefined;
     const captureNext: Node<OllamaDiscoverNode.State> = (s) => {
       capturedState = s;
-      return null;
+      return stop();
     };
 
     const utils: OllamaDiscoverNode.Utils = {
@@ -65,11 +68,10 @@ Deno.test(
     };
 
     const result = await OllamaDiscoverNode.create(
-      { onDiscovered: captureNext },
+      { onDiscovered: captureNext, onCancel: () => stop() },
       utils,
     )(baseState);
 
-    if (!result) throw new Error("Expected Next, got null");
     await result();
 
     assertEquals(capturedState?.ollamaHost, "http://192.168.1.5:11434");

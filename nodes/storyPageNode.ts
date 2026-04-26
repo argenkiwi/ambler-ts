@@ -14,6 +14,7 @@ export interface State {
 export type Edges<S extends State> = {
   onPageComplete: Node<S>;
   onDecisionRequired: Node<S>;
+  onError: Node<S>;
 };
 
 export type Utils = {
@@ -52,31 +53,36 @@ export function create<S extends State>(
       - Do not include any other text outside the story and the options/end marker.`;
 
     const messages = [{ role: "user", content: prompt }];
-    const reply = await utils.chat(
-      state.ollamaHost,
-      state.selectedModel,
-      messages,
-    );
+    try {
+      const reply = await utils.chat(
+        state.ollamaHost,
+        state.selectedModel,
+        messages,
+      );
 
-    const newPage = reply.trim();
-    const updatedStoryPages = [...state.storyPages, newPage];
-    const fullStory = updatedStoryPages.join("\n\n");
-    utils.print(
-      `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
-    );
+      const newPage = reply.trim();
+      const updatedStoryPages = [...state.storyPages, newPage];
+      const fullStory = updatedStoryPages.join("\n\n");
+      utils.print(
+        `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
+      );
 
-    if (fullStory.trim().endsWith("The End")) {
-      return next(edges.onPageComplete, {
-        ...state,
-        storyPages: updatedStoryPages,
-        currentPage: state.currentPage + 1,
-      });
-    } else {
-      return next(edges.onDecisionRequired, {
-        ...state,
-        storyPages: updatedStoryPages,
-        currentPage: state.currentPage + 1,
-      });
+      if (fullStory.trim().endsWith("The End")) {
+        return next(edges.onPageComplete, {
+          ...state,
+          storyPages: updatedStoryPages,
+          currentPage: state.currentPage + 1,
+        });
+      } else {
+        return next(edges.onDecisionRequired, {
+          ...state,
+          storyPages: updatedStoryPages,
+          currentPage: state.currentPage + 1,
+        });
+      }
+    } catch (error) {
+      utils.print(`Error generating page: ${error}`);
+      return next(edges.onError, state);
     }
   };
 }
