@@ -65,11 +65,11 @@ export type MaybePromise<T> = T | Promise<T>;
 
 /**
  * A function that represents a node in the state machine.
- * Given the current state, it returns the next step in the machine or null if the machine should terminate.
+ * Given the current state, it returns the next step (an edge) in the machine.
  *
  * @template S The type of the machine's state.
  */
-export type Node<S> = (state: S) => MaybePromise<Next<S> | null>;
+export type Node<S> = (state: S) => MaybePromise<Next<S>>;
 
 /**
  * Represents the result of a node's execution. Calling it advances to the next step.
@@ -90,6 +90,16 @@ export type Next<S> = () => MaybePromise<Next<S> | null>;
  */
 export function next<S>(node: Node<S>, state: S): Next<S> {
   return () => node(state);
+}
+
+/**
+ * A terminal edge that signals the end of the walk.
+ *
+ * @template S The type of the machine's state.
+ * @returns A {@link Next} function that returns null, terminating the \`amble\` loop.
+ */
+export function stop<S>(): Next<S> {
+  return () => null;
 }
 
 /**
@@ -162,12 +172,13 @@ deno run walks/<name>.ts
 
 **Ambler** is a Deno/TypeScript state machine framework. The core execution model lives in \`ambler.ts\`:
 
-- \`Node<S>\` — a function \`(state: S) => MaybePromise<Next<S> | null>\` representing a node in the graph
+- \`Node<S>\` — a function \`(state: S) => MaybePromise<Next<S>>\` representing a node in the graph
 - \`Next<S>\` — a plain function; calling it advances the machine to the next step
+- \`stop()\` — creates a terminal \`Next<S>\` that returns \`null\`; used in walk wiring as \`() => stop()\`
 - \`node(factory)\` — wraps a node factory so it re-runs each time (enabling cyclic graphs without circular reference issues)
 - \`amble(start, initialState)\` — drives the machine until a node returns \`null\`
 
-**Nodes** (\`nodes/\`) implement individual steps. Each node is created via a factory that accepts typed transition callbacks (\`onSuccess\`, \`onError\`, \`onCount\`, etc.) and injectable utilities (\`print\`, \`sleep\`, \`random\`, \`readLine\`) for testability. Nodes return \`Next\` pointing to the next node, or \`null\` to terminate.
+**Nodes** (\`nodes/\`) implement individual steps. Each node is created via a factory that accepts typed transition callbacks (\`onSuccess\`, \`onError\`, \`onCount\`, etc.) and injectable utilities (\`print\`, \`sleep\`, \`random\`, \`readLine\`) for testability. Nodes always return \`Next\`. Termination is expressed in the walk wiring by passing \`() => stop()\` as the final edge.
 
 **Walks** (\`walks/\`) wire nodes into concrete graphs and call \`amble()\`. The \`nodes\` record uses forward references resolved lazily via \`node()\`.
 
@@ -252,27 +263,29 @@ export function create<S extends State>(
   };
 }
 
-// Terminal node variant (no edges — replace the above with this):
+// Final node variant (last step in the walk — replace the above with this):
 // export function create<S extends State>(
+//   edges: Edges<S>,
 //   utils: Utils = defaultUtils,
 // ): Node<S> {
 //   return async (state: S) => {
-//     // Terminal logic.
-//     return null;
+//     // Final logic.
+//     return next(edges.onDone, state);
+//     // In the walk, wire: finalNode.create({ onDone: () => stop() })
 //   };
 // }
 \`\`\`
 
 ### Key rules
 
-- **Always import from \`"../ambler.ts"\`** — import \`next\` and \`Node\` for non-terminal nodes. Import \`MaybePromise\` if any util type is sync-or-async (e.g. \`readLine\`). Terminal nodes with no edges may not need any import from \`ambler.ts\`.
+- **Always import from \`"../ambler.ts"\`** — import \`next\` and \`Node\`. Import \`MaybePromise\` if any util type is sync-or-async (e.g. \`readLine\`).
 - **Do not import \`Next\`** — the return type of the inner function is inferred from \`Node<S>\`; no explicit annotation is needed.
 - **Exports are flat at module level** — no namespace wrapper. Walks import the module with \`import * as MyNode from "../nodes/myNode.ts"\`, which gives \`MyNode.State\`, \`MyNode.create\`, etc.
 - **\`State\` is a minimum interface** — only include fields this node actually uses. The generic \`S extends State\` allows the walk to pass a richer state type without breaking the type system.
 - **\`Edges<S extends State>\` uses the same generic** so that edge functions accept the full walk state, not just the node's minimum state.
 - **\`defaultUtils\` provides production implementations** — these are what run in the real walk. Tests always inject mock utils.
 - **State is immutable** — never mutate \`state\` directly; always return \`{ ...state, field: value }\`.
-- **Return \`next(edges.onEdgeName, nextState)\`** (function call) to transition; return \`null\` only from terminal nodes.
+- **Return \`next(edges.onEdgeName, nextState)\`** (function call) to transition. Nodes never return \`null\` directly — termination is handled in the walk by wiring the final edge to \`() => stop()\`.
 
 ---
 
@@ -296,11 +309,11 @@ Use the \`/add-node-test\` skill to generate the test file for this node.
 
 ## 5. Reference: the three node archetypes
 
-| Archetype | Has Edges | Returns null | Typical use |
-|---|---|---|---|
-| Entry node | Yes (e.g. \`onSuccess\`, \`onError\`) | Never directly | Prompts input, validates, branches on outcome |
-| Loop/transform node | Yes (e.g. \`onContinue\`, \`onStop\`) | Never directly | Performs work, conditionally loops or exits |
-| Terminal node | No | Always | Displays final result and terminates the walk |
+| Archetype | Edges | Typical use |
+|---|---|---|
+| Entry node | Yes (e.g. \`onSuccess\`, \`onError\`) | Prompts input, validates, branches on outcome |
+| Loop/transform node | Yes (e.g. \`onContinue\`, \`onStop\`) | Performs work, conditionally loops or exits |
+| Final node | Yes (e.g. \`onDone\`) | Displays final result; walk wires \`onDone: () => stop()\` to end the walk |
 
 When unsure which archetype fits, ask the user whether the new node should loop, branch, or terminate the walk.
 `;
@@ -463,15 +476,21 @@ export function create<S extends State>(
 }
 \`\`\`
 
-**Terminal nodes** (no outgoing edges) omit \`Edges\` and return \`null\`:
+**Final nodes** (last step of the walk) have an \`onDone\` edge; the walk wires it to \`() => stop()\`:
 
 \`\`\`typescript
+export type Edges<S extends State> = {
+  onDone: Node<S>;
+};
+
 export function create<S extends State>(
+  edges: Edges<S>,
   utils: Utils = defaultUtils,
 ): Node<S> {
   return async (state: S) => {
     utils.print(\`Done: \${state.field}\`);
-    return null;
+    return next(edges.onDone, state);
+    // Walk wires: finalNode.create({ onDone: () => stop() })
   };
 }
 \`\`\`
@@ -557,7 +576,7 @@ Follow this exact format:
 ## Step 4 — Create the Wiring File (\`walks/<name>.ts\`)
 
 \`\`\`typescript
-import { amble, node, Node } from "../ambler.ts";
+import { amble, node, Node, stop } from "../ambler.ts";
 import * as NodeA from "../nodes/nodeA.ts";
 import * as NodeB from "../nodes/nodeB.ts";
 import * as NodeC from "../nodes/nodeC.ts";
@@ -573,7 +592,7 @@ const initialState: State = {
 const nodes: Record<string, Node<State>> = {
   start: node(() => NodeA.create({ onSuccess: nodes.next, onError: nodes.start })),
   next:  node(() => NodeB.create({ onComplete: nodes.stop })),
-  stop:  node(() => NodeC.create()),
+  stop:  node(() => NodeC.create({ onDone: () => stop() })),
 };
 
 if (import.meta.main) {
@@ -582,7 +601,7 @@ if (import.meta.main) {
 \`\`\`
 
 **Key rules:**
-- Import \`amble\`, \`node\`, \`Node\` from \`../ambler.ts\`.
+- Import \`amble\`, \`node\`, \`Node\`, \`stop\` from \`../ambler.ts\`.
 - Import each node module with \`import * as <Name>Node from "../nodes/<name>Node.ts"\`.
 - Define \`State\` interface and \`initialState\` at the top of the file.
 - Use \`Record<string, Node<State>>\` for the \`nodes\` object.

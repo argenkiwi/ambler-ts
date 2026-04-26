@@ -24,7 +24,7 @@ The core objective of Ambler is to enable an agent to programmatically construct
 The framework follows a graph-based execution model:
 
 - **Core Engine (`ambler.ts`)**: Implements the `amble` function which drives the machine through the graph. It manages the execution loop, transitioning from one node to the next until the process terminates.
-- **Nodes (`nodes/`)**: The fundamental building blocks. Each node is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data) and returns the next node to execute, or `null` to end the walk. Nodes are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`.
+- **Nodes (`nodes/`)**: The fundamental building blocks. Each node is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data) and returns the next step to execute. Termination is expressed in the walk wiring via `stop()`. Nodes are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`.
 - **Walks (`walks/`)**: The concrete implementation of a program. A walk wires nodes together into a specific graph structure and initiates the execution.
 - **Specs (`specs/`)**: Design documents written in Markdown that describe the intended behavior of a walk before implementation. This provides a blueprint for both humans and agents.
 - **Utilities (`utils/`)**: Reusable logic and helpers used across nodes and walks.

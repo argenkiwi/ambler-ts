@@ -22,12 +22,13 @@ deno run walks/counter.ts
 
 **Ambler** is a Deno/TypeScript state machine framework. The core execution model lives in `ambler.ts`:
 
-- `Node<S>` — a function `(state: S) => MaybePromise<Next<S> | null>` representing a node in the graph
+- `Node<S>` — a function `(state: S) => MaybePromise<Next<S>>` representing a node in the graph
 - `Next<S>` — a plain function; calling it advances the machine to the next step
+- `stop()` — creates a terminal `Next<S>` that returns `null`; used in walk wiring as `() => stop()`
 - `node(factory)` — wraps a node factory so it re-runs each time (enabling cyclic graphs without circular reference issues)
 - `amble(start, initialState)` — drives the machine until a node returns `null`
 
-**Nodes** (`nodes/`) implement individual steps. Each node is created via a factory that accepts typed transition callbacks (`onSuccess`, `onError`, `onCount`, etc.) and injectable utilities (`print`, `sleep`, `random`, `readLine`) for testability. Nodes return `Next` pointing to the next node, or `null` to terminate.
+**Nodes** (`nodes/`) implement individual steps. Each node is created via a factory that accepts typed transition callbacks (`onSuccess`, `onError`, `onCount`, etc.) and injectable utilities (`print`, `sleep`, `random`, `readLine`) for testability. Nodes always return `Next`. Termination is expressed in the walk wiring by passing `() => stop()` as the final edge.
 
 **Walks** (`walks/`) wire nodes into concrete graphs and call `amble()`. The `nodes` record uses forward references resolved lazily via `node()`.
 
