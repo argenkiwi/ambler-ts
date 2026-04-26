@@ -75,8 +75,12 @@ export function node<S>(factory: () => Node<S>): Node<S> {
  * @returns A promise that resolves when the state machine completes.
  */
 export async function amble<S>(initial: Node<S>, state: S): Promise<void> {
-  let next: Next<S> | null = await initial(state);
-  while (next) {
-    next = await next();
+  let step: Next<S> | null | Promise<Next<S> | null> = initial(state);
+  while (step) {
+    if (typeof step === "function") {
+      step = step();
+    } else {
+      step = await step;
+    }
   }
 }
