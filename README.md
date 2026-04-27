@@ -6,10 +6,10 @@ Ambler is a Deno/TypeScript state machine framework designed to provide the buil
 
 ### Option 1 — via the skills CLI (recommended)
 
-Install all Ambler skills globally using [`npx skills`](https://github.com/vercel-labs/skills):
+Install just the `ambler-init` skill globally using [`npx skills`](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add argenkiwi/ambler-ts -g
+npx skills add argenkiwi/ambler-ts -g -s ambler-init
 ```
 
 Then bootstrap a new project from any Claude Code session:
@@ -18,7 +18,7 @@ Then bootstrap a new project from any Claude Code session:
 /ambler-init <target-dir>
 ```
 
-To keep skills up to date after future changes to this repo:
+The skill installs dev skills (`add-node`, `add-node-test`, `add-walk`, `add-walk-spec`) directly into the new project via `npx skills add`. To keep `ambler-init` up to date:
 
 ```bash
 npx skills update ambler-init
