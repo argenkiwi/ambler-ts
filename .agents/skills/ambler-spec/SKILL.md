@@ -1,12 +1,12 @@
 ---
-name: add-walk-spec
-description: Creates a Markdown specification file for an Ambler walk in the walks/ directory, following the format of walks/counter.md. Use this when a user wants to document a new or existing walk.
+name: ambler-spec
+description: Creates a Markdown specification file for an Ambler walk in the specs/ directory, following the Ambler spec format. Use this when a user wants to document a new or existing walk.
 metadata:
   author: leandro
   version: "1.0"
 ---
 
-# Add Walk Specification
+# Ambler Specification
 
 This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine, following the format established in `specs/counter.md`.
 

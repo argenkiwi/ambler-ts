@@ -1,16 +1,16 @@
 ---
 name: ambler-init
-description: Initializes a new Ambler state-machine project in an empty folder. Creates the directory structure, copies ambler.ts, generates deno.json and AGENTS.md, and installs Claude Code skills (add-node, add-node-test, add-walk, add-walk-spec). Use this when a user wants to bootstrap a new Ambler project.
+description: Initializes a new Ambler state-machine project. Creates the directory structure, copies ambler.ts, generates deno.json and AGENTS.md. Use this when a user wants to bootstrap a new Ambler project.
 metadata:
   author: leandro
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Ambler Init
 
-> Install globally with: `npx skills add argenkiwi/ambler-ts -g -s ambler-init`
+> Install locally with: `npx skills add argenkiwi/ambler-ts`
 
-This skill initializes a new Ambler project in an empty (or new) directory.
+This skill initializes a new Ambler project.
 
 ## Template Files
 
@@ -23,8 +23,6 @@ Three core files are read from `~/.claude/skills/ambler-init/assets/` and writte
 | `AGENTS.md` | `<target>/AGENTS.md` |
 | *(inline)* | `<target>/CLAUDE.md` → `@AGENTS.md` |
 
-Dev skills are installed by the `skills` CLI — no bundled copies needed.
-
 ---
 
 ## Steps
@@ -32,24 +30,16 @@ Dev skills are installed by the `skills` CLI — no bundled copies needed.
 ### 1. Determine the target directory
 
 - If the user provided a directory path, use it.
-- If not, ask: "What directory should the new Ambler project be created in?"
+- If not, use the current directory (`.`).
 
-### 2. Validate the target directory
+### 2. Prepare the target directory
 
-Use the Bash tool to check:
-
-```bash
-[ -d "<target>" ] && ls -A "<target>" | head -1
-```
-
-- **Does not exist** → will be created in step 3, proceed.
-- **Exists and is empty** → proceed.
-- **Exists and is non-empty** → stop and tell the user: `"<target>" is not empty. Provide an empty or non-existent directory.`
+- If the directory does not exist, it will be created in step 3.
 
 ### 3. Create the directory structure
 
 ```bash
-mkdir -p "<target>/nodes" "<target>/walks" "<target>/specs"
+mkdir -p "<target>/nodes" "<target>/walks" "<target>/specs" "<target>/utils"
 ```
 
 ### 4. Write template files
@@ -66,17 +56,7 @@ Read from `~/.claude/skills/ambler-init/assets/` and write to the target. Also g
 
 Read and write all 4 files. Do not skip any.
 
-### 5. Install dev skills
-
-Run in the target directory:
-
-```bash
-cd "<target>" && npx skills add argenkiwi/ambler-ts
-```
-
-This installs `add-node`, `add-node-test`, `add-walk`, `add-walk-spec`, and `add-skill` into `.claude/skills/`.
-
-### 6. Verify
+### 5. Verify
 
 Type-check the generated `ambler.ts`:
 
@@ -84,7 +64,7 @@ Type-check the generated `ambler.ts`:
 deno check "<target>/ambler.ts"
 ```
 
-### 7. Report success
+### 6. Report success
 
 ```
 Initialized Ambler project in "<target>":
@@ -92,15 +72,13 @@ Initialized Ambler project in "<target>":
   deno.json
   AGENTS.md
   CLAUDE.md
-
-Skills installed via npx:
-  .claude/skills/add-node/
-  .claude/skills/add-node-test/
-  .claude/skills/add-walk/
-  .claude/skills/add-walk-spec/
-  .claude/skills/add-skill/
+  nodes/
+  walks/
+  specs/
+  utils/
 
 Next steps:
-  /add-walk   — create your first walk
-  /add-node   — create a standalone node
+  /ambler-walk   — create your first walk
+  /ambler-node   — create a standalone node
 ```
+

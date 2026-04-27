@@ -1,12 +1,12 @@
 ---
-name: add-node
+name: ambler-node
 description: Creates a new Ambler node in the nodes/ directory following the established flat-export State/Edges/Utils/create pattern. Use this when the user wants to add a new state-machine node to the project.
 metadata:
   author: leandro
   version: "1.1"
 ---
 
-# Add Node
+# Ambler Node
 
 Follow these steps to create a new node in the `nodes/` directory.
 
@@ -99,7 +99,7 @@ export function create<S extends State>(
 
 ## 3. Create `nodes/<name>Node.test.ts`
 
-Use the `/add-node-test` skill to generate the test file for this node.
+Use the `/ambler-test` skill to generate the test file for this node.
 
 ---
 

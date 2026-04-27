@@ -1,12 +1,12 @@
 ---
-name: add-node-test
+name: ambler-test
 description: Creates a test file for an Ambler node in the nodes/ directory. Use this when the user wants to add or generate tests for an existing or newly created node.
 metadata:
   author: leandro
   version: "1.1"
 ---
 
-# Add Node Test
+# Ambler Test
 
 Follow these steps to create a test file for a node in the `nodes/` directory.
 

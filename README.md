@@ -6,10 +6,10 @@ Ambler is a Deno/TypeScript state machine framework designed to provide the buil
 
 ### Option 1 — via the skills CLI (recommended)
 
-Install just the `ambler-init` skill globally using [`npx skills`](https://github.com/vercel-labs/skills):
+Install the Ambler skills locally using [`npx skills`](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add argenkiwi/ambler-ts -g -s ambler-init
+npx skills add argenkiwi/ambler-ts
 ```
 
 Then bootstrap a new project from any Claude Code session:
@@ -18,10 +18,10 @@ Then bootstrap a new project from any Claude Code session:
 /ambler-init <target-dir>
 ```
 
-The skill installs dev skills (`add-node`, `add-node-test`, `add-walk`, `add-walk-spec`) directly into the new project via `npx skills add`. To keep `ambler-init` up to date:
+To keep your skills up to date:
 
 ```bash
-npx skills update ambler-init
+npx skills update
 ```
 
 ### Option 2 — via Deno (no npm required)
@@ -32,7 +32,7 @@ Run `init.ts` directly from this repo:
 deno run --allow-write --allow-read init.ts <target-dir>
 ```
 
-Both options create the folder structure (`nodes/`, `walks/`, `specs/`), copy `ambler.ts`, generate a minimal `deno.json`, and install the agent skills — ready to use with no sample code.
+Both options create the folder structure (`nodes/`, `walks/`, `specs/`, `utils/`), copy `ambler.ts`, generate a minimal `deno.json`, and set up the project — ready to use with no sample code.
 
 ## Goals
 
@@ -83,9 +83,9 @@ Create a new walk in `walks/` by importing the necessary nodes and defining thei
 ## Leveraging Skills
 
 Ambler is designed to be used with agents equipped with **skills**. These skills can automate the creation of the entire lifecycle:
-- `add-node`: Scaffolds a new node with the correct structure and dependencies.
-- `add-node-test`: Generates a comprehensive test suite for an existing node.
-- `add-walk`: Creates a new walk and its corresponding specification.
-- `add-walk-spec`: Generates a new specification file.
+- `ambler-node`: Scaffolds a new node with the correct structure and dependencies.
+- `ambler-test`: Generates a comprehensive test suite for an existing node.
+- `ambler-walk`: Creates a new walk and its corresponding specification.
+- `ambler-spec`: Generates a new specification file.
 
 By using these skills, an augmented agent can efficiently expand the project's capabilities, turning high-level requirements (specs) into executable code (nodes and walks).

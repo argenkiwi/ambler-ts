@@ -1,12 +1,12 @@
 ---
-name: add-walk
+name: ambler-walk
 description: Creates a new Ambler walk; the TypeScript wiring file (walks/<name>.ts) and the Markdown specification (specs/<name>.md). Ensures any required nodes exist or creates them. Use this when the user wants to add a new state-machine program to the project.
 metadata:
   author: leandro
   version: "1.1"
 ---
 
-# Add Walk
+# Ambler Walk
 
 This skill guides you in creating a complete Ambler walk. A walk is a state-machine program consisting of two files:
 

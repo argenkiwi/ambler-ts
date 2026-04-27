@@ -31,4 +31,6 @@ deno run walks/<name>.ts
 
 **Specs** (`specs/`) contain plain-language descriptions of walk behavior, used as design documents before implementation.
 
+**Utilities** (`utils/`) contain reusable logic and helpers.
+
 The pattern for adding a new walk: write a spec in `specs/`, implement nodes in `nodes/` with full dependency injection, compose them in `walks/`, and add tests alongside each node file.
