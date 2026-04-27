@@ -12,7 +12,7 @@ Install the Ambler skills locally using [`npx skills`](https://github.com/vercel
 npx skills add argenkiwi/ambler-ts
 ```
 
-Then bootstrap a new project from any Claude Code session:
+Then bootstrap a new project from your coding agent session:
 
 ```bash
 /ambler-init <target-dir>
