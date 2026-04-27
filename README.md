@@ -4,13 +4,35 @@ Ambler is a Deno/TypeScript state machine framework designed to provide the buil
 
 ## Starting a New Project
 
-To bootstrap a new Ambler project in an empty directory, run `init.ts` from this repo:
+### Option 1 — via the skills CLI (recommended)
+
+Install all Ambler skills globally using [`npx skills`](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add argenkiwi/ambler-ts -g
+```
+
+Then bootstrap a new project from any Claude Code session:
+
+```bash
+/ambler-init <target-dir>
+```
+
+To keep skills up to date after future changes to this repo:
+
+```bash
+npx skills update ambler-init
+```
+
+### Option 2 — via Deno (no npm required)
+
+Run `init.ts` directly from this repo:
 
 ```bash
 deno run --allow-write --allow-read init.ts <target-dir>
 ```
 
-This creates the folder structure (`nodes/`, `walks/`, `specs/`), copies `ambler.ts`, generates a minimal `deno.json`, and installs the agent skills — ready to use with no sample code.
+Both options create the folder structure (`nodes/`, `walks/`, `specs/`), copy `ambler.ts`, generate a minimal `deno.json`, and install the agent skills — ready to use with no sample code.
 
 ## Goals
 
