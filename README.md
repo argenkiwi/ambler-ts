@@ -4,7 +4,7 @@ Ambler is a Deno/TypeScript state machine framework designed to provide the buil
 
 ## Starting a New Project
 
-### Option 1 — via the skills CLI (recommended)
+### Option 1 — via the skills CLI (recommended for agentic development)
 
 Install the Ambler skills locally using [`npx skills`](https://github.com/vercel-labs/skills):
 
@@ -24,7 +24,7 @@ To keep your skills up to date:
 npx skills update
 ```
 
-### Option 2 — via Deno (no npm required)
+### Option 2 — via Deno (no npm required, non-agentic setup, recommended for learning)
 
 Run `init.ts` directly from this repo:
 
