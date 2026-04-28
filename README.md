@@ -82,10 +82,13 @@ Create a new walk in `walks/` by importing the necessary nodes and defining thei
 
 ## Leveraging Skills
 
-Ambler is designed to be used with agents equipped with **skills**. These skills can automate the creation of the entire lifecycle:
+Ambler is designed to be used with agents equipped with **skills**. These skills automate the entire development lifecycle:
+
+- `ambler-init`: Bootstraps a new project with the required folder structure and core files.
 - `ambler-node`: Scaffolds a new node with the correct structure and dependencies.
 - `ambler-test`: Generates a comprehensive test suite for an existing node.
 - `ambler-walk`: Creates a new walk and its corresponding specification.
 - `ambler-spec`: Generates a new specification file.
+- `ambler-util`: Extracts or creates reusable utility modules in the `utils/` directory.
 
 By using these skills, an augmented agent can efficiently expand the project's capabilities, turning high-level requirements (specs) into executable code (nodes and walks).
