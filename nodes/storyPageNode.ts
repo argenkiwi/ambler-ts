@@ -27,9 +27,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  chat: async (host, model, messages) => {
-    return await ollamaChat(host, model, messages);
-  },
+  chat: ollamaChat,
   print: (msg) => console.log(msg),
 };
 

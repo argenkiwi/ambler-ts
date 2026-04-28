@@ -1,5 +1,5 @@
-import { Ollama } from "ollama";
 import { next, Node } from "../ambler.ts";
+import { listModels } from "../utils/ollama_models.ts";
 
 export interface State {
   selectedModel: string;
@@ -18,11 +18,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  listModels: async (host: string) => {
-    const ollama = new Ollama({ host });
-    const response = await ollama.list();
-    return response.models.map((m) => m.name);
-  },
+  listModels,
   readLine: (msg) => prompt(msg),
   print: (msg) => console.log(msg),
 };

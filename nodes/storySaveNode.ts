@@ -1,5 +1,5 @@
 import { next, Node } from "../ambler.ts";
-import fs from "node:fs/promises";
+import { saveFile } from "../utils/story_save.ts";
 
 export interface State {
   selectedModel: string;
@@ -19,11 +19,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  saveFile: async (filename, content) => {
-    const dir = "cyoa";
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(`${dir}/${filename}.md`, content);
-  },
+  saveFile,
   print: (msg) => console.log(msg),
 };
 

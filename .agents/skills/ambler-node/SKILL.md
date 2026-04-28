@@ -92,6 +92,7 @@ export function create<S extends State>(
 - **`State` is a minimum interface** — only include fields this node actually uses. The generic `S extends State` allows the walk to pass a richer state type without breaking the type system.
 - **`Edges<S extends State>` uses the same generic** so that edge functions accept the full walk state, not just the node's minimum state.
 - **`defaultUtils` provides production implementations** — these are what run in the real walk. Tests always inject mock utils.
+- **Extract complex `defaultUtils` implementations** — if any production util requires an npm/jsr import, has significant logic (error handling, retries, connection caching), or could be shared with another node, extract it to `utils/<name>.ts` using the `/ambler-util` skill instead of inlining it here. Simple one-liners like `(msg) => console.log(msg)` are fine to keep inline.
 - **State is immutable** — never mutate `state` directly; always return `{ ...state, field: value }`.
 - **Return `next(edges.onEdgeName, nextState)`** (function call) to transition; return `null` only from terminal nodes.
 
@@ -112,6 +113,7 @@ Use the `/ambler-test` skill to generate the test file for this node.
 - [ ] No barrel/index file was created or modified — nodes are imported individually.
 - [ ] State is never mutated in place.
 - [ ] All utils in `defaultUtils` use real production implementations (`defaultPrint`, `defaultReadLine`, `Math.random`, `setTimeout`, etc.).
+- [ ] Any `defaultUtils` implementation that requires an npm import, has significant logic, or is reusable across nodes has been moved to `utils/` via the `/ambler-util` skill.
 
 ---
 

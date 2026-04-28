@@ -1,4 +1,5 @@
 import { next, Node } from "../ambler.ts";
+import { saveToFile } from "../utils/save_to_file.ts";
 
 export interface State {
   generatedStory: string;
@@ -15,17 +16,7 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  saveToFile: async (content) => {
-    const filename = `story-${Date.now()}.md`;
-    try {
-      await Deno.writeTextFile(filename, content);
-      console.log(`Saved to ${filename}`);
-      return true;
-    } catch (e) {
-      console.error(`Failed to save: ${e}`);
-      return false;
-    }
-  },
+  saveToFile,
   readLine: (msg) => prompt(msg),
   print: (msg) => console.log(msg),
 };

@@ -1,4 +1,5 @@
 import { next, Node } from "../ambler.ts";
+import { tryHost } from "../utils/ollama_discover.ts";
 
 export interface State {
   ollamaHost: string;
@@ -18,19 +19,7 @@ export type Utils = {
 const CANDIDATE_HOSTS = ["http://localhost:11434", "http://127.0.0.1:11434"];
 
 const defaultUtils: Utils = {
-  tryHost: async (host: string) => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2000);
-      const response = await fetch(`${host}/api/version`, {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      return response.ok;
-    } catch {
-      return false;
-    }
-  },
+  tryHost,
   readLine: (msg) => prompt(msg),
   print: (msg) => console.log(msg),
 };
