@@ -4,9 +4,9 @@ import { next, Node } from "../ambler.ts";
 export type Message = { role: string; content: string };
 
 export interface State {
-  messages: Message[];
   ollamaHost: string;
   selectedModel: string;
+  messages: Message[];
 }
 
 export type Edges<S extends State> = {
@@ -15,17 +15,15 @@ export type Edges<S extends State> = {
 
 export type Utils = {
   chat: (
-    messages: Message[],
     host: string,
     model: string,
+    messages: Message[],
   ) => Promise<string>;
   print: (msg: string) => void;
 };
 
 const defaultUtils: Utils = {
-  chat: async (messages: Message[], host: string, model: string) => {
-    return await ollamaChat(host, model, messages);
-  },
+  chat: ollamaChat,
   print: (msg) => console.log(msg),
 };
 
@@ -35,9 +33,9 @@ export function create<S extends State>(
 ) {
   return async (state: S) => {
     const reply = await utils.chat(
-      state.messages,
       state.ollamaHost,
       state.selectedModel,
+      state.messages,
     );
     utils.print(`Assistant: ${reply}`);
     const messages: Message[] = [

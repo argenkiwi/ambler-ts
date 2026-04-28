@@ -6,9 +6,9 @@ Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
   async () => {
     const initialState: ChatResponseNode.State = {
-      messages: [{ role: "user", content: "Hello" }],
       ollamaHost: "http://localhost:11434",
       selectedModel: "llama3.2",
+      messages: [{ role: "user", content: "Hello" }],
     };
     let captured: ChatResponseNode.State | undefined;
     let printed: string | undefined;
@@ -18,7 +18,7 @@ Deno.test(
     };
 
     const utils: ChatResponseNode.Utils = {
-      chat: (_messages, _host, _model) => Promise.resolve("Hi there!"),
+      chat: (_host, _model, _messages) => Promise.resolve("Hi there!"),
       print: (msg) => {
         printed = msg;
       },
@@ -42,13 +42,13 @@ Deno.test(
   "chatResponseNode should pass the full message history to the chat util",
   async () => {
     const initialState: ChatResponseNode.State = {
+      ollamaHost: "http://localhost:11434",
+      selectedModel: "llama3.2",
       messages: [
         { role: "user", content: "Hello" },
         { role: "assistant", content: "Hi!" },
         { role: "user", content: "How are you?" },
       ],
-      ollamaHost: "http://localhost:11434",
-      selectedModel: "llama3.2",
     };
     let receivedMessages: ChatResponseNode.Message[] | undefined;
     let receivedHost: string | undefined;
@@ -56,10 +56,10 @@ Deno.test(
     const capture: Node<ChatResponseNode.State> = (_s) => stop();
 
     const utils: ChatResponseNode.Utils = {
-      chat: (messages, host, model) => {
-        receivedMessages = messages;
+      chat: (host, model, messages) => {
         receivedHost = host;
         receivedModel = model;
+        receivedMessages = messages;
         return Promise.resolve("I'm fine!");
       },
       print: () => {},
