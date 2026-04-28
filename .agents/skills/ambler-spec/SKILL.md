@@ -1,6 +1,6 @@
 ---
 name: ambler-spec
-description: Creates a Markdown specification file for an Ambler walk in the specs/ directory, following the Ambler spec format. Use this when a user wants to document a new or existing walk.
+description: Creates or updates a Markdown specification file for an Ambler walk in the specs/ directory. Use this whenever a user wants to document, plan, or describe a walk — including "write a spec", "document this walk", or "plan out the steps" — even before any code exists.
 metadata:
   author: leandro
   version: "1.0"

@@ -1,6 +1,6 @@
 ---
 name: ambler-node
-description: Creates a new Ambler node in the nodes/ directory following the established flat-export State/Edges/Utils/create pattern. Use this when the user wants to add a new state-machine node to the project.
+description: Creates a new Ambler node in the nodes/ directory. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node".
 metadata:
   author: leandro
   version: "1.1"

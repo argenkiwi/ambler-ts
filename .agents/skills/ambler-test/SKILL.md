@@ -1,6 +1,6 @@
 ---
 name: ambler-test
-description: Creates a test file for an Ambler node in the nodes/ directory. Use this when the user wants to add or generate tests for an existing or newly created node.
+description: Creates a test file for an Ambler node in the nodes/ directory. Use this whenever the user wants tests for a node — including "test this node", "add tests", "write tests for X", or any time a node is created without a corresponding test file.
 metadata:
   author: leandro
   version: "1.1"

@@ -1,6 +1,6 @@
 ---
 name: ambler-init
-description: Initializes a new Ambler state-machine project. Creates the directory structure, copies ambler.ts, generates deno.json and AGENTS.md. Use this when a user wants to bootstrap a new Ambler project.
+description: Initializes a new Ambler state-machine project. Use this whenever a user wants to start a new Ambler project, bootstrap a state-machine app, or set up the Ambler folder structure — even if they just say "new project" or "set up ambler" or "create ambler folder".
 metadata:
   author: leandro
   version: "1.3"
