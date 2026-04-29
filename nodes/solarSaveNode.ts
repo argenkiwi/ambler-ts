@@ -5,6 +5,8 @@ export interface State {
   generatedStory: string;
 }
 
+export type Hook = "onSaveComplete";
+
 export type Utils = {
   saveToFile: (content: string) => Promise<boolean>;
   readLine: (msg: string) => string | null;
@@ -18,7 +20,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onSaveComplete", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

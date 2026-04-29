@@ -4,6 +4,8 @@ export interface State {
   count: number;
 }
 
+export type Hook = "onDone";
+
 export type Utils = {
   print: (msg: string) => void;
 };
@@ -13,7 +15,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onDone", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

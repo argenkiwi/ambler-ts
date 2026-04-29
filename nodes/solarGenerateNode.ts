@@ -8,6 +8,8 @@ export interface State {
   generatedStory: string;
 }
 
+export type Hook = "onGenerateComplete" | "onError";
+
 export type Utils = {
   generateStory: (
     host: string,
@@ -23,7 +25,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onGenerateComplete" | "onError", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

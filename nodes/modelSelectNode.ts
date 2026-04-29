@@ -6,6 +6,8 @@ export interface State {
   ollamaHost: string;
 }
 
+export type Hook = "onSelect" | "onCancel";
+
 export type Utils = {
   listModels: (host: string) => Promise<string[]>;
   readLine: (msg: string) => string | null;
@@ -19,7 +21,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onSelect" | "onCancel", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

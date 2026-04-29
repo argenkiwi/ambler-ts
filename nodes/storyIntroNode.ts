@@ -6,6 +6,8 @@ export interface State {
   circumstances: string;
 }
 
+export type Hook = "onIntroComplete" | "onCancel";
+
 export type Utils = {
   readLine: (msg: string) => string | null;
   print: (msg: string) => void;
@@ -17,7 +19,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onIntroComplete" | "onCancel", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

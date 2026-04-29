@@ -6,6 +6,8 @@ export interface State {
   messages: Message[];
 }
 
+export type Hook = "onChat" | "onQuit";
+
 export type Utils = {
   readLine: (msg: string) => string | null;
   print: (msg: string) => void;
@@ -19,7 +21,7 @@ const defaultUtils: Utils = {
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onChat" | "onQuit", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

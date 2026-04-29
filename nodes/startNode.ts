@@ -4,6 +4,8 @@ export interface State {
   count: number;
 }
 
+export type Hook = "onSuccess" | "onError";
+
 export type Utils = {
   readLine: (msg: string) => string | null;
   print: (msg: string) => void;
@@ -15,7 +17,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onSuccess" | "onError", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

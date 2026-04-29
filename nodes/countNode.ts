@@ -4,6 +4,8 @@ export interface State {
   count: number;
 }
 
+export type Hook = "onCount" | "onStop";
+
 export type Utils = {
   print: (msg: string) => void;
   sleep: (ms: number) => Promise<void>;
@@ -17,7 +19,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onCount" | "onStop", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

@@ -5,6 +5,8 @@ export interface State {
   ollamaHost: string;
 }
 
+export type Hook = "onDiscovered" | "onCancel";
+
 export type Utils = {
   tryHost: (host: string) => Promise<boolean>;
   readLine: (msg: string) => string | null;
@@ -20,7 +22,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onDiscovered" | "onCancel", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

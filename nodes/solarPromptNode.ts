@@ -4,6 +4,8 @@ export interface State {
   solarPrompt: string;
 }
 
+export type Hook = "onPromptComplete" | "onCancel";
+
 export type Utils = {
   readLine: (msg: string) => string | null;
   print: (msg: string) => void;
@@ -15,7 +17,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onPromptComplete" | "onCancel", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

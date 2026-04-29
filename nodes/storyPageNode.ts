@@ -11,6 +11,8 @@ export interface State {
   currentPage: number;
 }
 
+export type Hook = "onPageComplete" | "onDecisionRequired" | "onError";
+
 export type Utils = {
   chat: (
     host: string,
@@ -26,7 +28,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onPageComplete" | "onDecisionRequired" | "onError", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {
@@ -39,7 +41,7 @@ export function create<S extends State, K extends string = string>(
 
       Rules:
       - Use second person singular.
-      - Decide wheter the story should end or continue (chance of ending is ${state.currentPage} in 10).
+      - Decide whether the story should end or continue (chance of ending is ${state.currentPage} in 10).
       - If the story ends, the final line must be "The End".
       - If the story continues, the final lines must be a numbered list of markdown checkboxes representing 2 or 3 actions the protagonist can choose from (e.g., "1. [ ] Option 1\n2. [ ] Option 2").
       - Do not include any other text outside the story and the options/end marker.`;

@@ -9,6 +9,8 @@ export interface State {
   storyPages: string[];
 }
 
+export type Hook = "onSaveComplete";
+
 export type Utils = {
   saveFile: (filename: string, content: string) => Promise<void>;
   print: (msg: string) => void;
@@ -20,7 +22,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<"onSaveComplete", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

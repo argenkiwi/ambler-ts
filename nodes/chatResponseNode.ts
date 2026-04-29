@@ -9,6 +9,8 @@ export interface State {
   messages: Message[];
 }
 
+export type Hook = "onPrompt";
+
 export type Utils = {
   chat: (
     host: string,
@@ -24,7 +26,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string>(
-  edges: Edges<"onPrompt", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

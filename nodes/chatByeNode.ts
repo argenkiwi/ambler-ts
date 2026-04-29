@@ -1,5 +1,7 @@
 import { Edges, next } from "../ambler.ts";
 
+export type Hook = "onDone";
+
 export type Utils = {
   print: (msg: string) => void;
 };
@@ -9,7 +11,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S, K extends string = string>(
-  edges: Edges<"onDone", K>,
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {
