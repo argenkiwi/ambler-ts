@@ -22,9 +22,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onGenerateComplete");
+    assertEquals(result[0], "onGenerateComplete");
     assertEquals(
-      result.state.generatedStory,
+      result[1].generatedStory,
       "Once upon a time in a solarpunk world...",
     );
   },
@@ -45,7 +45,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onError");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "onError");
+    assertEquals(result[1], baseState);
   },
 );

@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 import { generateStory } from "../utils/solar_generate.ts";
 
 export interface State {
@@ -28,7 +28,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<NodeResult<S, K>> => {
     utils.print(
       "\nGenerating your solarpunk story... (this may take a moment)",
     );
@@ -43,13 +43,13 @@ export function create<S extends State, K extends string = string>(
       utils.print(story);
       utils.print("\n--- END OF STORY ---");
 
-      return next(edges.onGenerateComplete, {
+      return [edges.onGenerateComplete, {
         ...state,
         generatedStory: story,
-      });
+      }];
     } catch (error) {
       utils.print(`Error generating story: ${error}`);
-      return next(edges.onError, state);
+      return [edges.onError, state];
     }
   };
 }

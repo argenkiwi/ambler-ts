@@ -24,12 +24,12 @@ Deno.test(
     )(initialState);
 
     assertEquals(printed, "Assistant: Hi there!");
-    assertEquals(result.state.messages, [
+    assertEquals(result[1].messages, [
       { role: "user", content: "Hello" },
       { role: "assistant", content: "Hi there!" },
     ]);
 
-    assertEquals(result.next, "onPrompt");
+    assertEquals(result[0], "onPrompt");
   },
 );
 
@@ -72,6 +72,6 @@ Deno.test(
 
     assertEquals(receivedHost, "http://localhost:11434");
     assertEquals(receivedModel, "llama3.2");
-    assertEquals(result.next, "onPrompt");
+    assertEquals(result[0], "onPrompt");
   },
 );

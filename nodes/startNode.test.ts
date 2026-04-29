@@ -16,8 +16,8 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "next");
-    assertEquals(result.state.count, 0);
+    assertEquals(result[0], "next");
+    assertEquals(result[1].count, 0);
   },
 );
 
@@ -36,8 +36,8 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "next");
-    assertEquals(result.state.count, 42);
+    assertEquals(result[0], "next");
+    assertEquals(result[1].count, 42);
   },
 );
 
@@ -56,7 +56,7 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "error");
-    assertEquals(result.state.count, 123);
+    assertEquals(result[0], "error");
+    assertEquals(result[1].count, 123);
   },
 );

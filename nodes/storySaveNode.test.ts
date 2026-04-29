@@ -27,9 +27,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "complete");
+    assertEquals(result[0], "complete");
     assertEquals(savedContent, "Page one.\n\nPage two.");
-    assertEquals(result.state.storyPages, baseState.storyPages);
+    assertEquals(result[1].storyPages, baseState.storyPages);
   },
 );
 
@@ -48,7 +48,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "complete");
-    assertEquals(result.state.storyPages, baseState.storyPages);
+    assertEquals(result[0], "complete");
+    assertEquals(result[1].storyPages, baseState.storyPages);
   },
 );

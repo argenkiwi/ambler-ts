@@ -17,8 +17,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onDiscovered");
-    assertEquals(result.state.ollamaHost, "http://localhost:11434");
+    assertEquals(result[0], "onDiscovered");
+    assertEquals(result[1].ollamaHost, "http://localhost:11434");
   },
 );
 
@@ -36,8 +36,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onCancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "onCancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -55,7 +55,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onDiscovered");
-    assertEquals(result.state.ollamaHost, "http://192.168.1.5:11434");
+    assertEquals(result[0], "onDiscovered");
+    assertEquals(result[1].ollamaHost, "http://192.168.1.5:11434");
   },
 );

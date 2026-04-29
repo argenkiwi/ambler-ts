@@ -15,7 +15,7 @@ Deno.test("stopNode should print final count and call onDone", () => {
     initialState,
   );
 
-  assertEquals(result.next, null);
-  assertEquals(result.state.count, 15);
+  assertEquals(result[0], null);
+  assertEquals(result[1].count, 15);
   assertEquals(capturedMessage, "Final count: 15");
 });

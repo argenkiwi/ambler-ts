@@ -16,10 +16,7 @@ export type Edges<H extends string, K extends string = string> = Record<
   K | null
 >;
 
-export type NodeResult<S, K extends string = string> = {
-  next: K | null;
-  state: S;
-};
+export type NodeResult<S, K extends string = string> = [key: K | null, state: S];
 
 /**
  * A function that represents a node in the state machine.
@@ -33,33 +30,6 @@ export type Node<S, K extends string = string> = (
 ) => MaybePromise<NodeResult<S, K>>;
 
 /**
- * Helper to create a NodeResult.
- *
- * @template S The type of the machine's state.
- * @template K The union of valid node identifier strings.
- * @param next The identifier of the next node, or null to stop.
- * @param state The current state of the machine.
- * @returns A NodeResult object.
- */
-export function next<S, K extends string>(
-  next: K | null,
-  state: S,
-): NodeResult<S, K> {
-  return { next, state };
-}
-
-/**
- * Helper to create a terminal NodeResult.
- *
- * @template S The type of the machine's state.
- * @param state The final state of the machine.
- * @returns A NodeResult object with next set to null.
- */
-export function stop<S>(state: S): NodeResult<S, never> {
-  return { next: null, state };
-}
-
-/**
  * The main execution loop factory.
  * It takes a registry of nodes and returns a function to start the state machine.
  *
@@ -70,13 +40,13 @@ export function stop<S>(state: S): NodeResult<S, never> {
  * @returns A function that starts the state machine.
  */
 export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
-  return async (nodeId: K, state: S): Promise<NodeResult<S, K>> => {
+  return (nodeId: K, state: S): MaybePromise<NodeResult<S, K>> => {
     const node: Node<S, K> | undefined = nodes[nodeId];
     if (!node) {
       throw new Error(`Node not found: ${nodeId}`);
     }
 
-    return await node(state);
+    return node(state);
   };
 }
 
@@ -108,8 +78,8 @@ export async function amble<S, K extends string>(
     }
 
     const result = await next(nodeId, state);
-    nodeId = result.next;
-    state = result.state;
+    nodeId = result[0];
+    state = result[1];
   }
 
   return state;

@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 import { listModels } from "../utils/ollama_models.ts";
 
 export interface State {
@@ -24,21 +24,21 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<NodeResult<S, K>> => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
 
     const input = utils.readLine("Select model index: ");
-    if (input === null) return next(edges.onCancel, state);
+    if (input === null) return [edges.onCancel, state];
 
     const index = parseInt(input);
     if (isNaN(index) || index < 0 || index >= models.length) {
       utils.print("Invalid selection.");
-      return next(edges.onSelect, state);
+      return [edges.onSelect, state];
     }
 
     utils.print(`Selected model: ${models[index]}`);
-    return next(edges.onSelect, { ...state, selectedModel: models[index] });
+    return [edges.onSelect, { ...state, selectedModel: models[index] }];
   };
 }

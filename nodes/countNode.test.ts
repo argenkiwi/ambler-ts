@@ -17,8 +17,8 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onCount");
-    assertEquals(result.state.count, 6);
+    assertEquals(result[0], "onCount");
+    assertEquals(result[1].count, 6);
   },
 );
 
@@ -38,7 +38,7 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onStop");
-    assertEquals(result.state.count, 11);
+    assertEquals(result[0], "onStop");
+    assertEquals(result[1].count, 11);
   },
 );

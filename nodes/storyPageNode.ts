@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -31,7 +31,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<NodeResult<S, K>> => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}
@@ -62,21 +62,21 @@ export function create<S extends State, K extends string = string>(
       );
 
       if (fullStory.trim().endsWith("The End")) {
-        return next(edges.onPageComplete, {
+        return [edges.onPageComplete, {
           ...state,
           storyPages: updatedStoryPages,
           currentPage: state.currentPage + 1,
-        });
+        }];
       } else {
-        return next(edges.onDecisionRequired, {
+        return [edges.onDecisionRequired, {
           ...state,
           storyPages: updatedStoryPages,
           currentPage: state.currentPage + 1,
-        });
+        }];
       }
     } catch (error) {
       utils.print(`Error generating page: ${error}`);
-      return next(edges.onError, state);
+      return [edges.onError, state];
     }
   };
 }

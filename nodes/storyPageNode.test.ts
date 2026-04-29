@@ -29,11 +29,11 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "complete");
-    assertEquals(result.state.storyPages.length, 1);
-    assertEquals(result.state.currentPage, 2);
+    assertEquals(result[0], "complete");
+    assertEquals(result[1].storyPages.length, 1);
+    assertEquals(result[1].currentPage, 2);
     assertEquals(
-      result.state.storyPages[0],
+      result[1].storyPages[0],
       "You discovered the secret. The End",
     );
   },
@@ -57,9 +57,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "decision");
-    assertEquals(result.state.storyPages.length, 1);
-    assertEquals(result.state.currentPage, 2);
+    assertEquals(result[0], "decision");
+    assertEquals(result[1].storyPages.length, 1);
+    assertEquals(result[1].currentPage, 2);
   },
 );
 
@@ -82,7 +82,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "error");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "error");
+    assertEquals(result[1], baseState);
   },
 );

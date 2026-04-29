@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -20,19 +20,19 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): NodeResult<S, K> => {
     const input = utils.readLine("Enter a starting number: ");
 
     if (input === null || input === "") {
-      return next(edges.onSuccess, { ...state, count: 0 });
+      return [edges.onSuccess, { ...state, count: 0 }];
     }
 
     const n = parseInt(input);
     if (isNaN(n)) {
       utils.print("Error: Invalid input. Please enter a number.");
-      return next(edges.onError, state);
+      return [edges.onError, state];
     }
 
-    return next(edges.onSuccess, { ...state, count: n });
+    return [edges.onSuccess, { ...state, count: n }];
   };
 }

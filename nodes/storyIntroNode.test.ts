@@ -20,8 +20,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "cancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -39,8 +39,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "cancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -61,8 +61,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "cancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -81,9 +81,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "complete");
-    assertEquals(result.state.identity, "Ada");
-    assertEquals(result.state.placement, "London, 1842");
-    assertEquals(result.state.circumstances, "Inventing the engine");
+    assertEquals(result[0], "complete");
+    assertEquals(result[1].identity, "Ada");
+    assertEquals(result[1].placement, "London, 1842");
+    assertEquals(result[1].circumstances, "Inventing the engine");
   },
 );

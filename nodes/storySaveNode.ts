@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 import { saveFile } from "../utils/story_save.ts";
 
 export interface State {
@@ -25,7 +25,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<NodeResult<S, K>> => {
     const fullStory = state.storyPages.join("\n\n");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `story-${timestamp}`;
@@ -37,6 +37,6 @@ export function create<S extends State, K extends string = string>(
       utils.print(`Error saving story: ${err}`);
     }
 
-    return next(edges.onSaveComplete, state);
+    return [edges.onSaveComplete, state];
   };
 }

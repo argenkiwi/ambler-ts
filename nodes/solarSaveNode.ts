@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 import { saveToFile } from "../utils/save_to_file.ts";
 
 export interface State {
@@ -23,7 +23,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<NodeResult<S, K>> => {
     const input = utils.readLine(
       "Would you like to save this story? (y/n): ",
     );
@@ -36,6 +36,6 @@ export function create<S extends State, K extends string = string>(
       utils.print("Story not saved.");
     }
 
-    return next(edges.onSaveComplete, state);
+    return [edges.onSaveComplete, state];
   };
 }

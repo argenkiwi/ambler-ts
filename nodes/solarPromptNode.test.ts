@@ -16,8 +16,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onCancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "onCancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -34,9 +34,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onPromptComplete");
+    assertEquals(result[0], "onPromptComplete");
     assertEquals(
-      result.state.solarPrompt,
+      result[1].solarPrompt,
       "A community rebuilds after a storm",
     );
   },

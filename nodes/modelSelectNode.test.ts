@@ -22,8 +22,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onCancel");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "onCancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -41,8 +41,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSelect");
-    assertEquals(result.state.selectedModel, "");
+    assertEquals(result[0], "onSelect");
+    assertEquals(result[1].selectedModel, "");
   },
 );
 
@@ -60,8 +60,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSelect");
-    assertEquals(result.state.selectedModel, "");
+    assertEquals(result[0], "onSelect");
+    assertEquals(result[1].selectedModel, "");
   },
 );
 
@@ -79,7 +79,7 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSelect");
-    assertEquals(result.state.selectedModel, "mistral");
+    assertEquals(result[0], "onSelect");
+    assertEquals(result[1].selectedModel, "mistral");
   },
 );

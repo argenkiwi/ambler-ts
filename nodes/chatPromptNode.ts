@@ -1,4 +1,4 @@
-import { Edges, next } from "../ambler.ts";
+import { Edges, NodeResult } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -24,19 +24,19 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): NodeResult<S, K> => {
     const input = utils.readLine("You: ");
     if (input === null) {
-      return next(edges.onQuit, state);
+      return [edges.onQuit, state];
     }
     const trimmed = input.trim();
     if (QUIT_WORDS.has(trimmed.toLowerCase())) {
-      return next(edges.onQuit, state);
+      return [edges.onQuit, state];
     }
     const messages: Message[] = [
       ...state.messages,
       { role: "user", content: trimmed },
     ];
-    return next(edges.onChat, { ...state, messages });
+    return [edges.onChat, { ...state, messages }];
   };
 }

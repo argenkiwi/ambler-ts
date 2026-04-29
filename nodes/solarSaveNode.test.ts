@@ -24,9 +24,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSaveComplete");
+    assertEquals(result[0], "onSaveComplete");
     assertEquals(savedContent, baseState.generatedStory);
-    assertEquals(result.state, baseState);
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -49,9 +49,9 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSaveComplete");
+    assertEquals(result[0], "onSaveComplete");
     assertEquals(saveCalled, false);
-    assertEquals(result.state, baseState);
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -71,11 +71,11 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "onSaveComplete");
+    assertEquals(result[0], "onSaveComplete");
     assertEquals(
       printed.some((m) => m.includes("Failed")),
       true,
     );
-    assertEquals(result.state, baseState);
+    assertEquals(result[1], baseState);
   },
 );

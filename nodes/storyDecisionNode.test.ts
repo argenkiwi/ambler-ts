@@ -28,8 +28,8 @@ Deno.test(
       utils,
     )(baseState);
 
-    assertEquals(result.next, "error");
-    assertEquals(result.state, baseState);
+    assertEquals(result[0], "error");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -47,8 +47,8 @@ Deno.test(
       utils,
     )(state);
 
-    assertEquals(result.next, "made");
-    assertEquals(result.state.storyPages, state.storyPages);
+    assertEquals(result[0], "made");
+    assertEquals(result[1].storyPages, state.storyPages);
   },
 );
 
@@ -76,8 +76,8 @@ Deno.test(
       utils,
     )(state);
 
-    assertEquals(result.next, "cancel");
-    assertEquals(result.state, state);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], state);
   },
 );
 
@@ -97,8 +97,8 @@ Deno.test(
       utils,
     )(state);
 
-    assertEquals(result.next, "made");
-    const updatedPage = result.state.storyPages[0] ?? "";
+    assertEquals(result[0], "made");
+    const updatedPage = result[1].storyPages[0] ?? "";
     assertEquals(updatedPage.includes("2. [x] Go right"), true);
     assertEquals(updatedPage.includes("1. [ ] Go left"), true);
   },
@@ -121,8 +121,8 @@ Deno.test(
       utils,
     )(state);
 
-    assertEquals(result.next, "made");
-    const updatedPage = result.state.storyPages[0] ?? "";
+    assertEquals(result[0], "made");
+    const updatedPage = result[1].storyPages[0] ?? "";
     assertEquals(updatedPage.includes("1. [x] Option A"), true);
   },
 );

@@ -16,14 +16,14 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onChat");
-    assertEquals(result.state.messages, [{ role: "user", content: "Hello" }]);
+    assertEquals(result[0], "onChat");
+    assertEquals(result[1].messages, [{ role: "user", content: "Hello" }]);
   },
 );
 
 Deno.test(
   "chatPromptNode should transition to onQuit when user types 'bye'",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = { messages: [] };
 
     const utils: ChatPromptNode.Utils = {
@@ -31,18 +31,18 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onQuit");
+    assertEquals(result[0], "onQuit");
   },
 );
 
 Deno.test(
   "chatPromptNode should transition to onQuit when user types 'exit'",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = { messages: [] };
 
     const utils: ChatPromptNode.Utils = {
@@ -50,12 +50,12 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onQuit");
+    assertEquals(result[0], "onQuit");
   },
 );
 
@@ -74,13 +74,13 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onQuit");
+    assertEquals(result[0], "onQuit");
   },
 );
 
 Deno.test(
   "chatPromptNode should transition to onQuit when input is null",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = { messages: [] };
 
     const utils: ChatPromptNode.Utils = {
@@ -88,12 +88,12 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
 
-    assertEquals(result.next, "onQuit");
+    assertEquals(result[0], "onQuit");
   },
 );
 
@@ -117,8 +117,8 @@ Deno.test(
       utils,
     )(initialState);
 
-    assertEquals(result.state.messages.length, 3);
-    assertEquals(result.state.messages[2], {
+    assertEquals(result[1].messages.length, 3);
+    assertEquals(result[1].messages[2], {
       role: "user",
       content: "Second message",
     });
