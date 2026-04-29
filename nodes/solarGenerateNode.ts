@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 import { generateStory } from "../utils/solar_generate.ts";
 
 export interface State {
@@ -9,8 +9,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onGenerateComplete: Node<S>;
-  onError: Node<S>;
+  onGenerateComplete: string | null;
+  onError: string | null;
 };
 
 export type Utils = {

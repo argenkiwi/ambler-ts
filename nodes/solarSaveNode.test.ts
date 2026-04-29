@@ -1,6 +1,5 @@
 import { assertEquals } from "@std/assert";
 import * as SolarSaveNode from "./solarSaveNode.ts";
-import { stop, Node } from "../ambler.ts";
 
 const baseState: SolarSaveNode.State = {
   generatedStory: "Once upon a time in a solarpunk world...",
@@ -10,12 +9,6 @@ Deno.test(
   "solarSaveNode should call saveToFile and onSaveComplete when user says yes",
   async () => {
     let savedContent: string | undefined;
-    let callbackState: SolarSaveNode.State | undefined;
-
-    const captureNext: Node<SolarSaveNode.State> = (s) => {
-      callbackState = s;
-      return stop();
-    };
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
@@ -27,17 +20,13 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      { onSaveComplete: captureNext },
+      { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
 
-    let step = await result();
-    while (typeof step === "function") {
-      step = await step();
-    }
-    assertEquals(step, null);
+    assertEquals(result.next, "onSaveComplete");
     assertEquals(savedContent, baseState.generatedStory);
-    assertEquals(callbackState, baseState);
+    assertEquals(result.state, baseState);
   },
 );
 
@@ -45,12 +34,6 @@ Deno.test(
   "solarSaveNode should skip saveToFile and still call onSaveComplete when user says no",
   async () => {
     let saveCalled = false;
-    let callbackState: SolarSaveNode.State | undefined;
-
-    const captureNext: Node<SolarSaveNode.State> = (s) => {
-      callbackState = s;
-      return stop();
-    };
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "n",
@@ -62,17 +45,13 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      { onSaveComplete: captureNext },
+      { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
 
-    let step = await result();
-    while (typeof step === "function") {
-      step = await step();
-    }
-    assertEquals(step, null);
+    assertEquals(result.next, "onSaveComplete");
     assertEquals(saveCalled, false);
-    assertEquals(callbackState, baseState);
+    assertEquals(result.state, baseState);
   },
 );
 
@@ -80,12 +59,6 @@ Deno.test(
   "solarSaveNode should print failure message and still call onSaveComplete when saveToFile returns false",
   async () => {
     const printed: string[] = [];
-    let callbackState: SolarSaveNode.State | undefined;
-
-    const captureNext: Node<SolarSaveNode.State> = (s) => {
-      callbackState = s;
-      return stop();
-    };
 
     const utils: SolarSaveNode.Utils = {
       readLine: (_msg) => "y",
@@ -94,19 +67,15 @@ Deno.test(
     };
 
     const result = await SolarSaveNode.create(
-      { onSaveComplete: captureNext },
+      { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
 
-    let step = await result();
-    while (typeof step === "function") {
-      step = await step();
-    }
-    assertEquals(step, null);
+    assertEquals(result.next, "onSaveComplete");
     assertEquals(
       printed.some((m) => m.includes("Failed")),
       true,
     );
-    assertEquals(callbackState, baseState);
+    assertEquals(result.state, baseState);
   },
 );

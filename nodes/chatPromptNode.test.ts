@@ -1,29 +1,23 @@
 import { assertEquals } from "@std/assert";
 import * as ChatPromptNode from "./chatPromptNode.ts";
-import { Node, stop } from "../ambler.ts";
 
 Deno.test(
   "chatPromptNode should transition to onChat with user message appended",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
-    let captured: ChatPromptNode.State | undefined;
-    const capture: Node<ChatPromptNode.State> = (s) => {
-      captured = s;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => "Hello",
       print: () => {},
     };
 
-    const result = ChatPromptNode.create(
-      { onChat: capture, onQuit: () => stop() },
+    const result = await ChatPromptNode.create(
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await (await result)();
 
-    assertEquals(captured?.messages, [{ role: "user", content: "Hello" }]);
+    assertEquals(result.next, "onChat");
+    assertEquals(result.state.messages, [{ role: "user", content: "Hello" }]);
   },
 );
 
@@ -31,11 +25,6 @@ Deno.test(
   "chatPromptNode should transition to onQuit when user types 'bye'",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
-    let quitCalled = false;
-    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
-      quitCalled = true;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => "bye",
@@ -43,12 +32,11 @@ Deno.test(
     };
 
     const result = await ChatPromptNode.create(
-      { onChat: () => stop(), onQuit: captureQuit },
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await result();
 
-    assertEquals(quitCalled, true);
+    assertEquals(result.next, "onQuit");
   },
 );
 
@@ -56,11 +44,6 @@ Deno.test(
   "chatPromptNode should transition to onQuit when user types 'exit'",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
-    let quitCalled = false;
-    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
-      quitCalled = true;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => "exit",
@@ -68,12 +51,11 @@ Deno.test(
     };
 
     const result = await ChatPromptNode.create(
-      { onChat: () => stop(), onQuit: captureQuit },
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await result();
 
-    assertEquals(quitCalled, true);
+    assertEquals(result.next, "onQuit");
   },
 );
 
@@ -81,24 +63,18 @@ Deno.test(
   "chatPromptNode should transition to onQuit when user types 'quit'",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
-    let quitCalled = false;
-    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
-      quitCalled = true;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => "quit",
       print: () => {},
     };
 
-    const result = ChatPromptNode.create(
-      { onChat: () => stop(), onQuit: captureQuit },
+    const result = await ChatPromptNode.create(
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await (await result)();
 
-    assertEquals(quitCalled, true);
+    assertEquals(result.next, "onQuit");
   },
 );
 
@@ -106,24 +82,18 @@ Deno.test(
   "chatPromptNode should transition to onQuit when input is null",
   async () => {
     const initialState: ChatPromptNode.State = { messages: [] };
-    let quitCalled = false;
-    const captureQuit: Node<ChatPromptNode.State> = (_s) => {
-      quitCalled = true;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => null,
       print: () => {},
     };
 
-    const result = ChatPromptNode.create(
-      { onChat: () => stop(), onQuit: captureQuit },
+    const result = await ChatPromptNode.create(
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await (await result)();
 
-    assertEquals(quitCalled, true);
+    assertEquals(result.next, "onQuit");
   },
 );
 
@@ -136,25 +106,19 @@ Deno.test(
         { role: "assistant", content: "First reply" },
       ],
     };
-    let captured: ChatPromptNode.State | undefined;
-    const capture: Node<ChatPromptNode.State> = (s) => {
-      captured = s;
-      return stop();
-    };
 
     const utils: ChatPromptNode.Utils = {
       readLine: () => "Second message",
       print: () => {},
     };
 
-    const result = ChatPromptNode.create(
-      { onChat: capture, onQuit: () => stop() },
+    const result = await ChatPromptNode.create(
+      { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
-    await (await result)();
 
-    assertEquals(captured?.messages.length, 3);
-    assertEquals(captured?.messages[2], {
+    assertEquals(result.state.messages.length, 3);
+    assertEquals(result.state.messages[2], {
       role: "user",
       content: "Second message",
     });

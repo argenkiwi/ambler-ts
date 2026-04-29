@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -7,8 +7,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onIntroComplete: Node<S>;
-  onCancel: Node<S>;
+  onIntroComplete: string | null;
+  onCancel: string | null;
 };
 
 export type Utils = {

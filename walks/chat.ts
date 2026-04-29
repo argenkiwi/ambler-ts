@@ -1,4 +1,4 @@
-import { amble, Node, node, stop } from "../ambler.ts";
+import { amble, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as ChatPromptNode from "../nodes/chatPromptNode.ts";
@@ -18,17 +18,13 @@ const initialState: State = {
 };
 
 const nodes: Record<string, Node<State>> = {
-  start: node(() =>
-    OllamaDiscoverNode.create({ onDiscovered: nodes.modelSelect, onCancel: () => stop() })
-  ),
-  modelSelect: node(() => ModelSelectNode.create({ onSelect: nodes.prompt, onCancel: () => stop() })),
-  prompt: node(() =>
-    ChatPromptNode.create({ onChat: nodes.response, onQuit: nodes.bye })
-  ),
-  response: node(() => ChatResponseNode.create({ onPrompt: nodes.prompt })),
-  bye: node(() => ChatByeNode.create({ onDone: () => stop() })),
+  start: OllamaDiscoverNode.create({ onDiscovered: "modelSelect", onCancel: null }),
+  modelSelect: ModelSelectNode.create({ onSelect: "prompt", onCancel: null }),
+  prompt: ChatPromptNode.create({ onChat: "response", onQuit: "bye" }),
+  response: ChatResponseNode.create({ onPrompt: "prompt" }),
+  bye: ChatByeNode.create({ onDone: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes.start, initialState);
+  await amble(nodes, "start", initialState);
 }

@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 import { listModels } from "../utils/ollama_models.ts";
 
 export interface State {
@@ -7,8 +7,8 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onSelect: Node<S>;
-  onCancel: Node<S>;
+  onSelect: string | null;
+  onCancel: string | null;
 };
 
 export type Utils = {

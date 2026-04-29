@@ -1,12 +1,12 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 
 export interface State {
   solarPrompt: string;
 }
 
 export type Edges<S extends State> = {
-  onPromptComplete: Node<S>;
-  onCancel: Node<S>;
+  onPromptComplete: string | null;
+  onCancel: string | null;
 };
 
 export type Utils = {

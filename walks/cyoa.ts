@@ -1,4 +1,4 @@
-import { amble, Node, node, stop } from "../ambler.ts";
+import { amble, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as StoryIntroNode from "../nodes/storyIntroNode.ts";
@@ -27,43 +27,31 @@ const initialState: State = {
 };
 
 const nodes: Record<string, Node<State>> = {
-  start: node(() =>
-    OllamaDiscoverNode.create({
-      onDiscovered: nodes.modelSelect,
-      onCancel: () => stop(),
-    })
-  ),
-  modelSelect: node(() =>
-    ModelSelectNode.create({
-      onSelect: nodes.intro,
-      onCancel: () => stop(),
-    })
-  ),
-  intro: node(() =>
-    StoryIntroNode.create({
-      onIntroComplete: nodes.page,
-      onCancel: () => stop(),
-    })
-  ),
-  page: node(() =>
-    StoryPageNode.create({
-      onPageComplete: nodes.save,
-      onDecisionRequired: nodes.decision,
-      onError: () => stop(),
-    })
-  ),
-  decision: node(() =>
-    StoryDecisionNode.create({
-      onDecisionMade: nodes.page,
-      onCancel: () => stop(),
-      onError: () => stop(),
-    })
-  ),
-  save: node(() =>
-    StorySaveNode.create({ onSaveComplete: (_state: State) => stop() })
-  ),
+  start: OllamaDiscoverNode.create({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  }),
+  modelSelect: ModelSelectNode.create({
+    onSelect: "intro",
+    onCancel: null,
+  }),
+  intro: StoryIntroNode.create({
+    onIntroComplete: "page",
+    onCancel: null,
+  }),
+  page: StoryPageNode.create({
+    onPageComplete: "save",
+    onDecisionRequired: "decision",
+    onError: null,
+  }),
+  decision: StoryDecisionNode.create({
+    onDecisionMade: "page",
+    onCancel: null,
+    onError: null,
+  }),
+  save: StorySaveNode.create({ onSaveComplete: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes.start, initialState);
+  await amble(nodes, "start", initialState);
 }

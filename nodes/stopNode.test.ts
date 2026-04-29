@@ -1,5 +1,4 @@
 import { assertEquals } from "@std/assert";
-import { stop } from "../ambler.ts";
 import * as StopNode from "./stopNode.ts";
 
 Deno.test("stopNode should print final count and call onDone", async () => {
@@ -12,14 +11,11 @@ Deno.test("stopNode should print final count and call onDone", async () => {
     },
   };
 
-  const nextResult = await StopNode.create({ onDone: () => stop() }, utils)(
+  const result = await StopNode.create({ onDone: null }, utils)(
     initialState,
   );
 
-  let step = await nextResult();
-  while (typeof step === "function") {
-    step = await step();
-  }
-  assertEquals(step, null);
+  assertEquals(result.next, null);
+  assertEquals(result.state.count, 15);
   assertEquals(capturedMessage, "Final count: 15");
 });

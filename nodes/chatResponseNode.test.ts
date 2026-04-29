@@ -1,6 +1,5 @@
 import { assertEquals } from "@std/assert";
 import * as ChatResponseNode from "./chatResponseNode.ts";
-import { Node, stop } from "../ambler.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
@@ -10,12 +9,7 @@ Deno.test(
       selectedModel: "llama3.2",
       messages: [{ role: "user", content: "Hello" }],
     };
-    let captured: ChatResponseNode.State | undefined;
     let printed: string | undefined;
-    const capture: Node<ChatResponseNode.State> = (s) => {
-      captured = s;
-      return stop();
-    };
 
     const utils: ChatResponseNode.Utils = {
       chat: (_host, _model, _messages) => Promise.resolve("Hi there!"),
@@ -25,16 +19,16 @@ Deno.test(
     };
 
     const result = await ChatResponseNode.create(
-      { onPrompt: capture },
+      { onPrompt: "onPrompt" },
       utils,
     )(initialState);
-    await result();
 
     assertEquals(printed, "Assistant: Hi there!");
-    assertEquals(captured?.messages, [
+    assertEquals(result.state.messages, [
       { role: "user", content: "Hello" },
       { role: "assistant", content: "Hi there!" },
     ]);
+    assertEquals(result.next, "onPrompt");
   },
 );
 
@@ -53,7 +47,6 @@ Deno.test(
     let receivedMessages: ChatResponseNode.Message[] | undefined;
     let receivedHost: string | undefined;
     let receivedModel: string | undefined;
-    const capture: Node<ChatResponseNode.State> = (_s) => stop();
 
     const utils: ChatResponseNode.Utils = {
       chat: (host, model, messages) => {
@@ -66,10 +59,9 @@ Deno.test(
     };
 
     const result = await ChatResponseNode.create(
-      { onPrompt: capture },
+      { onPrompt: "onPrompt" },
       utils,
     )(initialState);
-    await result();
 
     assertEquals(receivedMessages?.length, 3);
     assertEquals(receivedMessages?.[2], {
@@ -78,5 +70,6 @@ Deno.test(
     });
     assertEquals(receivedHost, "http://localhost:11434");
     assertEquals(receivedModel, "llama3.2");
+    assertEquals(result.next, "onPrompt");
   },
 );

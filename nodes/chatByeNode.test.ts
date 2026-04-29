@@ -1,9 +1,8 @@
 import { assertEquals } from "@std/assert";
-import { stop } from "../ambler.ts";
 import * as ChatByeNode from "./chatByeNode.ts";
 
 Deno.test("chatByeNode should print goodbye and return terminal edge", async () => {
-  const initialState = {};
+  const initialState = { some: "state" };
   let printed: string | undefined;
 
   const utils: ChatByeNode.Utils = {
@@ -13,15 +12,12 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", async () 
   };
 
   const edges: ChatByeNode.Edges<typeof initialState> = {
-    onDone: () => stop(),
+    onDone: null,
   };
 
-  const nodeResult = ChatByeNode.create(edges, utils)(initialState);
+  const nodeResult = await ChatByeNode.create(edges, utils)(initialState);
 
-  assertEquals(typeof nodeResult, "function");
-  const nextResult = await nodeResult();
-  assertEquals(typeof nextResult, "function");
-  // @ts-ignore: checking terminal null
-  assertEquals(await nextResult(), null);
+  assertEquals(nodeResult.next, null);
+  assertEquals(nodeResult.state, initialState);
   assertEquals(printed, "Goodbye!");
 });

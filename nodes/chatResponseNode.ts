@@ -1,5 +1,5 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -10,7 +10,7 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onPrompt: Node<S>;
+  onPrompt: string | null;
 };
 
 export type Utils = {

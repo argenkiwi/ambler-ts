@@ -4,83 +4,85 @@
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
+ * The result of a node's execution.
+ * Contains the identifier of the next node to execute and the updated state.
+ * If 'next' is null, the state machine terminates.
+ *
+ * @template S The type of the machine's state.
+ */
+export type NodeResult<S> = {
+  next: string | null;
+  state: S;
+};
+
+/**
  * A function that represents a node in the state machine.
- * Given the current state, it returns the next step (an edge) in the machine.
+ * Given the current state, it returns the next step in the machine.
  *
  * @template S The type of the machine's state.
  */
-export type Node<S> = (state: S) => MaybePromise<Next<S>>;
+export type Node<S> = (state: S) => MaybePromise<NodeResult<S>>;
 
 /**
- * Represents the result of a node's execution. Calling it advances to the next step.
- * A plain function type avoids the object allocation of an interface or class.
+ * Helper to create a NodeResult.
  *
  * @template S The type of the machine's state.
- */
-export type Next<S> = () => MaybePromise<Next<S> | null>;
-
-/**
- * Wraps a {@link Node} function and a state into a {@link Next} function.
- * This allows for easier creation of transitions.
- *
- * @template S The type of the machine's state.
- * @param node The function representing the next node.
+ * @param next The identifier of the next node, or null to stop.
  * @param state The current state of the machine.
- * @returns A {@link Next} function that, when invoked, executes the provided {@link Node}.
+ * @returns A NodeResult object.
  */
-export function next<S>(node: Node<S>, state: S): Next<S> {
-  return () => node(state);
+export function next<S>(next: string | null, state: S): NodeResult<S> {
+  return { next, state };
 }
 
 /**
- * A terminal edge that signals the end of the walk.
+ * Helper to create a terminal NodeResult.
  *
  * @template S The type of the machine's state.
- * @returns A {@link Next} function that returns null, terminating the `amble` loop.
+ * @param state The final state of the machine.
+ * @returns A NodeResult object with next set to null.
  */
-export function stop<S>(): Next<S> {
-  return () => null;
-}
-
-/**
- * Lazily instantiates a node from a factory and caches the result for reuse.
- * The factory is not called until the node is first entered during `amble` execution,
- * which breaks circular dependency cycles in the wiring graph. Subsequent visits
- * reuse the cached node instance, avoiding redundant allocations on every transition.
- *
- * @template S The type of the machine's state.
- * @param factory A function that returns a {@link Node} function when invoked.
- * @returns A {@link Node} function that lazily initializes and caches the underlying node.
- */
-export function node<S>(factory: () => Node<S>): Node<S> {
-  let cached: Node<S> | null = null;
-
-  return (state: S) => {
-    if (cached === null) {
-      cached = factory();
-    }
-
-    return cached(state);
-  };
+export function stop<S>(state: S): NodeResult<S> {
+  return { next: null, state };
 }
 
 /**
  * The main execution loop that drives the state machine.
  * It starts with the initial node and continues to execute subsequent nodes until
- * a node returns null.
+ * a node returns a result with 'next' set to null.
  *
  * @template S The type of the machine's state.
- * @param initial The first node in the state machine.
- * @param state The initial state of the machine.
- * @returns A promise that resolves when the state machine completes.
+ * @param nodes A registry of nodes, indexed by their identifiers.
+ * @param initialNodeId The identifier of the first node in the state machine.
+ * @param initialState The initial state of the machine.
+ * @param options Optional configuration for the execution.
+ * @returns A promise that resolves to the final state when the state machine completes.
  */
-export async function amble<S>(initial: Node<S>, state: S): Promise<void> {
-  let step: Next<S> | null | Promise<Next<S> | null> = initial(state);
-  while (step) {
-    if (typeof step === "function") {
-      step = step();
-    } else {
-      step = await step;
+export async function amble<S>(
+  nodes: Record<string, Node<S>>,
+  initialNodeId: string,
+  initialState: S,
+  options?: {
+    onStep?: (nodeId: string, state: S) => MaybePromise<void>;
+  },
+): Promise<S> {
+  let nodeId: string | null = initialNodeId;
+  let state = initialState;
+
+  while (nodeId) {
+    if (options?.onStep) {
+      await options.onStep(nodeId, state);
     }
+
+    const node: Node<S> | undefined = nodes[nodeId];
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
+    }
+
+    const result: NodeResult<S> = await node(state);
+    nodeId = result.next;
+    state = result.state;
   }
+
+  return state;
 }

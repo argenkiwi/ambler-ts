@@ -1,11 +1,11 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 
 export interface State {
   count: number;
 }
 
 export type Edges<S extends State> = {
-  onDone: Node<S>;
+  onDone: string | null;
 };
 
 export type Utils = {

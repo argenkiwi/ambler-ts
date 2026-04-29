@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 import { saveToFile } from "../utils/save_to_file.ts";
 
 export interface State {
@@ -6,7 +6,7 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onSaveComplete: Node<S>;
+  onSaveComplete: string | null;
 };
 
 export type Utils = {

@@ -1,4 +1,4 @@
-import { amble, Node, node, stop } from "../ambler.ts";
+import { amble, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as SolarPromptNode from "../nodes/solarPromptNode.ts";
@@ -20,35 +20,25 @@ const initialState: State = {
 };
 
 const nodes: Record<string, Node<State>> = {
-  start: node(() =>
-    OllamaDiscoverNode.create({
-      onDiscovered: nodes.modelSelect,
-      onCancel: () => stop(),
-    })
-  ),
-  modelSelect: node(() =>
-    ModelSelectNode.create({
-      onSelect: nodes.prompt,
-      onCancel: () => stop(),
-    })
-  ),
-  prompt: node(() =>
-    SolarPromptNode.create({
-      onPromptComplete: nodes.generate,
-      onCancel: () => stop(),
-    })
-  ),
-  generate: node(() =>
-    SolarGenerateNode.create({
-      onGenerateComplete: nodes.save,
-      onError: () => stop(),
-    })
-  ),
-  save: node(() =>
-    SolarSaveNode.create({ onSaveComplete: (_state: State) => stop() })
-  ),
+  start: OllamaDiscoverNode.create({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  }),
+  modelSelect: ModelSelectNode.create({
+    onSelect: "prompt",
+    onCancel: null,
+  }),
+  prompt: SolarPromptNode.create({
+    onPromptComplete: "generate",
+    onCancel: null,
+  }),
+  generate: SolarGenerateNode.create({
+    onGenerateComplete: "save",
+    onError: null,
+  }),
+  save: SolarSaveNode.create({ onSaveComplete: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes.start, initialState);
+  await amble(nodes, "start", initialState);
 }

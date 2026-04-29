@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -11,9 +11,9 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onDecisionMade: Node<S>;
-  onCancel: Node<S>;
-  onError: Node<S>;
+  onDecisionMade: string | null;
+  onCancel: string | null;
+  onError: string | null;
 };
 
 export type Utils = {

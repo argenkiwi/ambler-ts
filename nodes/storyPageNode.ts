@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { next } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -12,9 +12,9 @@ export interface State {
 }
 
 export type Edges<S extends State> = {
-  onPageComplete: Node<S>;
-  onDecisionRequired: Node<S>;
-  onError: Node<S>;
+  onPageComplete: string | null;
+  onDecisionRequired: string | null;
+  onError: string | null;
 };
 
 export type Utils = {
