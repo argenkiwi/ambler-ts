@@ -19,26 +19,28 @@ const initialState: State = {
   generatedStory: "",
 };
 
-const nodes: Record<string, Node<State>> = {
-  start: OllamaDiscoverNode.create({
+type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
+
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: OllamaDiscoverNode.create<State, NodeId>({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: ModelSelectNode.create({
+  modelSelect: ModelSelectNode.create<State, NodeId>({
     onSelect: "prompt",
     onCancel: null,
   }),
-  prompt: SolarPromptNode.create({
+  prompt: SolarPromptNode.create<State, NodeId>({
     onPromptComplete: "generate",
     onCancel: null,
   }),
-  generate: SolarGenerateNode.create({
+  generate: SolarGenerateNode.create<State, NodeId>({
     onGenerateComplete: "save",
     onError: null,
   }),
-  save: SolarSaveNode.create({ onSaveComplete: null }),
+  save: SolarSaveNode.create<State, NodeId>({ onSaveComplete: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  await amble<State, NodeId>(nodes, "start", initialState);
 }

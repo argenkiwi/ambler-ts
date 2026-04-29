@@ -7,17 +7,18 @@ export interface State {
   count: number;
 }
 
+type NodeId = "start" | "count" | "stop";
+
 const initialState: State = {
   count: 0,
 };
 
-// Wire the graph using a record to store nodes
-const nodes: Record<string, Node<State>> = {
-  start: StartNode.create({ onSuccess: "count", onError: "start" }),
-  count: CountNode.create({ onCount: "count", onStop: "stop" }),
-  stop: StopNode.create({ onDone: null }),
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: StartNode.create<State, NodeId>({ onSuccess: "count", onError: "start" }),
+  count: CountNode.create<State, NodeId>({ onCount: "count", onStop: "stop" }),
+  stop: StopNode.create<State, NodeId>({ onDone: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  await amble<State, NodeId>(nodes, "start", initialState);
 }

@@ -11,7 +11,7 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", async () 
     },
   };
 
-  const edges: ChatByeNode.Edges<typeof initialState> = {
+  const edges: ChatByeNode.Edges = {
     onDone: null,
   };
 

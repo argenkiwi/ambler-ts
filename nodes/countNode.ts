@@ -4,9 +4,9 @@ export interface State {
   count: number;
 }
 
-export type Edges<S extends State> = {
-  onCount: string | null;
-  onStop: string | null;
+export type Edges<K extends string = string> = {
+  onCount: K | null;
+  onStop: K | null;
 };
 
 export type Utils = {
@@ -21,8 +21,8 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

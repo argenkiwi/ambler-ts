@@ -5,9 +5,9 @@ export interface State {
   ollamaHost: string;
 }
 
-export type Edges<S extends State> = {
-  onDiscovered: string | null;
-  onCancel: string | null;
+export type Edges<K extends string = string> = {
+  onDiscovered: K | null;
+  onCancel: K | null;
 };
 
 export type Utils = {
@@ -24,8 +24,8 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

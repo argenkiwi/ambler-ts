@@ -6,9 +6,9 @@ export interface State {
   messages: Message[];
 }
 
-export type Edges<S extends State> = {
-  onChat: string | null;
-  onQuit: string | null;
+export type Edges<K extends string = string> = {
+  onChat: K | null;
+  onQuit: K | null;
 };
 
 export type Utils = {
@@ -23,8 +23,8 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

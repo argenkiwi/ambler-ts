@@ -17,14 +17,16 @@ const initialState: State = {
   messages: [],
 };
 
-const nodes: Record<string, Node<State>> = {
-  start: OllamaDiscoverNode.create({ onDiscovered: "modelSelect", onCancel: null }),
-  modelSelect: ModelSelectNode.create({ onSelect: "prompt", onCancel: null }),
-  prompt: ChatPromptNode.create({ onChat: "response", onQuit: "bye" }),
-  response: ChatResponseNode.create({ onPrompt: "prompt" }),
-  bye: ChatByeNode.create({ onDone: null }),
+type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
+
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: OllamaDiscoverNode.create<State, NodeId>({ onDiscovered: "modelSelect", onCancel: null }),
+  modelSelect: ModelSelectNode.create<State, NodeId>({ onSelect: "prompt", onCancel: null }),
+  prompt: ChatPromptNode.create<State, NodeId>({ onChat: "response", onQuit: "bye" }),
+  response: ChatResponseNode.create<State, NodeId>({ onPrompt: "prompt" }),
+  bye: ChatByeNode.create<State, NodeId>({ onDone: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  await amble<State, NodeId>(nodes, "start", initialState);
 }

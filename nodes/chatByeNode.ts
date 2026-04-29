@@ -8,11 +8,14 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export type Edges<S> = {
-  onDone: string | null;
+export type Edges<K extends string = string> = {
+  onDone: K | null;
 };
 
-export function create<S>(edges: Edges<S>, utils: Utils = defaultUtils) {
+export function create<S, K extends string = string>(
+  edges: Edges<K>,
+  utils: Utils = defaultUtils,
+) {
   return (state: S) => {
     utils.print("Goodbye!");
     return next(edges.onDone, state);
