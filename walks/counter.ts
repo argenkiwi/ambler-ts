@@ -1,4 +1,4 @@
-import { amble, Node } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import * as StartNode from "../nodes/startNode.ts";
 import * as CountNode from "../nodes/countNode.ts";
 import * as StopNode from "../nodes/stopNode.ts";
@@ -20,5 +20,6 @@ const initialState: State = {
 };
 
 if (import.meta.main) {
-  await amble(nodes, initialNodeId, initialState);
+  const amble = ambler(nodes);
+  await amble(initialNodeId, initialState);
 }

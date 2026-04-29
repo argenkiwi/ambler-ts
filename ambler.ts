@@ -60,10 +60,48 @@ export function stop<S>(state: S): NodeResult<S, never> {
 }
 
 /**
- * The main execution loop that drives the state machine.
- * It starts with the initial node and continues to execute subsequent nodes until
- * a node returns a result with 'next' set to null.
+ * The main execution loop factory.
+ * It takes a registry of nodes and returns a function to start the state machine.
  *
+ * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
+ * @param nodes A registry of nodes, indexed by their identifiers.
+ * @param options Optional configuration for the execution.
+ * @returns A function that starts the state machine.
+ */
+export function ambler<S, K extends string>(
+  nodes: Record<K, Node<S, K>>,
+  options?: {
+    onNext?: (nodeId: K, state: S) => MaybePromise<void>;
+  },
+) {
+  return async (initialNodeId: K, initialState: S): Promise<S> => {
+    let nodeId: K | null = initialNodeId;
+    let state = initialState;
+
+    while (nodeId) {
+      if (options?.onNext) {
+        await options.onNext(nodeId, state);
+      }
+
+      const node: Node<S, K> | undefined = nodes[nodeId];
+      if (!node) {
+        throw new Error(`Node not found: ${nodeId}`);
+      }
+
+      const result: NodeResult<S, K> = await node(state);
+      nodeId = result.next;
+      state = result.state;
+    }
+
+    return state;
+  };
+}
+
+/**
+ * The main execution loop that drives the state machine.
+ *
+ * @deprecated Use ambler(nodes)(initialNodeId, initialState) instead.
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  * @param nodes A registry of nodes, indexed by their identifiers.
@@ -80,23 +118,5 @@ export async function amble<S, K extends string>(
     onNext?: (nodeId: K, state: S) => MaybePromise<void>;
   },
 ): Promise<S> {
-  let nodeId: K | null = initialNodeId;
-  let state = initialState;
-
-  while (nodeId) {
-    if (options?.onNext) {
-      await options.onNext(nodeId, state);
-    }
-
-    const node: Node<S, K> | undefined = nodes[nodeId];
-    if (!node) {
-      throw new Error(`Node not found: ${nodeId}`);
-    }
-
-    const result: NodeResult<S, K> = await node(state);
-    nodeId = result.next;
-    state = result.state;
-  }
-
-  return state;
+  return ambler(nodes, options)(initialNodeId, initialState);
 }
