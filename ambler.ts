@@ -4,11 +4,10 @@
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
- * The result of a node's execution.
- * Contains the identifier of the next node to execute and the updated state.
- * If 'next' is null, the state machine terminates.
+ * A map from edge names to the next node identifier (or null to terminate).
+ * Used to wire node transitions in a type-safe way.
  *
- * @template S The type of the machine's state.
+ * @template H The union of edge name strings (e.g. `"onSuccess" | "onError"`).
  * @template K The union of valid node identifier strings.
  */
 export type Edges<H extends string, K extends string = string> = Record<
@@ -16,11 +15,18 @@ export type Edges<H extends string, K extends string = string> = Record<
   K | null
 >;
 
+/**
+ * The result returned by a node: a tuple of [nextNodeId, newState].
+ * If nextNodeId is null, the state machine terminates.
+ *
+ * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
+ */
 export type Next<S, K extends string> = [key: K | null, state: S];
 
 /**
  * A function that represents a node in the state machine.
- * Given the current state, it returns the next step in the machine.
+ * Receives the current state and the node's own key, and returns a Next tuple.
  *
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
@@ -31,14 +37,14 @@ export type Node<S, K extends string> = (
 ) => MaybePromise<Next<S, K>>;
 
 /**
- * The main execution loop factory.
- * It takes a registry of nodes and returns a function to start the state machine.
+ * Creates a single-step executor for a node registry.
+ * Given a nodeId and state, it looks up and invokes that node.
+ * Use `amble` to run the full execution loop.
  *
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  * @param nodes A registry of nodes, indexed by their identifiers.
- * @param options Optional configuration for the execution.
- * @returns A function that starts the state machine.
+ * @returns A function that executes one node step and returns a Next tuple.
  */
 export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
   return (nodeId: K, state: S): MaybePromise<Next<S, K>> => {
@@ -52,15 +58,15 @@ export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
 }
 
 /**
- * The main execution loop that drives the state machine.
+ * Runs the state machine to completion, starting from the given node and state.
  *
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  * @param nodes A registry of nodes, indexed by their identifiers.
- * @param initialNodeId The identifier of the first node in the state machine.
+ * @param initialNodeId The identifier of the first node to execute.
  * @param initialState The initial state of the machine.
- * @param options Optional configuration for the execution.
- * @returns A promise that resolves to the final state when the state machine completes.
+ * @param options.onNext Optional callback invoked before each node step.
+ * @returns A promise that resolves to the final state when the machine terminates.
  */
 export async function amble<S, K extends string>(
   nodes: Record<K, Node<S, K>>,

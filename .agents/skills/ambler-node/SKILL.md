@@ -29,9 +29,9 @@ If any of the above is unclear, ask the user before writing code.
 Use the following structure exactly. Do not deviate from naming conventions.
 
 ```typescript
-import { Edges, next, Node } from "../ambler.ts";
+import { Edges, Next, Node } from "../ambler.ts";
 // Also import MaybePromise if any util can be sync or async:
-// import { next, Node, MaybePromise } from "../ambler.ts";
+// import { Edges, Next, Node, MaybePromise } from "../ambler.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
@@ -68,32 +68,31 @@ export function create<S extends State, K extends string = string>(
   return async (state: S) => {
     // Node logic here.
     // Always spread state when updating: { ...state, field: newValue }
-    // Return next(edges.onEdgeName, nextState) to transition.
+    // Return [edges.onEdgeName, nextState] to transition.
   };
 }
 
 // Terminal node variant (no edges — replace the above with this):
-// import { next, Node, stop } from "../ambler.ts";
 // export function create<S extends State, K extends string = string>(
 //   utils: Utils = defaultUtils,
 // ): Node<S, K> {
 //   return async (state: S) => {
 //     // Terminal logic.
-//     return stop(state);
+//     return [null, state];
 //   };
 // }
 ```
 
 ### Key rules
 
-- **Always import from `"../ambler.ts"`** — import `next`, `Node`, and `Edges` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes use `stop`.
+- **Always import from `"../ambler.ts"`** — import `Next`, `Node`, and `Edges` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes need no extra imports beyond `Node`.
 - **Exports are flat at module level** — no namespace wrapper. Walks import the module with `import * as MyNode from "../nodes/myNode.ts"`, which gives `MyNode.State`, `MyNode.create`, etc.
 - **`State` is a minimum interface** — only include fields this node actually uses. The generic `S extends State` allows the walk to pass a richer state type without breaking the type system.
 - **`NodeEdges<K>` uses the `K` generic** so that edge values are valid node identifiers in the walk.
 - **`defaultUtils` provides production implementations** — these are what run in the real walk. Tests always inject mock utils.
 - **Extract complex `defaultUtils` implementations** — if any production util requires an npm/jsr import, has significant logic (error handling, retries, connection caching), or could be shared with another node, extract it to `utils/<name>.ts` using the `/ambler-util` skill instead of inlining it here. Simple one-liners like `(msg) => console.log(msg)` are fine to keep inline.
 - **State is immutable** — never mutate `state` directly; always return `{ ...state, field: value }`.
-- **Return `next(edges.onEdgeName, nextState)`** (function call) to transition; return `stop(state)` only from terminal nodes.
+- **Return `[edges.onEdgeName, nextState]`** (tuple) to transition; return `[null, state]` from terminal nodes.
 
 ---
 
