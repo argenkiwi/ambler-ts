@@ -63,15 +63,15 @@ export async function amble<S>(
   initialNodeId: string,
   initialState: S,
   options?: {
-    onStep?: (nodeId: string, state: S) => MaybePromise<void>;
+    onNext?: (nodeId: string, state: S) => MaybePromise<void>;
   },
 ): Promise<S> {
   let nodeId: string | null = initialNodeId;
   let state = initialState;
 
   while (nodeId) {
-    if (options?.onStep) {
-      await options.onStep(nodeId, state);
+    if (options?.onNext) {
+      await options.onNext(nodeId, state);
     }
 
     const node: Node<S> | undefined = nodes[nodeId];
