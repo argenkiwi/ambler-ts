@@ -11,8 +11,8 @@ export type MaybePromise<T> = T | Promise<T>;
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  */
-export type Edges<Names extends string, K extends string = string> = Record<
-  Names,
+export type Edges<H extends string, K extends string = string> = Record<
+  H,
   K | null
 >;
 
@@ -69,39 +69,20 @@ export function stop<S>(state: S): NodeResult<S, never> {
  * @param options Optional configuration for the execution.
  * @returns A function that starts the state machine.
  */
-export function ambler<S, K extends string>(
-  nodes: Record<K, Node<S, K>>,
-  options?: {
-    onNext?: (nodeId: K, state: S) => MaybePromise<void>;
-  },
-) {
-  return async (initialNodeId: K, initialState: S): Promise<S> => {
-    let nodeId: K | null = initialNodeId;
-    let state = initialState;
-
-    while (nodeId) {
-      if (options?.onNext) {
-        await options.onNext(nodeId, state);
-      }
-
-      const node: Node<S, K> | undefined = nodes[nodeId];
-      if (!node) {
-        throw new Error(`Node not found: ${nodeId}`);
-      }
-
-      const result: NodeResult<S, K> = await node(state);
-      nodeId = result.next;
-      state = result.state;
+export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
+  return async (nodeId: K, state: S): Promise<NodeResult<S, K>> => {
+    const node: Node<S, K> | undefined = nodes[nodeId];
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
     }
 
-    return state;
+    return await node(state);
   };
 }
 
 /**
  * The main execution loop that drives the state machine.
  *
- * @deprecated Use ambler(nodes)(initialNodeId, initialState) instead.
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  * @param nodes A registry of nodes, indexed by their identifiers.
@@ -118,5 +99,18 @@ export async function amble<S, K extends string>(
     onNext?: (nodeId: K, state: S) => MaybePromise<void>;
   },
 ): Promise<S> {
-  return ambler(nodes, options)(initialNodeId, initialState);
+  let nodeId: K | null = initialNodeId;
+  let state = initialState;
+  const next = ambler(nodes);
+  while (nodeId) {
+    if (options?.onNext) {
+      await options.onNext(nodeId, state);
+    }
+
+    const result = await next(nodeId, state);
+    nodeId = result.next;
+    state = result.state;
+  }
+
+  return state;
 }

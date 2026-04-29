@@ -1,4 +1,4 @@
-import { ambler, Node } from "../ambler.ts";
+import { amble, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as SolarPromptNode from "../nodes/solarPromptNode.ts";
@@ -42,6 +42,5 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
 };
 
 if (import.meta.main) {
-  const amble = ambler(nodes);
-  await amble("start", initialState);
+  await amble(nodes, "start", initialState);
 }
