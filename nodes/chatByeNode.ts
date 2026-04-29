@@ -1,4 +1,4 @@
-import { Edges, NodeResult } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export type Hook = "onDone";
 
@@ -14,7 +14,7 @@ export function create<S, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S): NodeResult<S, K> => {
+  return (state: S): Next<S, K> => {
     utils.print("Goodbye!");
     return [edges.onDone, state];
   };

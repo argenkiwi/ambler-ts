@@ -1,4 +1,4 @@
-import { Edges, NodeResult } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -31,7 +31,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S): Promise<NodeResult<S, K>> => {
+  return async (state: S): Promise<Next<S, K>> => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}

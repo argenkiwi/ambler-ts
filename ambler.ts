@@ -16,7 +16,7 @@ export type Edges<H extends string, K extends string = string> = Record<
   K | null
 >;
 
-export type NodeResult<S, K extends string = string> = [key: K | null, state: S];
+export type Next<S, K extends string = string> = [key: K | null, state: S];
 
 /**
  * A function that represents a node in the state machine.
@@ -27,7 +27,7 @@ export type NodeResult<S, K extends string = string> = [key: K | null, state: S]
  */
 export type Node<S, K extends string = string> = (
   state: S,
-) => MaybePromise<NodeResult<S, K>>;
+) => MaybePromise<Next<S, K>>;
 
 /**
  * The main execution loop factory.
@@ -40,7 +40,7 @@ export type Node<S, K extends string = string> = (
  * @returns A function that starts the state machine.
  */
 export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
-  return (nodeId: K, state: S): MaybePromise<NodeResult<S, K>> => {
+  return (nodeId: K, state: S): MaybePromise<Next<S, K>> => {
     const node: Node<S, K> | undefined = nodes[nodeId];
     if (!node) {
       throw new Error(`Node not found: ${nodeId}`);
@@ -71,15 +71,15 @@ export async function amble<S, K extends string>(
 ): Promise<S> {
   let nodeId: K | null = initialNodeId;
   let state = initialState;
-  const next = ambler(nodes);
+  const move = ambler(nodes);
   while (nodeId) {
     if (options?.onNext) {
       await options.onNext(nodeId, state);
     }
 
-    const result = await next(nodeId, state);
-    nodeId = result[0];
-    state = result[1];
+    const next = await move(nodeId, state);
+    nodeId = next[0];
+    state = next[1];
   }
 
   return state;

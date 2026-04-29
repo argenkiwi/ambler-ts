@@ -1,4 +1,4 @@
-import { Edges, NodeResult } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -18,7 +18,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S): NodeResult<S, K> => {
+  return (state: S): Next<S, K> => {
     utils.print(`Final count: ${state.count}`);
     return [edges.onDone, state];
   };
