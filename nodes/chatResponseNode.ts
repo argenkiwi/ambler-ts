@@ -1,5 +1,5 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
-import { Edges, NodeResult } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -29,7 +29,7 @@ export function create<S extends State, K extends string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S): Promise<NodeResult<S, K>> => {
+  return async (state: S): Promise<Next<S, K>> => {
     const reply = await utils.chat(
       state.ollamaHost,
       state.selectedModel,

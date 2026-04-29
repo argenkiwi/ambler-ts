@@ -16,7 +16,7 @@ export type Edges<H extends string, K extends string = string> = Record<
   K | null
 >;
 
-export type Next<S, K extends string = string> = [key: K | null, state: S];
+export type Next<S, K extends string> = [key: K | null, state: S];
 
 /**
  * A function that represents a node in the state machine.
@@ -25,8 +25,9 @@ export type Next<S, K extends string = string> = [key: K | null, state: S];
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  */
-export type Node<S, K extends string = string> = (
+export type Node<S, K extends string> = (
   state: S,
+  key: K,
 ) => MaybePromise<Next<S, K>>;
 
 /**
@@ -46,7 +47,7 @@ export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
       throw new Error(`Node not found: ${nodeId}`);
     }
 
-    return node(state);
+    return node(state, nodeId);
   };
 }
 

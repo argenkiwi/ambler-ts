@@ -1,4 +1,4 @@
-import { Edges, NodeResult } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -22,7 +22,7 @@ export function create<S extends State, K extends string = string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S): Promise<NodeResult<S, K>> => {
+  return async (state: S): Promise<Next<S, K>> => {
     utils.print(`Current count: ${state.count}`);
     await utils.sleep(1000);
     const nextState = { ...state, count: state.count + 1 };
