@@ -24,7 +24,6 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   bye: ChatByeNode.create<State, NodeId>({ onDone: null }),
 };
 
-const initialNodeId: NodeId = "start";
 const initialState: State = {
   ollamaHost: "",
   selectedModel: "",
@@ -32,5 +31,5 @@ const initialState: State = {
 };
 
 if (import.meta.main) {
-  await amble(nodes, initialNodeId, initialState);
+  await amble(nodes, "start", initialState);
 }

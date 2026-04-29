@@ -17,6 +17,7 @@ export interface State {
 }
 
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
+
 const nodes: Record<NodeId, Node<State, NodeId>> = {
   start: OllamaDiscoverNode.create({
     onDiscovered: "modelSelect",
@@ -43,7 +44,6 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   save: StorySaveNode.create<State, NodeId>({ onSaveComplete: null }),
 };
 
-const initialNodeId: NodeId = "start";
 const initialState: State = {
   ollamaHost: "",
   selectedModel: "",
@@ -55,5 +55,5 @@ const initialState: State = {
 };
 
 if (import.meta.main) {
-  await amble(nodes, initialNodeId, initialState);
+  await amble(nodes, "start", initialState);
 }

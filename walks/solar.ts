@@ -12,13 +12,6 @@ export interface State {
   generatedStory: string;
 }
 
-const initialState: State = {
-  ollamaHost: "",
-  selectedModel: "",
-  solarPrompt: "",
-  generatedStory: "",
-};
-
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
 const nodes: Record<NodeId, Node<State, NodeId>> = {
@@ -39,6 +32,13 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
     onError: null,
   }),
   save: SolarSaveNode.create<State, NodeId>({ onSaveComplete: null }),
+};
+
+const initialState: State = {
+  ollamaHost: "",
+  selectedModel: "",
+  solarPrompt: "",
+  generatedStory: "",
 };
 
 if (import.meta.main) {
