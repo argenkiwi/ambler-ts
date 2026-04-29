@@ -1,4 +1,4 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 import { generateStory } from "../utils/solar_generate.ts";
 
 export interface State {
@@ -7,11 +7,6 @@ export interface State {
   solarPrompt: string;
   generatedStory: string;
 }
-
-export type Edges<K extends string = string> = {
-  onGenerateComplete: K | null;
-  onError: K | null;
-};
 
 export type Utils = {
   generateStory: (
@@ -28,7 +23,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onGenerateComplete" | "onError", K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

@@ -1,5 +1,5 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -8,10 +8,6 @@ export interface State {
   selectedModel: string;
   messages: Message[];
 }
-
-export type Edges<K extends string = string> = {
-  onPrompt: K | null;
-};
 
 export type Utils = {
   chat: (
@@ -27,8 +23,8 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+export function create<S extends State, K extends string>(
+  edges: Edges<"onPrompt", K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

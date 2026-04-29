@@ -1,14 +1,9 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 import { tryHost } from "../utils/ollama_discover.ts";
 
 export interface State {
   ollamaHost: string;
 }
-
-export type Edges<K extends string = string> = {
-  onDiscovered: K | null;
-  onCancel: K | null;
-};
 
 export type Utils = {
   tryHost: (host: string) => Promise<boolean>;
@@ -25,7 +20,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onDiscovered" | "onCancel", K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

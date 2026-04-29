@@ -5,13 +5,13 @@ const baseState: SolarPromptNode.State = { solarPrompt: "" };
 
 Deno.test(
   "solarPromptNode should call onCancel when readLine returns null",
-  async () => {
+  () => {
     const utils: SolarPromptNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await SolarPromptNode.create(
+    const result = SolarPromptNode.create(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -23,13 +23,13 @@ Deno.test(
 
 Deno.test(
   "solarPromptNode should set solarPrompt and transition onPromptComplete",
-  async () => {
+  () => {
     const utils: SolarPromptNode.Utils = {
       readLine: (_msg) => "A community rebuilds after a storm",
       print: () => {},
     };
 
-    const result = await SolarPromptNode.create(
+    const result = SolarPromptNode.create(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);

@@ -9,13 +9,13 @@ const baseState: StoryIntroNode.State = {
 
 Deno.test(
   "storyIntroNode should call onCancel when identity readLine returns null",
-  async () => {
+  () => {
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
@@ -27,14 +27,14 @@ Deno.test(
 
 Deno.test(
   "storyIntroNode should call onCancel when placement readLine returns null",
-  async () => {
+  () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) => (call++ === 0 ? "Ada" : null),
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
@@ -68,7 +68,7 @@ Deno.test(
 
 Deno.test(
   "storyIntroNode should set identity, placement, and circumstances trimmed",
-  async () => {
+  () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) =>
@@ -76,7 +76,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
+    const result = StoryIntroNode.create(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);

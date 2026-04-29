@@ -3,7 +3,7 @@ import * as ChatPromptNode from "./chatPromptNode.ts";
 
 Deno.test(
   "chatPromptNode should transition to onChat with user message appended",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = { messages: [] };
 
     const utils: ChatPromptNode.Utils = {
@@ -11,7 +11,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -61,7 +61,7 @@ Deno.test(
 
 Deno.test(
   "chatPromptNode should transition to onQuit when user types 'quit'",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = { messages: [] };
 
     const utils: ChatPromptNode.Utils = {
@@ -69,7 +69,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -99,7 +99,7 @@ Deno.test(
 
 Deno.test(
   "chatPromptNode should preserve existing messages when appending user input",
-  async () => {
+  () => {
     const initialState: ChatPromptNode.State = {
       messages: [
         { role: "user", content: "First message" },
@@ -112,7 +112,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await ChatPromptNode.create(
+    const result = ChatPromptNode.create(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);

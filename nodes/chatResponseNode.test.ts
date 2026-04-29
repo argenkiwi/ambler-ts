@@ -9,8 +9,8 @@ Deno.test(
       selectedModel: "llama3.2",
       messages: [{ role: "user", content: "Hello" }],
     };
-    let printed: string | undefined;
 
+    let printed: string | undefined;
     const utils: ChatResponseNode.Utils = {
       chat: (_host, _model, _messages) => Promise.resolve("Hi there!"),
       print: (msg) => {
@@ -28,6 +28,7 @@ Deno.test(
       { role: "user", content: "Hello" },
       { role: "assistant", content: "Hi there!" },
     ]);
+
     assertEquals(result.next, "onPrompt");
   },
 );
@@ -44,10 +45,10 @@ Deno.test(
         { role: "user", content: "How are you?" },
       ],
     };
+
     let receivedMessages: ChatResponseNode.Message[] | undefined;
     let receivedHost: string | undefined;
     let receivedModel: string | undefined;
-
     const utils: ChatResponseNode.Utils = {
       chat: (host, model, messages) => {
         receivedHost = host;
@@ -68,6 +69,7 @@ Deno.test(
       role: "user",
       content: "How are you?",
     });
+
     assertEquals(receivedHost, "http://localhost:11434");
     assertEquals(receivedModel, "llama3.2");
     assertEquals(result.next, "onPrompt");

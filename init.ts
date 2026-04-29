@@ -38,8 +38,7 @@ for (const dir of dirs) {
 
 // ─── File contents ───────────────────────────────────────────────────────────
 
-const AMBLER_TS =
-  `/**
+const AMBLER_TS = `/**
  * Represents a value that can be either a synchronous value or a Promise of that value.
  */
 export type MaybePromise<T> = T | Promise<T>;
@@ -123,8 +122,7 @@ export async function amble<S>(initial: Node<S>, state: S): Promise<void> {
 }
 `;
 
-const DENO_JSON =
-  `{
+const DENO_JSON = `{
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19"
   }
@@ -135,7 +133,7 @@ const DENO_JSON =
 
 const files = [
   { path: "ambler.ts", content: AMBLER_TS },
-  { path: "deno.json", content: DENO_JSON }
+  { path: "deno.json", content: DENO_JSON },
 ];
 
 console.log(`Initializing ambler project in "${targetDir}"...`);

@@ -11,11 +11,9 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", async () 
     },
   };
 
-  const edges: ChatByeNode.Edges = {
-    onDone: null,
-  };
-
-  const nodeResult = await ChatByeNode.create(edges, utils)(initialState);
+  const nodeResult = await ChatByeNode.create({ onDone: null }, utils)(
+    initialState,
+  );
 
   assertEquals(nodeResult.next, null);
   assertEquals(nodeResult.state, initialState);

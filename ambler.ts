@@ -11,6 +11,11 @@ export type MaybePromise<T> = T | Promise<T>;
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  */
+export type Edges<Names extends string, K extends string = string> = Record<
+  Names,
+  K | null
+>;
+
 export type NodeResult<S, K extends string = string> = {
   next: K | null;
   state: S;

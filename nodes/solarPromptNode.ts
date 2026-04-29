@@ -1,13 +1,8 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 
 export interface State {
   solarPrompt: string;
 }
-
-export type Edges<K extends string = string> = {
-  onPromptComplete: K | null;
-  onCancel: K | null;
-};
 
 export type Utils = {
   readLine: (msg: string) => string | null;
@@ -20,7 +15,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onPromptComplete" | "onCancel", K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

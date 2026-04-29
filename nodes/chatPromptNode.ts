@@ -1,15 +1,10 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
 export interface State {
   messages: Message[];
 }
-
-export type Edges<K extends string = string> = {
-  onChat: K | null;
-  onQuit: K | null;
-};
 
 export type Utils = {
   readLine: (msg: string) => string | null;
@@ -24,7 +19,7 @@ const defaultUtils: Utils = {
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onChat" | "onQuit", K>,
   utils: Utils = defaultUtils,
 ) {
   return (state: S) => {

@@ -8,17 +8,17 @@ export interface State {
 }
 
 type NodeId = "start" | "count" | "stop";
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: StartNode.create({ onSuccess: "count", onError: "start" }),
+  count: CountNode.create({ onCount: "count", onStop: "stop" }),
+  stop: StopNode.create<State, NodeId>({ onDone: null }),
+};
 
+const initialNodeId: NodeId = "start";
 const initialState: State = {
   count: 0,
 };
 
-const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: StartNode.create<State, NodeId>({ onSuccess: "count", onError: "start" }),
-  count: CountNode.create<State, NodeId>({ onCount: "count", onStop: "stop" }),
-  stop: StopNode.create<State, NodeId>({ onDone: null }),
-};
-
 if (import.meta.main) {
-  await amble<State, NodeId>(nodes, "start", initialState);
+  await amble(nodes, initialNodeId, initialState);
 }

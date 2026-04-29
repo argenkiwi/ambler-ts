@@ -1,4 +1,4 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -10,12 +10,6 @@ export interface State {
   storyPages: string[];
   currentPage: number;
 }
-
-export type Edges<K extends string = string> = {
-  onPageComplete: K | null;
-  onDecisionRequired: K | null;
-  onError: K | null;
-};
 
 export type Utils = {
   chat: (
@@ -32,7 +26,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onPageComplete" | "onDecisionRequired" | "onError", K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

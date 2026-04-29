@@ -1,4 +1,4 @@
-import { next } from "../ambler.ts";
+import { Edges, next } from "../ambler.ts";
 import { saveFile } from "../utils/story_save.ts";
 
 export interface State {
@@ -8,10 +8,6 @@ export interface State {
   circumstances: string;
   storyPages: string[];
 }
-
-export type Edges<K extends string = string> = {
-  onSaveComplete: K | null;
-};
 
 export type Utils = {
   saveFile: (filename: string, content: string) => Promise<void>;
@@ -24,7 +20,7 @@ const defaultUtils: Utils = {
 };
 
 export function create<S extends State, K extends string = string>(
-  edges: Edges<K>,
+  edges: Edges<"onSaveComplete", K>,
   utils: Utils = defaultUtils,
 ) {
   return async (state: S) => {

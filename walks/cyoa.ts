@@ -16,6 +16,34 @@ export interface State {
   currentPage: number;
 }
 
+type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: OllamaDiscoverNode.create({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  }),
+  modelSelect: ModelSelectNode.create({
+    onSelect: "intro",
+    onCancel: null,
+  }),
+  intro: StoryIntroNode.create({
+    onIntroComplete: "page",
+    onCancel: null,
+  }),
+  page: StoryPageNode.create({
+    onPageComplete: "save",
+    onDecisionRequired: "decision",
+    onError: null,
+  }),
+  decision: StoryDecisionNode.create({
+    onDecisionMade: "page",
+    onCancel: null,
+    onError: null,
+  }),
+  save: StorySaveNode.create<State, NodeId>({ onSaveComplete: null }),
+};
+
+const initialNodeId: NodeId = "start";
 const initialState: State = {
   ollamaHost: "",
   selectedModel: "",
@@ -26,34 +54,6 @@ const initialState: State = {
   currentPage: 1,
 };
 
-type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
-
-const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: OllamaDiscoverNode.create<State, NodeId>({
-    onDiscovered: "modelSelect",
-    onCancel: null,
-  }),
-  modelSelect: ModelSelectNode.create<State, NodeId>({
-    onSelect: "intro",
-    onCancel: null,
-  }),
-  intro: StoryIntroNode.create<State, NodeId>({
-    onIntroComplete: "page",
-    onCancel: null,
-  }),
-  page: StoryPageNode.create<State, NodeId>({
-    onPageComplete: "save",
-    onDecisionRequired: "decision",
-    onError: null,
-  }),
-  decision: StoryDecisionNode.create<State, NodeId>({
-    onDecisionMade: "page",
-    onCancel: null,
-    onError: null,
-  }),
-  save: StorySaveNode.create<State, NodeId>({ onSaveComplete: null }),
-};
-
 if (import.meta.main) {
-  await amble<State, NodeId>(nodes, "start", initialState);
+  await amble(nodes, initialNodeId, initialState);
 }

@@ -13,13 +13,13 @@ const baseState: StoryDecisionNode.State = {
 
 Deno.test(
   "storyDecisionNode should call onError when storyPages is empty",
-  async () => {
+  () => {
     const utils: StoryDecisionNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -35,14 +35,14 @@ Deno.test(
 
 Deno.test(
   "storyDecisionNode should transition with unchanged state when no checkboxes found",
-  async () => {
+  () => {
     const state = { ...baseState, storyPages: ["You reach the end. The End"] };
     const utils: StoryDecisionNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -54,7 +54,7 @@ Deno.test(
 
 Deno.test(
   "storyDecisionNode should call onCancel when readLine returns null",
-  async () => {
+  () => {
     const state = {
       ...baseState,
       storyPages: [
@@ -67,7 +67,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -83,7 +83,7 @@ Deno.test(
 
 Deno.test(
   "storyDecisionNode should mark selected checkbox and transition onDecisionMade",
-  async () => {
+  () => {
     const page = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const state = { ...baseState, storyPages: [page] };
 
@@ -92,7 +92,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -106,7 +106,7 @@ Deno.test(
 
 Deno.test(
   "storyDecisionNode should retry on invalid input then accept valid input",
-  async () => {
+  () => {
     const page = "You must choose.\n1. [ ] Option A\n2. [ ] Option B";
     const state = { ...baseState, storyPages: [page] };
 
@@ -116,7 +116,7 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
