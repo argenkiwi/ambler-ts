@@ -1,4 +1,4 @@
-import { amble, Node } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as ChatPromptNode from "../nodes/chatPromptNode.ts";
@@ -24,12 +24,17 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   bye: ChatByeNode.create<State, NodeId>({ onDone: null }),
 };
 
-const initialState: State = {
-  ollamaHost: "",
-  selectedModel: "",
-  messages: [],
-};
+const amble = ambler(nodes);
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  let nodeId: NodeId | null = "start";
+  let state: State = {
+    ollamaHost: "",
+    selectedModel: "",
+    messages: [],
+  };
+
+  while (nodeId) {
+    [nodeId, state] = await amble(nodeId, state);
+  }
 }

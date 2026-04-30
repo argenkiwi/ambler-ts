@@ -1,4 +1,4 @@
-import { amble, Node } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import * as StartNode from "../nodes/startNode.ts";
 import * as CountNode from "../nodes/countNode.ts";
 import * as StopNode from "../nodes/stopNode.ts";
@@ -15,10 +15,15 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   stop: StopNode.create<State, NodeId>({ onDone: null }),
 };
 
-const initialState: State = {
-  count: 0,
-};
+const amble = ambler(nodes);
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  let nodeId: NodeId | null = "start";
+  let state: State = {
+    count: 0,
+  };
+
+  while (nodeId) {
+    [nodeId, state] = await amble(nodeId, state);
+  }
 }

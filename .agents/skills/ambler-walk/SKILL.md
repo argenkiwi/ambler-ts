@@ -44,7 +44,7 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { amble, Node } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import * as NodeA from "../nodes/nodeA.ts";
 import * as NodeB from "../nodes/nodeB.ts";
 import * as NodeC from "../nodes/nodeC.ts";
@@ -66,17 +66,23 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
 };
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  const run = ambler(nodes);
+  let nodeId: NodeId | null = "start";
+  let state: State = initialState;
+
+  while (nodeId) {
+    [nodeId, state] = await run(nodeId, state);
+  }
 }
 ```
 
 **Key rules:**
-- Import `amble`, `Node` from `../ambler.ts`. Import `ambler` only if you need the single-step executor directly.
+- Import `ambler`, `Node` from `../ambler.ts`.
 - Import each node module with `import * as <Name>Node from "../nodes/<name>Node.ts"`.
 - Define `State` interface and `initialState` at the top of the file.
 - Define `NodeId` union type for node identifiers.
 - Use `Record<NodeId, Node<State, NodeId>>` for the `nodes` object.
-- Include the `if (import.meta.main)` guard using `ambler(nodes)`.
+- Include the `if (import.meta.main)` guard and implement the execution loop using `ambler(nodes)`.
 
 ---
 
@@ -118,4 +124,4 @@ Before finishing, confirm:
 | `nodes/startNode.ts` | Example node with input + error handling |
 | `nodes/countNode.ts` | Example node with randomized transition |
 | `nodes/stopNode.ts` | Example terminal node (returns `null`) |
-| `ambler.ts` | Core primitives: `Node`, `Edges`, `Next`, `amble`, `ambler` |
+| `ambler.ts` | Core primitives: `Node`, `Edges`, `Next`, `ambler` |

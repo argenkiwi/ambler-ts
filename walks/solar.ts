@@ -1,4 +1,4 @@
-import { amble, Node } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
 import * as SolarPromptNode from "../nodes/solarPromptNode.ts";
@@ -34,13 +34,18 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   save: SolarSaveNode.create<State, NodeId>({ onSaveComplete: null }),
 };
 
-const initialState: State = {
-  ollamaHost: "",
-  selectedModel: "",
-  solarPrompt: "",
-  generatedStory: "",
-};
+const amble = ambler(nodes);
 
 if (import.meta.main) {
-  await amble(nodes, "start", initialState);
+  let nodeId: NodeId | null = "start";
+  let state: State = {
+    ollamaHost: "",
+    selectedModel: "",
+    solarPrompt: "",
+    generatedStory: "",
+  };
+
+  while (nodeId) {
+    [nodeId, state] = await amble(nodeId, state);
+  }
 }
