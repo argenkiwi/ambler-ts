@@ -14,14 +14,12 @@ This skill initializes a new Ambler project.
 
 ## Template Files
 
-Three core files are read from `~/.claude/skills/ambler-init/assets/` and written to the target. A fourth (`CLAUDE.md`) is generated inline.
+Two core files are read from `~/.claude/skills/ambler-init/assets/` and written to the target.
 
 | Source | Writes to |
 |--------|-----------|
 | `ambler.ts` | `<target>/ambler.ts` |
 | `deno.json` | `<target>/deno.json` |
-| `AGENTS.md` | `<target>/AGENTS.md` |
-| *(inline)* | `<target>/CLAUDE.md` → `@AGENTS.md` |
 
 ---
 
@@ -44,17 +42,12 @@ mkdir -p "<target>/nodes" "<target>/walks" "<target>/specs" "<target>/utils"
 
 ### 4. Write template files
 
-Read from `~/.claude/skills/ambler-init/assets/` and write to the target. Also generate `CLAUDE.md` inline.
+Read from `~/.claude/skills/ambler-init/assets/` and write to the target.
 
 1. Read `~/.claude/skills/ambler-init/assets/ambler.ts` → write to `<target>/ambler.ts`
 2. Read `~/.claude/skills/ambler-init/assets/deno.json` → write to `<target>/deno.json`
-3. Read `~/.claude/skills/ambler-init/assets/AGENTS.md` → write to `<target>/AGENTS.md`
-4. Write `<target>/CLAUDE.md` with this exact content:
-   ```
-   @AGENTS.md
-   ```
 
-Read and write all 4 files. Do not skip any.
+Read and write both files. Do not skip any.
 
 ### 5. Verify
 
@@ -70,8 +63,6 @@ deno check "<target>/ambler.ts"
 Initialized Ambler project in "<target>":
   ambler.ts
   deno.json
-  AGENTS.md
-  CLAUDE.md
   nodes/
   walks/
   specs/

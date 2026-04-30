@@ -53,10 +53,6 @@ export interface State {
   field: string;
 }
 
-const initialState: State = {
-  field: "initial",
-};
-
 type NodeId = "start" | "next" | "stop";
 
 const nodes: Record<NodeId, Node<State, NodeId>> = {
@@ -65,13 +61,17 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
   stop:  NodeC.create({ onDone: null }),
 };
 
+const amble = ambler(nodes);
+
 if (import.meta.main) {
-  const run = ambler(nodes);
   let nodeId: NodeId | null = "start";
-  let state: State = initialState;
+  let state: State = {
+    field: "initial",
+  };
 
   while (nodeId) {
-    [nodeId, state] = await run(nodeId, state);
+    const next = amble(nodeId, state);
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }
 ```
@@ -82,7 +82,7 @@ if (import.meta.main) {
 - Define `State` interface and `initialState` at the top of the file.
 - Define `NodeId` union type for node identifiers.
 - Use `Record<NodeId, Node<State, NodeId>>` for the `nodes` object.
-- Include the `if (import.meta.main)` guard and implement the execution loop using `ambler(nodes)`.
+- Call `ambler(nodes)` outside the `if` guard, assign the result to `const amble`, and use `instanceof Promise` in the loop: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
 ---
 

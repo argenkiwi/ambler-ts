@@ -22,9 +22,44 @@ If any of the above is unclear, read the node file first.
 
 ---
 
-## 2. Create `nodes/<name>Node.test.ts`
+## 2. Determine sync vs async
+
+Look at the node's `create` return type:
+
+- `return (state: S): Next<S, K> => { ... }` — **synchronous**: tests call the node directly, no `await`.
+- `return async (state: S): Promise<Next<S, K>> => { ... }` — **asynchronous**: tests use `async () =>` and `await`.
+
+---
+
+## 3. Create `nodes/<name>Node.test.ts`
 
 Write one `Deno.test` per meaningful branch of logic (one per edge + one per error/edge case).
+
+**Synchronous node:**
+
+```typescript
+import { assertEquals } from "@std/assert";
+import * as <Name>Node from "./<name>Node.ts";
+
+Deno.test("<name>Node should <behavior> when <condition>", () => {
+  const initialState: <Name>Node.State = { /* ... */ };
+
+  const utils: <Name>Node.Utils = {
+    print: () => {},
+    // Override each util to be deterministic and side-effect-free.
+  };
+
+  const result = <Name>Node.create(
+    { onSuccess: "next" /*, onError: "error" */ },
+    utils,
+  )(initialState);
+
+  assertEquals(result[0], "next");           // next node key
+  assertEquals(result[1].someField, value);  // updated state
+});
+```
+
+**Asynchronous node:**
 
 ```typescript
 import { assertEquals } from "@std/assert";
@@ -48,19 +83,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 });
 ```
 
-For terminal nodes (which return `[null, state]`):
-
-```typescript
-Deno.test("<name>Node should terminate when <condition>", async () => {
-  const initialState: <Name>Node.State = { /* ... */ };
-  const utils: <Name>Node.Utils = { print: () => {} };
-
-  const result = await <Name>Node.create({}, utils)(initialState);
-
-  assertEquals(result[0], null);
-  assertEquals(result[1].someField, expectedValue);
-});
-```
+For terminal nodes (which return `[null, state]`), substitute `{}` for edges and assert `result[0] === null`. Apply `async`/`await` only if the node is asynchronous.
 
 ### Test rules
 
@@ -70,10 +93,11 @@ Deno.test("<name>Node should terminate when <condition>", async () => {
 - **One test per edge/branch** — cover every `[edges.onEdgeName, ...]` return and the `[null, state]` case for terminal nodes.
 - **Assert `result[0]`** for the next node key (or `null`) and **`result[1]`** for the updated state.
 - **Test names follow the pattern**: `"<name>Node should <expected behavior> when <condition>"`.
+- **Do not use `async`/`await` for synchronous nodes** — sync nodes return `Next` directly; wrapping them in `async` masks type errors.
 
 ---
 
-## 3. Checklist before finishing
+## 4. Checklist before finishing
 
 - [ ] `nodes/<name>Node.test.ts` exists with one test per branch.
 - [ ] All `Utils` are mocked — no real I/O, network, or timing.
