@@ -24,6 +24,7 @@ if (import.meta.main) {
   };
 
   while (nodeId) {
-    [nodeId, state] = await amble(nodeId, state);
+    const next = amble(nodeId, state);
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }
