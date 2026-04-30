@@ -20,7 +20,7 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, K extends string = string>(
+export function create<S extends State, K extends string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {

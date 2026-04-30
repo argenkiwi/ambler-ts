@@ -20,7 +20,7 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State, K extends string = string>(
+export function create<S extends State, K extends string>(
   edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
