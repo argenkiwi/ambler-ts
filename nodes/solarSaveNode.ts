@@ -1,13 +1,11 @@
-import { next, Node } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 import { saveToFile } from "../utils/save_to_file.ts";
 
 export interface State {
   generatedStory: string;
 }
 
-export type Edges<S extends State> = {
-  onSaveComplete: Node<S>;
-};
+export type Hook = "onSaveComplete";
 
 export type Utils = {
   saveToFile: (content: string) => Promise<boolean>;
@@ -21,13 +19,13 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S) => {
+  return async (state: S): Promise<Next<S, K>> => {
     const input = utils.readLine(
-      "Would you like to save this story? (y/n): "
+      "Would you like to save this story? (y/n): ",
     );
     if (input?.toLowerCase() === "y") {
       const success = await utils.saveToFile(state.generatedStory);
@@ -38,6 +36,6 @@ export function create<S extends State>(
       utils.print("Story not saved.");
     }
 
-    return next(edges.onSaveComplete, state);
+    return [edges.onSaveComplete, state];
   };
 }

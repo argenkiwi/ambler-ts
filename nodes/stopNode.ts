@@ -1,12 +1,10 @@
-import { next, Node } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export interface State {
   count: number;
 }
 
-export type Edges<S extends State> = {
-  onDone: Node<S>;
-};
+export type Hook = "onDone";
 
 export type Utils = {
   print: (msg: string) => void;
@@ -16,12 +14,12 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): Next<S, K> => {
     utils.print(`Final count: ${state.count}`);
-    return next(edges.onDone, state);
+    return [edges.onDone, state];
   };
 }

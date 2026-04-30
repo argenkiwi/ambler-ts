@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export interface State {
   selectedModel: string;
@@ -10,11 +10,7 @@ export interface State {
   currentPage: number;
 }
 
-export type Edges<S extends State> = {
-  onDecisionMade: Node<S>;
-  onCancel: Node<S>;
-  onError: Node<S>;
-};
+export type Hook = "onDecisionMade" | "onCancel" | "onError";
 
 export type Utils = {
   readLine: (msg: string) => string | null;
@@ -26,13 +22,13 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): Next<S, K> => {
     const lastPage = state.storyPages[state.storyPages.length - 1];
-    if (!lastPage) return next(edges.onError, state);
+    if (!lastPage) return [edges.onError, state];
 
     // Extract the checkboxes from the last page
     const lines = lastPage.split("\n");
@@ -48,7 +44,7 @@ export function create<S extends State>(
 
     if (options.length === 0) {
       // Fallback if no checkboxes found (safety)
-      return next(edges.onDecisionMade, state);
+      return [edges.onDecisionMade, state];
     }
 
     let selectedIdx: number;
@@ -56,7 +52,7 @@ export function create<S extends State>(
       const input = utils.readLine(
         `Select option (1-${options.length}): `,
       );
-      if (input === null) return next(edges.onCancel, state);
+      if (input === null) return [edges.onCancel, state];
       const parsed = parseInt(input);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= options.length) {
         selectedIdx = parsed;
@@ -79,9 +75,9 @@ export function create<S extends State>(
       updatedLastPage,
     ];
 
-    return next(edges.onDecisionMade, {
+    return [edges.onDecisionMade, {
       ...state,
       storyPages: updatedStoryPages,
-    });
+    }];
   };
 }

@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -6,10 +6,7 @@ export interface State {
   circumstances: string;
 }
 
-export type Edges<S extends State> = {
-  onIntroComplete: Node<S>;
-  onCancel: Node<S>;
-};
+export type Hook = "onIntroComplete" | "onCancel";
 
 export type Utils = {
   readLine: (msg: string) => string | null;
@@ -21,11 +18,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): Next<S, K> => {
     const identity = utils.readLine("Who is the protagonist? ");
     const placement = utils.readLine(
       "Where and when does the story take place? ",
@@ -33,14 +30,14 @@ export function create<S extends State>(
     const circumstances = utils.readLine("What is happening? ");
 
     if (identity === null || placement === null || circumstances === null) {
-      return next(edges.onCancel, state);
+      return [edges.onCancel, state];
     }
 
-    return next(edges.onIntroComplete, {
+    return [edges.onIntroComplete, {
       ...state,
       identity: identity.trim(),
       placement: placement.trim(),
       circumstances: circumstances.trim(),
-    });
+    }];
   };
 }

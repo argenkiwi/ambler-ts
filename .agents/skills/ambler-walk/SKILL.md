@@ -44,7 +44,7 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { amble, node, Node } from "../ambler.ts";
+import { amble, Node } from "../ambler.ts";
 import * as NodeA from "../nodes/nodeA.ts";
 import * as NodeB from "../nodes/nodeB.ts";
 import * as NodeC from "../nodes/nodeC.ts";
@@ -57,24 +57,26 @@ const initialState: State = {
   field: "initial",
 };
 
-const nodes: Record<string, Node<State>> = {
-  start: node(() => NodeA.create({ onSuccess: nodes.next, onError: nodes.start })),
-  next:  node(() => NodeB.create({ onComplete: nodes.stop })),
-  stop:  node(() => NodeC.create()),
+type NodeId = "start" | "next" | "stop";
+
+const nodes: Record<NodeId, Node<State, NodeId>> = {
+  start: NodeA.create({ onSuccess: "next", onError: "start" }),
+  next:  NodeB.create({ onComplete: "stop" }),
+  stop:  NodeC.create({ onDone: null }),
 };
 
 if (import.meta.main) {
-  await amble(nodes.start, initialState);
+  await amble(nodes, "start", initialState);
 }
 ```
 
 **Key rules:**
-- Import `amble`, `node`, `Node` from `../ambler.ts`.
+- Import `amble`, `Node` from `../ambler.ts`. Import `ambler` only if you need the single-step executor directly.
 - Import each node module with `import * as <Name>Node from "../nodes/<name>Node.ts"`.
 - Define `State` interface and `initialState` at the top of the file.
-- Use `Record<string, Node<State>>` for the `nodes` object.
-- Always wrap node creation in `node(() => ...)` to handle circular/forward references.
-- Include the `if (import.meta.main)` guard.
+- Define `NodeId` union type for node identifiers.
+- Use `Record<NodeId, Node<State, NodeId>>` for the `nodes` object.
+- Include the `if (import.meta.main)` guard using `ambler(nodes)`.
 
 ---
 
@@ -116,4 +118,4 @@ Before finishing, confirm:
 | `nodes/startNode.ts` | Example node with input + error handling |
 | `nodes/countNode.ts` | Example node with randomized transition |
 | `nodes/stopNode.ts` | Example terminal node (returns `null`) |
-| `ambler.ts` | Core primitives: `Node`, `Next`, `next`, `node`, `amble` |
+| `ambler.ts` | Core primitives: `Node`, `Edges`, `Next`, `amble`, `ambler` |

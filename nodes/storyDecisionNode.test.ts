@@ -1,5 +1,4 @@
 import * as StoryDecisionNode from "./storyDecisionNode.ts";
-import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert/equals";
 
 const baseState: StoryDecisionNode.State = {
@@ -14,58 +13,48 @@ const baseState: StoryDecisionNode.State = {
 
 Deno.test(
   "storyDecisionNode should call onError when storyPages is empty",
-  async () => {
+  () => {
     const utils: StoryDecisionNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       {
-        onDecisionMade: (_s) => stop(),
-        onCancel: () => stop(),
-        onError: () => stop(),
+        onDecisionMade: "made",
+        onCancel: "cancel",
+        onError: "error",
       },
       utils,
     )(baseState);
 
-    let step = await result();
-    while (typeof step === "function") {
-      step = await step();
-    }
-    assertEquals(step, null);
+    assertEquals(result[0], "error");
+    assertEquals(result[1], baseState);
   },
 );
 
 Deno.test(
   "storyDecisionNode should transition with unchanged state when no checkboxes found",
-  async () => {
-    let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Node<StoryDecisionNode.State> = (s) => {
-      capturedState = s;
-      return stop();
-    };
-
+  () => {
     const state = { ...baseState, storyPages: ["You reach the end. The End"] };
     const utils: StoryDecisionNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
-      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
+    const result = StoryDecisionNode.create(
+      { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
 
-    await result();
-
-    assertEquals(capturedState?.storyPages, state.storyPages);
+    assertEquals(result[0], "made");
+    assertEquals(result[1].storyPages, state.storyPages);
   },
 );
 
 Deno.test(
   "storyDecisionNode should call onCancel when readLine returns null",
-  async () => {
+  () => {
     const state = {
       ...baseState,
       storyPages: [
@@ -78,32 +67,23 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = StoryDecisionNode.create(
       {
-        onDecisionMade: (_s) => stop(),
-        onCancel: () => stop(),
-        onError: () => stop(),
+        onDecisionMade: "made",
+        onCancel: "cancel",
+        onError: "error",
       },
       utils,
     )(state);
 
-    let step = await result();
-    while (typeof step === "function") {
-      step = await step();
-    }
-    assertEquals(step, null);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], state);
   },
 );
 
 Deno.test(
   "storyDecisionNode should mark selected checkbox and transition onDecisionMade",
-  async () => {
-    let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Node<StoryDecisionNode.State> = async (s) => {
-      capturedState = s;
-      return stop();
-    };
-
+  () => {
     const page = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const state = { ...baseState, storyPages: [page] };
 
@@ -112,14 +92,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
-      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
+    const result = StoryDecisionNode.create(
+      { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
 
-    await result();
-
-    const updatedPage = capturedState?.storyPages[0] ?? "";
+    assertEquals(result[0], "made");
+    const updatedPage = result[1].storyPages[0] ?? "";
     assertEquals(updatedPage.includes("2. [x] Go right"), true);
     assertEquals(updatedPage.includes("1. [ ] Go left"), true);
   },
@@ -127,13 +106,7 @@ Deno.test(
 
 Deno.test(
   "storyDecisionNode should retry on invalid input then accept valid input",
-  async () => {
-    let capturedState: StoryDecisionNode.State | undefined;
-    const captureNext: Node<StoryDecisionNode.State> = async (s) => {
-      capturedState = s;
-      return stop();
-    };
-
+  () => {
     const page = "You must choose.\n1. [ ] Option A\n2. [ ] Option B";
     const state = { ...baseState, storyPages: [page] };
 
@@ -143,14 +116,13 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryDecisionNode.create(
-      { onDecisionMade: captureNext, onCancel: () => stop(), onError: () => stop() },
+    const result = StoryDecisionNode.create(
+      { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
 
-    await result();
-
-    const updatedPage = capturedState?.storyPages[0] ?? "";
+    assertEquals(result[0], "made");
+    const updatedPage = result[1].storyPages[0] ?? "";
     assertEquals(updatedPage.includes("1. [x] Option A"), true);
   },
 );

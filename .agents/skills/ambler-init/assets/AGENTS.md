@@ -19,15 +19,14 @@ deno run walks/<name>.ts
 
 **Ambler** is a Deno/TypeScript state machine framework. The core execution model lives in `ambler.ts`:
 
-- `Node<S>` — a function `(state: S) => MaybePromise<Next<S>>` representing a node in the graph
-- `Next<S>` — a plain function; calling it advances the machine to the next step
-- `stop()` — creates a terminal `Next<S>` that returns `null`; used in walk wiring as `() => stop()`
-- `node(factory)` — wraps a node factory so it re-runs each time (enabling cyclic graphs without circular reference issues)
-- `amble(start, initialState)` — drives the machine until a node returns `null`
+- `Next<S, K>` — a tuple `[key: K | null, state: S]` returned by each node; `null` key terminates the machine
+- `Node<S, K>` — a function `(state: S, key: K) => MaybePromise<Next<S, K>>` representing a node in the graph
+- `ambler(nodes)` — single-step executor factory; given a nodeId and state, invokes that node and returns its `Next` tuple
+- `amble(nodes, initialNodeId, initialState)` — full execution loop; drives the machine until a node returns `null`
 
-**Nodes** (`nodes/`) implement individual steps. Each node is created via a factory that accepts typed transition callbacks (`onSuccess`, `onError`, `onCount`, etc.) and injectable utilities (`print`, `sleep`, `random`, `readLine`) for testability. Nodes always return `Next`. Termination is expressed in the walk wiring by passing `() => stop()` as the final edge.
+**Nodes** (`nodes/`) implement individual steps. Each node is created via a factory that accepts typed transition identifiers (`onSuccess`, `onError`, etc.) and injectable utilities for testability. Nodes return a `Next` tuple: `[edges.onEdgeName, newState]` to transition, or `[null, state]` to terminate.
 
-**Walks** (`walks/`) wire nodes into concrete graphs and call `amble()`. The `nodes` record uses forward references resolved lazily via `node()`.
+**Walks** (`walks/`) wire nodes into a registry and call `amble()`.
 
 **Specs** (`specs/`) contain plain-language descriptions of walk behavior, used as design documents before implementation.
 

@@ -4,83 +4,90 @@
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
+ * A map from edge names to the next node identifier (or null to terminate).
+ * Used to wire node transitions in a type-safe way.
+ *
+ * @template H The union of edge name strings (e.g. `"onSuccess" | "onError"`).
+ * @template K The union of valid node identifier strings.
+ */
+export type Edges<H extends string, K extends string = string> = Record<
+  H,
+  K | null
+>;
+
+/**
+ * The result returned by a node: a tuple of [nextNodeId, newState].
+ * If nextNodeId is null, the state machine terminates.
+ *
+ * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
+ */
+export type Next<S, K extends string> = [key: K | null, state: S];
+
+/**
  * A function that represents a node in the state machine.
- * Given the current state, it returns the next step (an edge) in the machine.
+ * Receives the current state and the node's own key, and returns a Next tuple.
  *
  * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
  */
-export type Node<S> = (state: S) => MaybePromise<Next<S>>;
+export type Node<S, K extends string> = (
+  state: S,
+  key: K,
+) => MaybePromise<Next<S, K>>;
 
 /**
- * Represents the result of a node's execution. Calling it advances to the next step.
- * A plain function type avoids the object allocation of an interface or class.
+ * Creates a single-step executor for a node registry.
+ * Given a nodeId and state, it looks up and invokes that node.
+ * Use `amble` to run the full execution loop.
  *
  * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
+ * @param nodes A registry of nodes, indexed by their identifiers.
+ * @returns A function that executes one node step and returns a Next tuple.
  */
-export type Next<S> = () => MaybePromise<Next<S> | null>;
-
-/**
- * Wraps a {@link Node} function and a state into a {@link Next} function.
- * This allows for easier creation of transitions.
- *
- * @template S The type of the machine's state.
- * @param node The function representing the next node.
- * @param state The current state of the machine.
- * @returns A {@link Next} function that, when invoked, executes the provided {@link Node}.
- */
-export function next<S>(node: Node<S>, state: S): Next<S> {
-  return () => node(state);
-}
-
-/**
- * A terminal edge that signals the end of the walk.
- *
- * @template S The type of the machine's state.
- * @returns A {@link Next} function that returns null, terminating the `amble` loop.
- */
-export function stop<S>(): Next<S> {
-  return () => null;
-}
-
-/**
- * Lazily instantiates a node from a factory and caches the result for reuse.
- * The factory is not called until the node is first entered during `amble` execution,
- * which breaks circular dependency cycles in the wiring graph. Subsequent visits
- * reuse the cached node instance, avoiding redundant allocations on every transition.
- *
- * @template S The type of the machine's state.
- * @param factory A function that returns a {@link Node} function when invoked.
- * @returns A {@link Node} function that lazily initializes and caches the underlying node.
- */
-export function node<S>(factory: () => Node<S>): Node<S> {
-  let cached: Node<S> | null = null;
-
-  return (state: S) => {
-    if (cached === null) {
-      cached = factory();
+export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
+  return (nodeId: K, state: S): MaybePromise<Next<S, K>> => {
+    const node: Node<S, K> | undefined = nodes[nodeId];
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
     }
 
-    return cached(state);
+    return node(state, nodeId);
   };
 }
 
 /**
- * The main execution loop that drives the state machine.
- * It starts with the initial node and continues to execute subsequent nodes until
- * a node returns null.
+ * Runs the state machine to completion, starting from the given node and state.
  *
  * @template S The type of the machine's state.
- * @param initial The first node in the state machine.
- * @param state The initial state of the machine.
- * @returns A promise that resolves when the state machine completes.
+ * @template K The union of valid node identifier strings.
+ * @param nodes A registry of nodes, indexed by their identifiers.
+ * @param initialNodeId The identifier of the first node to execute.
+ * @param initialState The initial state of the machine.
+ * @param options.onNext Optional callback invoked before each node step.
+ * @returns A promise that resolves to the final state when the machine terminates.
  */
-export async function amble<S>(initial: Node<S>, state: S): Promise<void> {
-  let step: Next<S> | null | Promise<Next<S> | null> = initial(state);
-  while (step) {
-    if (typeof step === "function") {
-      step = step();
-    } else {
-      step = await step;
+export async function amble<S, K extends string>(
+  nodes: Record<K, Node<S, K>>,
+  initialNodeId: K,
+  initialState: S,
+  options?: {
+    onNext?: (nodeId: K, state: S) => MaybePromise<void>;
+  },
+): Promise<S> {
+  let nodeId: K | null = initialNodeId;
+  let state = initialState;
+  const move = ambler(nodes);
+  while (nodeId) {
+    if (options?.onNext) {
+      await options.onNext(nodeId, state);
     }
+
+    const next = await move(nodeId, state);
+    nodeId = next[0];
+    state = next[1];
   }
+
+  return state;
 }

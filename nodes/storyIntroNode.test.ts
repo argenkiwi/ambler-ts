@@ -1,5 +1,4 @@
 import * as StoryIntroNode from "./storyIntroNode.ts";
-import { Node, stop } from "../ambler.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: StoryIntroNode.State = {
@@ -10,44 +9,38 @@ const baseState: StoryIntroNode.State = {
 
 Deno.test(
   "storyIntroNode should call onCancel when identity readLine returns null",
-  async () => {
+  () => {
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) => null,
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
-      { onIntroComplete: (_s) => stop(), onCancel: () => stop() },
+    const result = StoryIntroNode.create(
+      { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
 
-    let next = await result();
-    while (typeof next === "function") {
-      next = await next();
-    }
-    assertEquals(next, null);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
 Deno.test(
   "storyIntroNode should call onCancel when placement readLine returns null",
-  async () => {
+  () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) => (call++ === 0 ? "Ada" : null),
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
-      { onIntroComplete: (_s) => stop(), onCancel: () => stop() },
+    const result = StoryIntroNode.create(
+      { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
 
-    let next = await result();
-    while (typeof next === "function") {
-      next = await next();
-    }
-    assertEquals(next, null);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
@@ -64,27 +57,18 @@ Deno.test(
     };
 
     const result = await StoryIntroNode.create(
-      { onIntroComplete: (_s) => stop(), onCancel: () => stop() },
+      { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
 
-    let next = await result();
-    while (typeof next === "function") {
-      next = await next();
-    }
-    assertEquals(next, null);
+    assertEquals(result[0], "cancel");
+    assertEquals(result[1], baseState);
   },
 );
 
 Deno.test(
   "storyIntroNode should set identity, placement, and circumstances trimmed",
-  async () => {
-    let capturedState: StoryIntroNode.State | undefined;
-    const captureNext: Node<StoryIntroNode.State> = (s) => {
-      capturedState = s;
-      return stop();
-    };
-
+  () => {
     let call = 0;
     const utils: StoryIntroNode.Utils = {
       readLine: (_msg) =>
@@ -92,15 +76,14 @@ Deno.test(
       print: () => {},
     };
 
-    const result = await StoryIntroNode.create(
-      { onIntroComplete: captureNext, onCancel: () => stop() },
+    const result = StoryIntroNode.create(
+      { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
 
-    await result();
-
-    assertEquals(capturedState?.identity, "Ada");
-    assertEquals(capturedState?.placement, "London, 1842");
-    assertEquals(capturedState?.circumstances, "Inventing the engine");
+    assertEquals(result[0], "complete");
+    assertEquals(result[1].identity, "Ada");
+    assertEquals(result[1].placement, "London, 1842");
+    assertEquals(result[1].circumstances, "Inventing the engine");
   },
 );

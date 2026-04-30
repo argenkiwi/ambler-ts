@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node in the nodes/ directory. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node".
 metadata:
   author: leandro
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Ambler Node
@@ -15,114 +15,83 @@ Follow these steps to create a new node in the `nodes/` directory.
 Before writing any code, determine:
 
 - **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>Node.ts`.
-- **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches. Other walk-level state fields flow through untouched via the `S extends State` generic.
-- **Edges**: What named transitions can this node take? Terminal nodes have no edges and always return `null`. Non-terminal nodes declare an `Edges<S extends State>` type whose values are `Node<S>`.
-- **Utils**: What side-effectful operations does the node perform? List them (e.g., `print`, `readLine`, `sleep`, `random`, `fetch`). Each becomes a field on the `Utils` type with a sensible production default in `defaultUtils`.
-- **Behavior**: What does the node do, step by step, and how does it choose which edge to follow?
-
-If any of the above is unclear, ask the user before writing code.
+- **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches.
+- **Hook (Edges)**: What named transitions can this node take? Define a `Hook` type (union of strings) for these names.
+- **Utils**: What side-effectful operations does the node perform? List them (e.g., `print`, `readLine`). Each becomes a field on the `Utils` type with a production default in `defaultUtils`.
+- **Behavior**: What does the node do, and how does it choose which Hook to follow?
 
 ---
 
 ## 2. Create `nodes/<name>Node.ts`
 
-Use the following structure exactly. Do not deviate from naming conventions.
+Use the following structure exactly. Adhere to naming conventions.
 
 ```typescript
-import { next, Node } from "../ambler.ts";
-// Also import MaybePromise if any util can be sync or async:
-// import { next, Node, MaybePromise } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
+// Import any shared utils if needed:
+// import { someUtil } from "../utils/some_util.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
-  // Keep this minimal; the generic S extends State carries the rest.
+  // The generic S extends State in create() carries the rest.
+  count: number; 
 }
 
-// Omit Edges entirely for terminal nodes.
-export type Edges<S extends State> = {
-  onSuccess: Node<S>;  // rename/add edge names as appropriate
-  // onError: Node<S>;
-};
+export type Hook = "onSuccess" | "onError"; // Rename/add as appropriate
 
 export type Utils = {
-  // One field per side-effectful operation.
-  // Use function signatures that match real stdlib equivalents.
   print: (msg: string) => void;
-  // readLine: (prompt: string) => MaybePromise<string | null>;
-  // sleep: (ms: number) => Promise<void>;
-  // random: () => number;
+  // readLine: (prompt: string) => string | null;
+  // chat: (host: string, model: string, msgs: any[]) => Promise<string>;
 };
 
 const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
   // readLine: (msg) => prompt(msg),
-  // sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
-  // random: () => Math.random(),
 };
 
-// Non-terminal node (has edges):
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
-): Node<S> {
-  return async (state: S) => {
+) {
+  return (state: S): Next<S, K> | Promise<Next<S, K>> => {
     // Node logic here.
+    // Use 'async' on the returned function if using await.
+    
     // Always spread state when updating: { ...state, field: newValue }
-    // Return next(edges.onEdgeName, nextState) to transition.
-    // Return null to terminate (only if this is actually a terminal node).
+    const nextState = { ...state, count: state.count + 1 };
+    
+    // Return [edges.onHookName, nextState] to transition.
+    return [edges.onSuccess, nextState];
   };
 }
-
-// Terminal node variant (no edges — replace the above with this):
-// export function create<S extends State>(
-//   utils: Utils = defaultUtils,
-// ): Node<S> {
-//   return async (state: S) => {
-//     // Terminal logic.
-//     return null;
-//   };
-// }
 ```
 
 ### Key rules
 
-- **Always import from `"../ambler.ts"`** — import `next` and `Node` for non-terminal nodes. Import `MaybePromise` if any util type is sync-or-async (e.g. `readLine`). Terminal nodes with no edges may not need any import from `ambler.ts`.
-- **Do not import `Next`** — the return type of the inner function is inferred from `Node<S>`; no explicit annotation is needed.
-- **Exports are flat at module level** — no namespace wrapper. Walks import the module with `import * as MyNode from "../nodes/myNode.ts"`, which gives `MyNode.State`, `MyNode.create`, etc.
-- **`State` is a minimum interface** — only include fields this node actually uses. The generic `S extends State` allows the walk to pass a richer state type without breaking the type system.
-- **`Edges<S extends State>` uses the same generic** so that edge functions accept the full walk state, not just the node's minimum state.
-- **`defaultUtils` provides production implementations** — these are what run in the real walk. Tests always inject mock utils.
-- **Extract complex `defaultUtils` implementations** — if any production util requires an npm/jsr import, has significant logic (error handling, retries, connection caching), or could be shared with another node, extract it to `utils/<name>.ts` using the `/ambler-util` skill instead of inlining it here. Simple one-liners like `(msg) => console.log(msg)` are fine to keep inline.
-- **State is immutable** — never mutate `state` directly; always return `{ ...state, field: value }`.
-- **Return `next(edges.onEdgeName, nextState)`** (function call) to transition; return `null` only from terminal nodes.
+- **Imports**: Always import `Edges` and `Next` from `"../ambler.ts"`.
+- **Flat Exports**: Export `State`, `Hook`, `Utils`, and `create` at the module level.
+- **Hook Type**: Use the name `Hook` for the union of edge name strings.
+- **Edges Type**: Use `Edges<Hook, K>` in the `create` function signature.
+- **State Generic**: `create<S extends State, K extends string = string>` ensures the node is compatible with any walk state that includes its minimum requirements.
+- **Utils**: `defaultUtils` contains production implementations. Complex or reusable logic (e.g., LLM calls, file I/O) should be moved to `utils/` and imported.
+- **Immutability**: Never mutate `state` directly; always return a new object: `{ ...state, ...updates }`.
+- **Termination**: Nodes that terminate the walk still use `Edges` in their `create` signature. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `StopNode.create({ onDone: null })`).
 
 ---
 
 ## 3. Create `nodes/<name>Node.test.ts`
 
-Use the `/ambler-test` skill to generate the test file for this node.
+Use the `/ambler-test` skill to generate the test file.
 
 ---
 
 ## 4. Checklist before finishing
 
-- [ ] `nodes/<name>Node.ts` exists and compiles (no TypeScript errors).
-- [ ] `nodes/<name>Node.test.ts` exists with one test per branch.
-- [ ] All exports are flat module-level (`export interface State`, `export type Edges`, `export function create`) — no namespace wrapper.
-- [ ] `State`, `Edges` (if non-terminal), `Utils`, `defaultUtils`, and `create` are all exported or defined.
-- [ ] No barrel/index file was created or modified — nodes are imported individually.
-- [ ] State is never mutated in place.
-- [ ] All utils in `defaultUtils` use real production implementations (`defaultPrint`, `defaultReadLine`, `Math.random`, `setTimeout`, etc.).
-- [ ] Any `defaultUtils` implementation that requires an npm import, has significant logic, or is reusable across nodes has been moved to `utils/` via the `/ambler-util` skill.
-
----
-
-## 5. Reference: the three existing node archetypes
-
-| Archetype | Example | Has Edges | Returns null |
-|---|---|---|---|
-| Entry node (prompts user, validates) | `startNode.ts` | Yes (`onSuccess`, `onError`) | Never directly |
-| Loop/transform node | `countNode.ts` | Yes (`onCount`, `onStop`) | Never directly |
-| Terminal node | `stopNode.ts` | No | Always |
-
-When unsure which archetype fits, ask the user whether the new node should loop, branch, or terminate the walk.
+- [ ] `nodes/<name>Node.ts` uses the `Hook` naming convention for edge keys.
+- [ ] `create` function uses `Edges<Hook, K>` and returns `Next<S, K>`.
+- [ ] `State` interface is minimal.
+- [ ] `defaultUtils` provides real implementations.
+- [ ] No direct state mutation.
+- [ ] Shared logic is in `utils/`.
+- [ ] Tests exist in `nodes/<name>Node.test.ts`.

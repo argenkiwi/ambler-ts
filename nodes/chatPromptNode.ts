@@ -1,4 +1,4 @@
-import { next, Node } from "../ambler.ts";
+import { Edges, Next } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -6,10 +6,7 @@ export interface State {
   messages: Message[];
 }
 
-export type Edges<S extends State> = {
-  onChat: Node<S>;
-  onQuit: Node<S>;
-};
+export type Hook = "onChat" | "onQuit";
 
 export type Utils = {
   readLine: (msg: string) => string | null;
@@ -23,23 +20,23 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State>(
-  edges: Edges<S>,
+export function create<S extends State, K extends string = string>(
+  edges: Edges<Hook, K>,
   utils: Utils = defaultUtils,
 ) {
-  return (state: S) => {
+  return (state: S): Next<S, K> => {
     const input = utils.readLine("You: ");
     if (input === null) {
-      return next(edges.onQuit, state);
+      return [edges.onQuit, state];
     }
     const trimmed = input.trim();
     if (QUIT_WORDS.has(trimmed.toLowerCase())) {
-      return next(edges.onQuit, state);
+      return [edges.onQuit, state];
     }
     const messages: Message[] = [
       ...state.messages,
       { role: "user", content: trimmed },
     ];
-    return next(edges.onChat, { ...state, messages });
+    return [edges.onChat, { ...state, messages }];
   };
 }
