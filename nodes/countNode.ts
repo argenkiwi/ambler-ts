@@ -1,10 +1,10 @@
-import { Edges, Next } from "../ambler.ts";
+import { Next } from "../ambler.ts";
 
 export interface State {
   count: number;
 }
 
-export type Hook = "onCount" | "onStop";
+export type Edge = "onCount" | "onStop";
 
 export type Utils = {
   print: (msg: string) => void;
@@ -18,11 +18,11 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export function create<S extends State, K extends string>(
-  edges: Edges<Hook, K>,
+export function create<S extends State, N extends string>(
+  edges: Record<Edge, N | null>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S): Promise<Next<S, K>> => {
+  return async (state: S): Promise<Next<S, N>> => {
     utils.print(`Current count: ${state.count}`);
     await utils.sleep(1000);
     const nextState = { ...state, count: state.count + 1 };
