@@ -1,18 +1,18 @@
 import { assertEquals } from "@std/assert";
-import * as CountNode from "./countNode.ts";
+import countNode, { State, Utils } from "../countNode.ts";
 
 Deno.test(
   "countNode should increment count and transition to onCount if random > 0.5",
   async () => {
-    const initialState: CountNode.State = { count: 5 };
+    const initialState: State = { count: 5 };
 
-    const utils: CountNode.Utils = {
-      print: () => {},
-      sleep: async () => {},
+    const utils: Utils = {
+      print: (_msg: string) => {},
+      sleep: async (_ms: number) => {},
       random: () => 0.6,
     };
 
-    const result = await CountNode.create(
+    const result = await countNode(
       { onCount: "onCount", onStop: "onStop" },
       utils,
     )(initialState);
@@ -25,15 +25,15 @@ Deno.test(
 Deno.test(
   "countNode should increment count and transition to onStop if random <= 0.5",
   async () => {
-    const initialState: CountNode.State = { count: 10 };
+    const initialState: State = { count: 10 };
 
-    const utils: CountNode.Utils = {
-      print: () => {},
-      sleep: async () => {},
+    const utils: Utils = {
+      print: (_msg: string) => {},
+      sleep: async (_ms: number) => {},
       random: () => 0.4,
     };
 
-    const result = await CountNode.create(
+    const result = await countNode(
       { onCount: "onCount", onStop: "onStop" },
       utils,
     )(initialState);

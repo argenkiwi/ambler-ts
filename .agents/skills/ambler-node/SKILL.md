@@ -27,13 +27,12 @@ Before writing any code, determine:
 Use the following structure exactly. Adhere to naming conventions.
 
 ```typescript
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 // Import any shared utils if needed:
 // import { someUtil } from "../utils/some_util.ts";
 
 export interface State {
   // Fields this node reads or writes — at minimum.
-  // The generic S extends State in create() carries the rest.
   count: number; 
 }
 
@@ -42,7 +41,6 @@ export type Edge = "onSuccess" | "onError"; // Rename/add as appropriate
 export type Utils = {
   print: (msg: string) => void;
   // readLine: (prompt: string) => string | null;
-  // chat: (host: string, model: string, msgs: any[]) => Promise<string>;
 };
 
 const defaultUtils: Utils = {
@@ -50,37 +48,38 @@ const defaultUtils: Utils = {
   // readLine: (msg) => prompt(msg),
 };
 
-export function create<S extends State, K extends string>(
-  edges: Record<Edge, K | null>,
-  utils: Utils = defaultUtils,
-) {
-  return (state: S): Next<S, K> | Promise<Next<S, K>> => {
+const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return (state) => {
     // Node logic here.
     // Use 'async' on the returned function if using await.
     
     // Always spread state when updating: { ...state, field: newValue }
     const nextState = { ...state, count: state.count + 1 };
     
-    // Return [edges.onEdgeName, nextState] to transition.
+    // Return [edges.onSuccess, nextState] to transition.
     return [edges.onSuccess, nextState];
   };
-}
+};
+
+export default create;
 ```
 
 ### Key rules
 
-- **Imports**: Always import `Next` from `"../ambler.ts"`.
-- **Flat Exports**: Export `State`, `Edge`, `Utils`, and `create` at the module level.
-- **Edge Type**: Use the name `Edge` for the union of edge name strings.
-- **Edges Type**: Use `Record<Edge, K | null>` in the `create` function signature.
-- **State Generic**: `create<S extends State, K extends string>` ensures the node is compatible with any walk state that includes its minimum requirements.
+- **Imports**: Always import `NodeFactory` from `"../ambler.ts"`.
+- **Default Export**: Export `create` as `default`.
+- **Named Exports**: Export `State`, `Edge`, and `Utils` at the module level.
+- **NodeFactory Type**: Use `const create: NodeFactory<Edge, Utils, State> = ...` to ensure types are correctly enforced.
 - **Utils**: `defaultUtils` contains production implementations. Complex or reusable logic (e.g., LLM calls, file I/O) should be moved to `utils/` and imported.
 - **Immutability**: Never mutate `state` directly; always return a new object: `{ ...state, ...updates }`.
-- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their `create` signature. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `StopNode.create({ onDone: null })`).
+- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their `create` signature via `NodeFactory`. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `stopNode({ onDone: null })`).
 
 ---
 
-## 3. Create `nodes/<name>Node.test.ts`
+## 3. Create `nodes/tests/<name>Node.test.ts`
 
 Use the `/ambler-test` skill to generate the test file.
 
@@ -89,9 +88,9 @@ Use the `/ambler-test` skill to generate the test file.
 ## 4. Checklist before finishing
 
 - [ ] `nodes/<name>Node.ts` uses the `Edge` naming convention for edge keys.
-- [ ] `create` function uses `Record<Edge, K | null>` and returns `Next<S, K>`.
+- [ ] `create` function uses `NodeFactory` and is the `default` export.
 - [ ] `State` interface is minimal.
 - [ ] `defaultUtils` provides real implementations.
 - [ ] No direct state mutation.
 - [ ] Shared logic is in `utils/`.
-- [ ] Tests exist in `nodes/<name>Node.test.ts`.
+- [ ] Tests exist in `nodes/tests/<name>Node.test.ts`.

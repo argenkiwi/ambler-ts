@@ -1,10 +1,10 @@
 import { ambler, Node } from "../ambler.ts";
-import * as OllamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
-import * as ModelSelectNode from "../nodes/modelSelectNode.ts";
-import * as StoryIntroNode from "../nodes/storyIntroNode.ts";
-import * as StoryPageNode from "../nodes/storyPageNode.ts";
-import * as StoryDecisionNode from "../nodes/storyDecisionNode.ts";
-import * as StorySaveNode from "../nodes/storySaveNode.ts";
+import ollamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
+import modelSelectNode from "../nodes/modelSelectNode.ts";
+import storyIntroNode from "../nodes/storyIntroNode.ts";
+import storyPageNode from "../nodes/storyPageNode.ts";
+import storyDecisionNode from "../nodes/storyDecisionNode.ts";
+import storySaveNode from "../nodes/storySaveNode.ts";
 
 export interface State {
   ollamaHost: string;
@@ -18,33 +18,31 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
-const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: OllamaDiscoverNode.create<State, NodeId>({
+const amble = ambler({
+  start: ollamaDiscoverNode<State, NodeId>({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: ModelSelectNode.create<State, NodeId>({
+  modelSelect: modelSelectNode<State, NodeId>({
     onSelect: "intro",
     onCancel: null,
   }),
-  intro: StoryIntroNode.create<State, NodeId>({
+  intro: storyIntroNode<State, NodeId>({
     onIntroComplete: "page",
     onCancel: null,
   }),
-  page: StoryPageNode.create<State, NodeId>({
+  page: storyPageNode<State, NodeId>({
     onPageComplete: "save",
     onDecisionRequired: "decision",
     onError: null,
   }),
-  decision: StoryDecisionNode.create<State, NodeId>({
+  decision: storyDecisionNode<State, NodeId>({
     onDecisionMade: "page",
     onCancel: null,
     onError: null,
   }),
-  save: StorySaveNode.create<State, NodeId>({ onSaveComplete: null }),
-};
-
-const amble = ambler(nodes);
+  save: storySaveNode<State, NodeId>({ onSaveComplete: null }),
+});
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";

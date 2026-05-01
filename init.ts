@@ -26,7 +26,7 @@ try {
 // Create directory structure
 const dirs = [
   targetDir,
-  `${targetDir}/nodes`,
+  `${targetDir}/nodes/tests`,
   `${targetDir}/walks`,
   `${targetDir}/specs`,
   `${targetDir}/utils`,
@@ -39,7 +39,6 @@ for (const dir of dirs) {
 // ─── File contents ───────────────────────────────────────────────────────────
 
 const AMBLER_TS = `/**
-/**
  * The result returned by a node: a tuple of [nextNodeId, newState].
  * If nextNodeId is null, the state machine terminates.
  *
@@ -57,13 +56,27 @@ export type Next<S, K extends string> = [key: K | null, state: S];
  */
 export type Node<S, K extends string> = (
   state: S,
-  key: K,
+  key?: K,
 ) => Next<S, K> | Promise<Next<S, K>>;
+
+/**
+ * A factory function that constructs a Node from an edge map and optional utils.
+ *
+ * @template E The union of edge names this node can traverse.
+ * @template U The utils object injected into the node at construction time.
+ * @template SConstraint An optional constraint on the state type (default: unknown).
+ */
+export interface NodeFactory<E extends string, U, SConstraint = unknown> {
+  <S extends SConstraint, N extends string>(
+    edges: Record<E, N | null>,
+    utils?: U,
+  ): Node<S, N>;
+}
 
 /**
  * Creates a single-step executor for a node registry.
  * Given a nodeId and state, it looks up and invokes that node.
- *
+
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
  * @param nodes A registry of nodes, indexed by their identifiers.
@@ -79,7 +92,8 @@ export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
     return node(state, nodeId);
   };
 }
-`;
+\`;
+
 
 const DENO_JSON = `{
   "imports": {

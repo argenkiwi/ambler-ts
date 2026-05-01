@@ -1,17 +1,17 @@
 import { assertEquals } from "@std/assert";
-import * as StopNode from "./stopNode.ts";
+import stopNode, { State, Utils } from "../stopNode.ts";
 
 Deno.test("stopNode should print final count and call onDone", async () => {
-  const initialState: StopNode.State = { count: 15 };
+  const initialState: State = { count: 15 };
   let capturedMessage: string | undefined;
 
-  const utils: StopNode.Utils = {
+  const utils: Utils = {
     print: (msg: string) => {
       capturedMessage = msg;
     },
   };
 
-  const result = await StopNode.create({ onDone: null }, utils)(
+  const result = await stopNode({ onDone: null }, utils)(
     initialState,
   );
 

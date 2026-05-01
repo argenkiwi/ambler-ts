@@ -39,17 +39,17 @@ Write one `Deno.test` per meaningful branch of logic (one per edge + one per err
 
 ```typescript
 import { assertEquals } from "@std/assert";
-import * as <Name>Node from "./<name>Node.ts";
+import <name>Node, { State, Utils } from "../<name>Node.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", () => {
-  const initialState: <Name>Node.State = { /* ... */ };
+  const initialState: State = { /* ... */ };
 
-  const utils: <Name>Node.Utils = {
-    print: () => {},
+  const utils: Utils = {
+    print: (_msg: string) => {},
     // Override each util to be deterministic and side-effect-free.
   };
 
-  const result = <Name>Node.create(
+  const result = <name>Node(
     { onSuccess: "next" /*, onError: "error" */ },
     utils,
   )(initialState);
@@ -63,17 +63,17 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
 
 ```typescript
 import { assertEquals } from "@std/assert";
-import * as <Name>Node from "./<name>Node.ts";
+import <name>Node, { State, Utils } from "../<name>Node.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", async () => {
-  const initialState: <Name>Node.State = { /* ... */ };
+  const initialState: State = { /* ... */ };
 
-  const utils: <Name>Node.Utils = {
-    print: () => {},
+  const utils: Utils = {
+    print: (_msg: string) => {},
     // Override each util to be deterministic and side-effect-free.
   };
 
-  const result = await <Name>Node.create(
+  const result = await <name>Node(
     { onSuccess: "next" /*, onError: "error" */ },
     utils,
   )(initialState);
@@ -105,3 +105,4 @@ For terminal nodes (which return `[null, state]`), substitute `{}` for edges and
 - [ ] Terminal `[null, state]` paths are asserted with `assertEquals(result[0], null)`.
 - [ ] Test names follow `"<name>Node should <behavior> when <condition>"`.
 - [ ] Run `deno test nodes/<name>Node.test.ts` to verify all tests pass.
+tests pass.

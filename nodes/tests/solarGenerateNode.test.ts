@@ -1,7 +1,7 @@
-import * as SolarGenerateNode from "./solarGenerateNode.ts";
+import solarGenerateNode, { State, Utils } from "../solarGenerateNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: SolarGenerateNode.State = {
+const baseState: State = {
   ollamaHost: "http://localhost:11434",
   selectedModel: "llama3",
   solarPrompt: "A village harnesses solar energy",
@@ -11,13 +11,13 @@ const baseState: SolarGenerateNode.State = {
 Deno.test(
   "solarGenerateNode should set generatedStory and transition onGenerateComplete",
   async () => {
-    const utils: SolarGenerateNode.Utils = {
-      generateStory: (_host, _model, _prompt) =>
+    const utils: Utils = {
+      generateStory: (_host: string, _model: string, _prompt: string) =>
         Promise.resolve("Once upon a time in a solarpunk world..."),
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarGenerateNode.create(
+    const result = await solarGenerateNode(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
     )(baseState);
@@ -33,14 +33,14 @@ Deno.test(
 Deno.test(
   "solarGenerateNode should call onError when generateStory throws",
   async () => {
-    const utils: SolarGenerateNode.Utils = {
-      generateStory: (_host, _model, _prompt) => {
+    const utils: Utils = {
+      generateStory: (_host: string, _model: string, _prompt: string) => {
         throw new Error("model unavailable");
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarGenerateNode.create(
+    const result = await solarGenerateNode(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
     )(baseState);

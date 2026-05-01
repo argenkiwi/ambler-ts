@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 deno test
 
 # Run a single test file
-deno test nodes/<name>Node.test.ts
+deno test nodes/tests/<name>Node.test.ts
 
 # Run a walk directly
 deno run walks/<name>.ts
@@ -22,11 +22,10 @@ deno run walks/<name>.ts
 - `Next<S, K>` — a tuple `[key: K | null, state: S]` returned by each node; `null` key terminates the machine
 - `Node<S, K>` — a function `(state: S, key: K) => MaybePromise<Next<S, K>>` representing a node in the graph
 - `ambler(nodes)` — single-step executor factory; given a nodeId and state, invokes that node and returns its `Next` tuple
-- `amble(nodes, initialNodeId, initialState)` — full execution loop; drives the machine until a node returns `null`
 
-**Nodes** (`nodes/`) implement individual steps. Each node is created via a factory that accepts typed transition identifiers (`onSuccess`, `onError`, etc.) and injectable utilities for testability. Nodes return a `Next` tuple: `[edges.onEdgeName, newState]` to transition, or `[null, state]` to terminate.
+**Nodes** (`nodes/`) implement individual steps. Each node exports a `create` function as `default` that accepts typed transition identifiers (`onSuccess`, `onError`, etc.) and injectable utilities for testability. Nodes return a `Next` tuple: `[edges.onEdgeName, newState]` to transition, or `[null, state]` to terminate. Tests live in `nodes/tests/`.
 
-**Walks** (`walks/`) wire nodes into a registry and call `amble()`.
+**Walks** (`walks/`) wire nodes into a registry and call `ambler()`.
 
 **Specs** (`specs/`) contain plain-language descriptions of walk behavior, used as design documents before implementation.
 

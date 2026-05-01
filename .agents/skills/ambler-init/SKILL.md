@@ -37,7 +37,7 @@ Two core files are read from `~/.claude/skills/ambler-init/assets/` and written 
 ### 3. Create the directory structure
 
 ```bash
-mkdir -p "<target>/nodes" "<target>/walks" "<target>/specs" "<target>/utils"
+mkdir -p "<target>/nodes/tests" "<target>/walks" "<target>/specs" "<target>/utils"
 ```
 
 ### 4. Write template files
@@ -71,5 +71,7 @@ Initialized Ambler project in "<target>":
 Next steps:
   /ambler-walk   — create your first walk
   /ambler-node   — create a standalone node
+```
+
 ```
 

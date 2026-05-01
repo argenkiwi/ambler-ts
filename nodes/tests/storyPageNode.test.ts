@@ -1,7 +1,7 @@
-import * as StoryPageNode from "./storyPageNode.ts";
+import storyPageNode, { State, Utils } from "../storyPageNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: StoryPageNode.State = {
+const baseState: State = {
   selectedModel: "llama3",
   ollamaHost: "http://localhost:11434",
   identity: "Ada",
@@ -14,13 +14,13 @@ const baseState: StoryPageNode.State = {
 Deno.test(
   "storyPageNode should transition onPageComplete when reply ends with 'The End'",
   async () => {
-    const utils: StoryPageNode.Utils = {
-      chat: (_host, _model, _messages) =>
+    const utils: Utils = {
+      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) =>
         Promise.resolve("You discovered the secret. The End"),
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryPageNode.create(
+    const result = await storyPageNode(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",
@@ -43,12 +43,12 @@ Deno.test(
   "storyPageNode should transition onDecisionRequired when reply has options",
   async () => {
     const reply = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
-    const utils: StoryPageNode.Utils = {
-      chat: (_host, _model, _messages) => Promise.resolve(reply),
-      print: () => {},
+    const utils: Utils = {
+      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) => Promise.resolve(reply),
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryPageNode.create(
+    const result = await storyPageNode(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",
@@ -66,14 +66,14 @@ Deno.test(
 Deno.test(
   "storyPageNode should call onError when chat throws",
   async () => {
-    const utils: StoryPageNode.Utils = {
-      chat: (_host, _model, _messages) => {
+    const utils: Utils = {
+      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) => {
         throw new Error("connection failed");
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryPageNode.create(
+    const result = await storyPageNode(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",

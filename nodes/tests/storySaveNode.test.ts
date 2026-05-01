@@ -1,7 +1,7 @@
-import * as StorySaveNode from "./storySaveNode.ts";
+import storySaveNode, { State, Utils } from "../storySaveNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: StorySaveNode.State = {
+const baseState: State = {
   selectedModel: "llama3",
   identity: "Ada",
   placement: "London",
@@ -14,15 +14,15 @@ Deno.test(
   async () => {
     let savedContent: string | undefined;
 
-    const utils: StorySaveNode.Utils = {
-      saveFile: (_filename, content) => {
+    const utils: Utils = {
+      saveFile: (_filename: string, content: string) => {
         savedContent = content;
         return Promise.resolve();
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await StorySaveNode.create(
+    const result = await storySaveNode(
       { onSaveComplete: "complete" },
       utils,
     )(baseState);
@@ -36,14 +36,14 @@ Deno.test(
 Deno.test(
   "storySaveNode should still transition onSaveComplete when saveFile throws",
   async () => {
-    const utils: StorySaveNode.Utils = {
-      saveFile: (_filename, _content) => {
+    const utils: Utils = {
+      saveFile: (_filename: string, _content: string) => {
         throw new Error("disk full");
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await StorySaveNode.create(
+    const result = await storySaveNode(
       { onSaveComplete: "complete" },
       utils,
     )(baseState);

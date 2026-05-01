@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
-import * as SolarSaveNode from "./solarSaveNode.ts";
+import solarSaveNode, { State, Utils } from "../solarSaveNode.ts";
 
-const baseState: SolarSaveNode.State = {
+const baseState: State = {
   generatedStory: "Once upon a time in a solarpunk world...",
 };
 
@@ -10,16 +10,16 @@ Deno.test(
   async () => {
     let savedContent: string | undefined;
 
-    const utils: SolarSaveNode.Utils = {
-      readLine: (_msg) => "y",
-      saveToFile: async (content) => {
+    const utils: Utils = {
+      readLine: (_msg: string) => "y",
+      saveToFile: async (content: string) => {
         savedContent = await Promise.resolve(content);
         return true;
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarSaveNode.create(
+    const result = await solarSaveNode(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
@@ -35,16 +35,16 @@ Deno.test(
   async () => {
     let saveCalled = false;
 
-    const utils: SolarSaveNode.Utils = {
-      readLine: (_msg) => "n",
-      saveToFile: async (_content) => {
+    const utils: Utils = {
+      readLine: (_msg: string) => "n",
+      saveToFile: async (_content: string) => {
         saveCalled = await Promise.resolve(true);
         return true;
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarSaveNode.create(
+    const result = await solarSaveNode(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
@@ -60,13 +60,13 @@ Deno.test(
   async () => {
     const printed: string[] = [];
 
-    const utils: SolarSaveNode.Utils = {
-      readLine: (_msg) => "y",
-      saveToFile: async (_content) => await Promise.resolve(false),
-      print: (msg) => printed.push(msg),
+    const utils: Utils = {
+      readLine: (_msg: string) => "y",
+      saveToFile: async (_content: string) => await Promise.resolve(false),
+      print: (msg: string) => printed.push(msg),
     };
 
-    const result = await SolarSaveNode.create(
+    const result = await solarSaveNode(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);

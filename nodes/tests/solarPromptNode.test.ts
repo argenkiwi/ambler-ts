@@ -1,17 +1,17 @@
-import * as SolarPromptNode from "./solarPromptNode.ts";
+import solarPromptNode, { State, Utils } from "../solarPromptNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: SolarPromptNode.State = { solarPrompt: "" };
+const baseState: State = { solarPrompt: "" };
 
 Deno.test(
   "solarPromptNode should call onCancel when readLine returns null",
   async () => {
-    const utils: SolarPromptNode.Utils = {
-      readLine: (_msg) => null,
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => null,
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarPromptNode.create(
+    const result = await solarPromptNode(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -24,12 +24,12 @@ Deno.test(
 Deno.test(
   "solarPromptNode should set solarPrompt and transition onPromptComplete",
   async () => {
-    const utils: SolarPromptNode.Utils = {
-      readLine: (_msg) => "A community rebuilds after a storm",
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => "A community rebuilds after a storm",
+      print: (_msg: string) => {},
     };
 
-    const result = await SolarPromptNode.create(
+    const result = await solarPromptNode(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);

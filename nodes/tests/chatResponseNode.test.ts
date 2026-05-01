@@ -1,24 +1,24 @@
 import { assertEquals } from "@std/assert";
-import * as ChatResponseNode from "./chatResponseNode.ts";
+import chatResponseNode, { State, Utils, Message } from "../chatResponseNode.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
   async () => {
-    const initialState: ChatResponseNode.State = {
+    const initialState: State = {
       ollamaHost: "http://localhost:11434",
       selectedModel: "llama3.2",
       messages: [{ role: "user", content: "Hello" }],
     };
 
     let printed: string | undefined;
-    const utils: ChatResponseNode.Utils = {
-      chat: (_host, _model, _messages) => Promise.resolve("Hi there!"),
-      print: (msg) => {
+    const utils: Utils = {
+      chat: (_host: string, _model: string, _messages: Message[]) => Promise.resolve("Hi there!"),
+      print: (msg: string) => {
         printed = msg;
       },
     };
 
-    const result = await ChatResponseNode.create(
+    const result = await chatResponseNode(
       { onPrompt: "onPrompt" },
       utils,
     )(initialState);
@@ -36,7 +36,7 @@ Deno.test(
 Deno.test(
   "chatResponseNode should pass the full message history to the chat util",
   async () => {
-    const initialState: ChatResponseNode.State = {
+    const initialState: State = {
       ollamaHost: "http://localhost:11434",
       selectedModel: "llama3.2",
       messages: [
@@ -46,20 +46,20 @@ Deno.test(
       ],
     };
 
-    let receivedMessages: ChatResponseNode.Message[] | undefined;
+    let receivedMessages: Message[] | undefined;
     let receivedHost: string | undefined;
     let receivedModel: string | undefined;
-    const utils: ChatResponseNode.Utils = {
-      chat: (host, model, messages) => {
+    const utils: Utils = {
+      chat: (host: string, model: string, messages: Message[]) => {
         receivedHost = host;
         receivedModel = model;
         receivedMessages = messages;
         return Promise.resolve("I'm fine!");
       },
-      print: () => {},
+      print: (_msg: string) => {},
     };
 
-    const result = await ChatResponseNode.create(
+    const result = await chatResponseNode(
       { onPrompt: "onPrompt" },
       utils,
     )(initialState);

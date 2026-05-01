@@ -31,7 +31,7 @@ For each node the walk requires:
 
 - Check if a file `nodes/<nodeName>.ts` already exists (use Glob).
 - If it does **not** exist, create it using the `/ambler-node` skill **before** writing the walk.
-- Also ensure `nodes/<nodeName>.test.ts` exists for every new node using the `/ambler-test` skill, then verify with `deno test nodes/<nodeName>.test.ts`.
+- Also ensure `nodes/tests/<nodeName>.test.ts` exists for every new node using the `/ambler-test` skill, then verify with `deno test nodes/tests/<nodeName>.test.ts`.
 
 ---
 
@@ -44,10 +44,10 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { ambler, Node } from "../ambler.ts";
-import * as NodeA from "../nodes/nodeA.ts";
-import * as NodeB from "../nodes/nodeB.ts";
-import * as NodeC from "../nodes/nodeC.ts";
+import { ambler } from "../ambler.ts";
+import nodeA from "../nodes/nodeA.ts";
+import nodeB from "../nodes/nodeB.ts";
+import nodeC from "../nodes/nodeC.ts";
 
 export interface State {
   field: string;
@@ -55,13 +55,11 @@ export interface State {
 
 type NodeId = "start" | "next" | "stop";
 
-const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: NodeA.create({ onSuccess: "next", onError: "start" }),
-  next:  NodeB.create({ onComplete: "stop" }),
-  stop:  NodeC.create({ onDone: null }),
-};
-
-const amble = ambler(nodes);
+const amble = ambler({
+  start: nodeA<State, NodeId>({ onSuccess: "next", onError: "start" }),
+  next:  nodeB<State, NodeId>({ onComplete: "stop" }),
+  stop:  nodeC<State, NodeId>({ onDone: null }),
+});
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
@@ -77,11 +75,11 @@ if (import.meta.main) {
 ```
 
 **Key rules:**
-- Import `ambler`, `Node` from `../ambler.ts`.
-- Import each node module with `import * as <Name>Node from "../nodes/<name>Node.ts"`.
-- Define `State` interface and `initialState` at the top of the file.
+- Import `ambler` from `../ambler.ts`.
+- Import each node module as a **default import**.
+- Define `State` interface at the top of the file.
 - Define `NodeId` union type for node identifiers.
-- Use `Record<NodeId, Node<State, NodeId>>` for the `nodes` object.
+- Initialize nodes by calling them directly: `nodeName<State, NodeId>({ ... })`.
 - Call `ambler(nodes)` outside the `if` guard, assign the result to `const amble`, and use `instanceof Promise` in the loop: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
 ---
@@ -97,7 +95,7 @@ deno run --allow-all walks/<name>.ts
 If the walk has new nodes, also run:
 
 ```
-deno test nodes/
+deno test nodes/tests/
 ```
 
 ---
@@ -109,7 +107,7 @@ Before finishing, confirm:
 - [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
 - [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
-- [ ] Every new node has a `nodes/<nodeName>.test.ts` with at least one test.
+- [ ] Every new node has a `nodes/tests/<nodeName>.test.ts` with at least one test.
 - [ ] All tests pass.
 - [ ] The walk runs end-to-end without errors.
 

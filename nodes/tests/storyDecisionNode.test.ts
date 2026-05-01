@@ -1,7 +1,7 @@
-import * as StoryDecisionNode from "./storyDecisionNode.ts";
+import storyDecisionNode, { State, Utils } from "../storyDecisionNode.ts";
 import { assertEquals } from "@std/assert/equals";
 
-const baseState: StoryDecisionNode.State = {
+const baseState: State = {
   selectedModel: "llama3",
   ollamaHost: "http://localhost:11434",
   identity: "Ada",
@@ -14,12 +14,12 @@ const baseState: StoryDecisionNode.State = {
 Deno.test(
   "storyDecisionNode should call onError when storyPages is empty",
   async () => {
-    const utils: StoryDecisionNode.Utils = {
-      readLine: (_msg) => null,
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => null,
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = await storyDecisionNode(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -37,12 +37,12 @@ Deno.test(
   "storyDecisionNode should transition with unchanged state when no checkboxes found",
   async () => {
     const state = { ...baseState, storyPages: ["You reach the end. The End"] };
-    const utils: StoryDecisionNode.Utils = {
-      readLine: (_msg) => null,
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => null,
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = await storyDecisionNode(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -62,12 +62,12 @@ Deno.test(
       ],
     };
 
-    const utils: StoryDecisionNode.Utils = {
-      readLine: (_msg) => null,
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => null,
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = await storyDecisionNode(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -87,12 +87,12 @@ Deno.test(
     const page = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const state = { ...baseState, storyPages: [page] };
 
-    const utils: StoryDecisionNode.Utils = {
-      readLine: (_msg) => "2",
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => "2",
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = await storyDecisionNode(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -111,12 +111,12 @@ Deno.test(
     const state = { ...baseState, storyPages: [page] };
 
     let call = 0;
-    const utils: StoryDecisionNode.Utils = {
-      readLine: (_msg) => ["bad", "99", "1"][call++],
-      print: () => {},
+    const utils: Utils = {
+      readLine: (_msg: string) => ["bad", "99", "1"][call++],
+      print: (_msg: string) => {},
     };
 
-    const result = await StoryDecisionNode.create(
+    const result = await storyDecisionNode(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);

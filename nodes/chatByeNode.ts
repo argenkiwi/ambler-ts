@@ -10,7 +10,7 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const create: NodeFactory<Edge, Utils> = (
+const create: NodeFactory<Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) => {
@@ -19,3 +19,5 @@ export const create: NodeFactory<Edge, Utils> = (
     return [edges.onDone, state];
   };
 };
+
+export default create;
