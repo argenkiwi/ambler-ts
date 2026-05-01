@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 
 export interface State {
   identity: string;
@@ -18,11 +18,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return (state: S): Next<S, N> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return (state) => {
     const identity = utils.readLine("Who is the protagonist? ");
     const placement = utils.readLine(
       "Where and when does the story take place? ",
@@ -40,4 +40,4 @@ export function create<S extends State, N extends string>(
       circumstances: circumstances.trim(),
     }];
   };
-}
+};

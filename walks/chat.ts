@@ -14,13 +14,13 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
 const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: OllamaDiscoverNode.create({
+  start: OllamaDiscoverNode.create<State, NodeId>({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: ModelSelectNode.create({ onSelect: "prompt", onCancel: null }),
-  prompt: ChatPromptNode.create({ onChat: "response", onQuit: "bye" }),
-  response: ChatResponseNode.create({ onPrompt: "prompt" }),
+  modelSelect: ModelSelectNode.create<State, NodeId>({ onSelect: "prompt", onCancel: null }),
+  prompt: ChatPromptNode.create<State, NodeId>({ onChat: "response", onQuit: "bye" }),
+  response: ChatResponseNode.create<State, NodeId>({ onPrompt: "prompt" }),
   bye: ChatByeNode.create<State, NodeId>({ onDone: null }),
 };
 

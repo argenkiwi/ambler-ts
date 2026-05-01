@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -20,11 +20,11 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return (state: S): Next<S, N> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return (state) => {
     const input = utils.readLine("You: ");
     if (input === null) {
       return [edges.onQuit, state];
@@ -39,4 +39,4 @@ export function create<S extends State, N extends string>(
     ];
     return [edges.onChat, { ...state, messages }];
   };
-}
+};

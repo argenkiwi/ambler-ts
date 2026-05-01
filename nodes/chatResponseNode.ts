@@ -1,5 +1,5 @@
 import { ollamaChat } from "../utils/ollama_chat.ts";
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
@@ -25,11 +25,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return async (state: S): Promise<Next<S, N>> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return async (state) => {
     const reply = await utils.chat(
       state.ollamaHost,
       state.selectedModel,
@@ -42,4 +42,4 @@ export function create<S extends State, N extends string>(
     ];
     return [edges.onPrompt, { ...state, messages }];
   };
-}
+};

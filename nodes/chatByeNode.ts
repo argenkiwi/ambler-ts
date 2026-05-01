@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 
 export type Edge = "onDone";
 
@@ -10,12 +10,12 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return (state: S): Next<S, N> => {
+export const create: NodeFactory<Edge, Utils> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return (state) => {
     utils.print("Goodbye!");
     return [edges.onDone, state];
   };
-}
+};

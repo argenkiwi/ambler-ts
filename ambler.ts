@@ -16,8 +16,22 @@ export type Next<S, K extends string> = [key: K | null, state: S];
  */
 export type Node<S, K extends string> = (
   state: S,
-  key: K,
+  key?: K,
 ) => Next<S, K> | Promise<Next<S, K>>;
+
+/**
+ * A factory function that constructs a Node from an edge map and optional utils.
+ *
+ * @template E The union of edge names this node can traverse.
+ * @template U The utils object injected into the node at construction time.
+ * @template SConstraint An optional constraint on the state type (default: unknown).
+ */
+export interface NodeFactory<E extends string, U, SConstraint = unknown> {
+  <S extends SConstraint, N extends string>(
+    edges: Record<E, N | null>,
+    utils?: U,
+  ): Node<S, N>;
+}
 
 /**
  * Creates a single-step executor for a node registry.

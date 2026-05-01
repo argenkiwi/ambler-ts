@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 import { generateStory } from "../utils/solar_generate.ts";
 
 export interface State {
@@ -24,11 +24,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return async (state: S): Promise<Next<S, N>> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return async (state) => {
     utils.print(
       "\nGenerating your solarpunk story... (this may take a moment)",
     );
@@ -52,4 +52,4 @@ export function create<S extends State, N extends string>(
       return [edges.onError, state];
     }
   };
-}
+};

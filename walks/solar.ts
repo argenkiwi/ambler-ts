@@ -19,15 +19,15 @@ const nodes: Record<NodeId, Node<State, NodeId>> = {
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: ModelSelectNode.create({
+  modelSelect: ModelSelectNode.create<State, NodeId>({
     onSelect: "prompt",
     onCancel: null,
   }),
-  prompt: SolarPromptNode.create({
+  prompt: SolarPromptNode.create<State, NodeId>({
     onPromptComplete: "generate",
     onCancel: null,
   }),
-  generate: SolarGenerateNode.create({
+  generate: SolarGenerateNode.create<State, NodeId>({
     onGenerateComplete: "save",
     onError: null,
   }),

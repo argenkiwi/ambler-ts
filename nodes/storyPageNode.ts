@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
 export interface State {
@@ -27,11 +27,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return async (state: S): Promise<Next<S, N>> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return async (state) => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${state.identity}
@@ -79,4 +79,4 @@ export function create<S extends State, N extends string>(
       return [edges.onError, state];
     }
   };
-}
+};

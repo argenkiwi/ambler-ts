@@ -19,24 +19,24 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
 const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: OllamaDiscoverNode.create({
+  start: OllamaDiscoverNode.create<State, NodeId>({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: ModelSelectNode.create({
+  modelSelect: ModelSelectNode.create<State, NodeId>({
     onSelect: "intro",
     onCancel: null,
   }),
-  intro: StoryIntroNode.create({
+  intro: StoryIntroNode.create<State, NodeId>({
     onIntroComplete: "page",
     onCancel: null,
   }),
-  page: StoryPageNode.create({
+  page: StoryPageNode.create<State, NodeId>({
     onPageComplete: "save",
     onDecisionRequired: "decision",
     onError: null,
   }),
-  decision: StoryDecisionNode.create({
+  decision: StoryDecisionNode.create<State, NodeId>({
     onDecisionMade: "page",
     onCancel: null,
     onError: null,

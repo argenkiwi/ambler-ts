@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import * as ChatByeNode from "./chatByeNode.ts";
 
-Deno.test("chatByeNode should print goodbye and return terminal edge", () => {
+Deno.test("chatByeNode should print goodbye and return terminal edge", async () => {
   const initialState = { some: "state" };
   let printed: string | undefined;
 
@@ -11,7 +11,7 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", () => {
     },
   };
 
-  const nodeResult = ChatByeNode.create({ onDone: null }, utils)(
+  const nodeResult = await ChatByeNode.create({ onDone: null }, utils)(
     initialState,
   );
 

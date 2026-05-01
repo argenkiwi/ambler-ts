@@ -1,4 +1,4 @@
-import { Next } from "../ambler.ts";
+import { NodeFactory } from "../ambler.ts";
 import { listModels } from "../utils/ollama_models.ts";
 
 export interface State {
@@ -20,11 +20,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, N extends string>(
-  edges: Record<Edge, N | null>,
-  utils: Utils = defaultUtils,
-) {
-  return async (state: S): Promise<Next<S, N>> => {
+export const create: NodeFactory<Edge, Utils, State> = (
+  edges,
+  utils = defaultUtils,
+) => {
+  return async (state) => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
@@ -41,4 +41,4 @@ export function create<S extends State, N extends string>(
     utils.print(`Selected model: ${models[index]}`);
     return [edges.onSelect, { ...state, selectedModel: models[index] }];
   };
-}
+};

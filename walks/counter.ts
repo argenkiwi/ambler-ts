@@ -10,8 +10,8 @@ export interface State {
 type NodeId = "start" | "count" | "stop";
 
 const nodes: Record<NodeId, Node<State, NodeId>> = {
-  start: StartNode.create({ onSuccess: "count", onError: "start" }),
-  count: CountNode.create({ onCount: "count", onStop: "stop" }),
+  start: StartNode.create<State, NodeId>({ onSuccess: "count", onError: "start" }),
+  count: CountNode.create<State, NodeId>({ onCount: "count", onStop: "stop" }),
   stop: StopNode.create<State, NodeId>({ onDone: null }),
 };
 
