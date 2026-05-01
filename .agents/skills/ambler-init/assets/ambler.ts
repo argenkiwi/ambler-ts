@@ -1,16 +1,4 @@
 /**
- * A map from edge names to the next node identifier (or null to terminate).
- * Used to wire node transitions in a type-safe way.
- *
- * @template H The union of edge name strings (e.g. `"onSuccess" | "onError"`).
- * @template K The union of valid node identifier strings.
- */
-export type Edges<H extends string, K extends string = string> = Record<
-  H,
-  K | null
->;
-
-/**
  * The result returned by a node: a tuple of [nextNodeId, newState].
  * If nextNodeId is null, the state machine terminates.
  *

@@ -1,4 +1,4 @@
-import { Edges, Next } from "../ambler.ts";
+import { Next } from "../ambler.ts";
 import { listModels } from "../utils/ollama_models.ts";
 
 export interface State {
@@ -6,7 +6,7 @@ export interface State {
   ollamaHost: string;
 }
 
-export type Hook = "onSelect" | "onCancel";
+export type Edge = "onSelect" | "onCancel";
 
 export type Utils = {
   listModels: (host: string) => Promise<string[]>;
@@ -20,11 +20,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export function create<S extends State, K extends string>(
-  edges: Edges<Hook, K>,
+export function create<S extends State, N extends string>(
+  edges: Record<Edge, N | null>,
   utils: Utils = defaultUtils,
 ) {
-  return async (state: S): Promise<Next<S, K>> => {
+  return async (state: S): Promise<Next<S, N>> => {
     const models = await utils.listModels(state.ollamaHost);
     utils.print("Available models:");
     models.forEach((m, i) => utils.print(`${i}: ${m}`));
