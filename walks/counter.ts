@@ -9,11 +9,11 @@ export interface State {
 
 type NodeId = "start" | "count" | "stop";
 
-const amble = ambler({
-  start: startNode<State, NodeId>({ onSuccess: "count", onError: "start" }),
-  count: countNode<State, NodeId>({ onCount: "count", onStop: "stop" }),
-  stop: stopNode<State, NodeId>({ onDone: null }),
-});
+const amble = ambler<State, NodeId>((bind) => ({
+  start: bind(startNode, { onSuccess: "count", onError: "start" }),
+  count: bind(countNode, { onCount: "count", onStop: "stop" }),
+  stop: bind(stopNode, { onDone: null }),
+}));
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";

@@ -13,19 +13,13 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
-const amble = ambler({
-  start: ollamaDiscoverNode<State, NodeId>({
-    onDiscovered: "modelSelect",
-    onCancel: null,
-  }),
-  modelSelect: modelSelectNode<State, NodeId>({
-    onSelect: "prompt",
-    onCancel: null,
-  }),
-  prompt: chatPromptNode<State, NodeId>({ onChat: "response", onQuit: "bye" }),
-  response: chatResponseNode<State, NodeId>({ onPrompt: "prompt" }),
-  bye: chatByeNode<State, NodeId>({ onDone: null }),
-});
+const amble = ambler<State, NodeId>((bind) => ({
+  start: bind(ollamaDiscoverNode, { onDiscovered: "modelSelect", onCancel: null }),
+  modelSelect: bind(modelSelectNode, { onSelect: "prompt", onCancel: null }),
+  prompt: bind(chatPromptNode, { onChat: "response", onQuit: "bye" }),
+  response: bind(chatResponseNode, { onPrompt: "prompt" }),
+  bye: bind(chatByeNode, { onDone: null }),
+}));
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
