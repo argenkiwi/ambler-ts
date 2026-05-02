@@ -1,4 +1,4 @@
-import { ambler, Node } from "../ambler.ts";
+import { ambler } from "../ambler.ts";
 import ollamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
 import modelSelectNode from "../nodes/modelSelectNode.ts";
 import storyIntroNode from "../nodes/storyIntroNode.ts";
