@@ -18,7 +18,10 @@ const amble = ambler({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: modelSelectNode<State, NodeId>({ onSelect: "prompt", onCancel: null }),
+  modelSelect: modelSelectNode<State, NodeId>({
+    onSelect: "prompt",
+    onCancel: null,
+  }),
   prompt: chatPromptNode<State, NodeId>({ onChat: "response", onQuit: "bye" }),
   response: chatResponseNode<State, NodeId>({ onPrompt: "prompt" }),
   bye: chatByeNode<State, NodeId>({ onDone: null }),

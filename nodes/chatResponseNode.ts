@@ -35,11 +35,13 @@ const create: NodeFactory<Edge, Utils, State> = (
       state.selectedModel,
       state.messages,
     );
+
     utils.print(`Assistant: ${reply}`);
     const messages: Message[] = [
       ...state.messages,
       { role: "assistant", content: reply },
     ];
+
     return [edges.onPrompt, { ...state, messages }];
   };
 };

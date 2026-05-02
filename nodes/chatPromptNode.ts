@@ -29,14 +29,17 @@ const create: NodeFactory<Edge, Utils, State> = (
     if (input === null) {
       return [edges.onQuit, state];
     }
+
     const trimmed = input.trim();
     if (QUIT_WORDS.has(trimmed.toLowerCase())) {
       return [edges.onQuit, state];
     }
+
     const messages: Message[] = [
       ...state.messages,
       { role: "user", content: trimmed },
     ];
+
     return [edges.onChat, { ...state, messages }];
   };
 };
