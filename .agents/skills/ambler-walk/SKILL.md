@@ -45,9 +45,9 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 
 ```typescript
 import { ambler } from "../ambler.ts";
-import nodeA from "../nodes/nodeA.ts";
-import nodeB from "../nodes/nodeB.ts";
-import nodeC from "../nodes/nodeC.ts";
+import startNode from "../nodes/startNode.ts";
+import nextNode from "../nodes/nextNode.ts";
+import stopNode from "../nodes/stopNode.ts";
 
 export interface State {
   field: string;
@@ -55,11 +55,11 @@ export interface State {
 
 type NodeId = "start" | "next" | "stop";
 
-const amble = ambler({
-  start: nodeA<State, NodeId>({ onSuccess: "next", onError: "start" }),
-  next:  nodeB<State, NodeId>({ onComplete: "stop" }),
-  stop:  nodeC<State, NodeId>({ onDone: null }),
-});
+const amble = ambler<State, NodeId>((bind) => ({
+  start: bind(startNode, { onSuccess: "next", onError: "start" }),
+  next:  bind(nextNode, { onComplete: "stop" }),
+  stop:  bind(stopNode, { onDone: null }),
+}));
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
@@ -79,8 +79,9 @@ if (import.meta.main) {
 - Import each node module as a **default import**.
 - Define `State` interface at the top of the file.
 - Define `NodeId` union type for node identifiers.
-- Initialize nodes by calling them directly: `nodeName<State, NodeId>({ ... })`.
-- Call `ambler(nodes)` outside the `if` guard, assign the result to `const amble`, and use `instanceof Promise` in the loop: `[nodeId, state] = next instanceof Promise ? await next : next`.
+- Use the `bind` callback to define transitions: `bind(nodeModule, { edgeName: "nextNodeId", ... })`.
+- Call `ambler(setupCallback)` to create the executor.
+- Use `instanceof Promise` in the loop: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
 ---
 
