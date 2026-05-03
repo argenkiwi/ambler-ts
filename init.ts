@@ -36,64 +36,7 @@ for (const dir of dirs) {
   await Deno.mkdir(dir, { recursive: true });
 }
 
-// ─── File contents ───────────────────────────────────────────────────────────
-
-const AMBLER_TS = `/**
- * The result returned by a node: a tuple of [nextNodeId, newState].
- * If nextNodeId is null, the state machine terminates.
- *
- * @template S The type of the machine's state.
- * @template K The union of valid node identifier strings.
- */
-export type Next<S, K extends string> = [key: K | null, state: S];
-
-/**
- * A function that represents a node in the state machine.
- * Receives the current state and the node's own key, and returns a Next tuple.
- *
- * @template S The type of the machine's state.
- * @template K The union of valid node identifier strings.
- */
-export type Node<S, K extends string> = (
-  state: S,
-  key?: K,
-) => Next<S, K> | Promise<Next<S, K>>;
-
-/**
- * A factory function that constructs a Node from an edge map and optional utils.
- *
- * @template E The union of edge names this node can traverse.
- * @template U The utils object injected into the node at construction time.
- * @template SConstraint An optional constraint on the state type (default: unknown).
- */
-export interface NodeFactory<E extends string, U, SConstraint = unknown> {
-  <S extends SConstraint, N extends string>(
-    edges: Record<E, N | null>,
-    utils?: U,
-  ): Node<S, N>;
-}
-
-/**
- * Creates a single-step executor for a node registry.
- * Given a nodeId and state, it looks up and invokes that node.
-
- * @template S The type of the machine's state.
- * @template K The union of valid node identifier strings.
- * @param nodes A registry of nodes, indexed by their identifiers.
- * @returns A function that executes one node step and returns a Next tuple.
- */
-export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
-  return (nodeId: K, state: S): Next<S, K> | Promise<Next<S, K>> => {
-    const node: Node<S, K> | undefined = nodes[nodeId];
-    if (!node) {
-      throw new Error(\`Node not found: \${nodeId}\`);
-    }
-
-    return node(state, nodeId);
-  };
-}
-\`;
-
+// ─── File contents ───────────
 
 const DENO_JSON = `{
   "imports": {
@@ -102,17 +45,22 @@ const DENO_JSON = `{
 }
 `;
 
-// ─── Write files ─────────────────────────────────────────────────────────────
-
-const files = [
-  { path: "ambler.ts", content: AMBLER_TS },
-  { path: "deno.json", content: DENO_JSON },
-];
+// ─── Write files ─────────────
 
 console.log(`Initializing ambler project in "${targetDir}"...`);
-for (const file of files) {
-  await Deno.writeTextFile(`${targetDir}/${file.path}`, file.content);
-  console.log(`  Created: ${file.path}`);
+
+// Copy ambler.ts from the script's location
+const amblerSrc = new URL("ambler.ts", import.meta.url).pathname;
+try {
+  await Deno.copyFile(amblerSrc, `${targetDir}/ambler.ts`);
+  console.log(`  Created: ambler.ts (copied)`);
+} catch (err) {
+  console.error(`Error copying ambler.ts: ${err.message}`);
+  Deno.exit(1);
 }
+
+// Write deno.json
+await Deno.writeTextFile(`${targetDir}/deno.json`, DENO_JSON);
+console.log(`  Created: deno.json`);
 
 console.log(`\nDone! Run "deno check ${targetDir}/ambler.ts" to verify.`);
