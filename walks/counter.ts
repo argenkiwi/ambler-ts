@@ -23,6 +23,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = next instanceof Promise ? await next : next;
+    [nodeId, state] = typeof next === 'function' ? next : await next;
   }
 }

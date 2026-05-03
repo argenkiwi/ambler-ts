@@ -67,7 +67,7 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = next instanceof Promise ? await next : next;
+    [nodeId, state] = typeof next === 'function' ? next : await next;
   }
 }
 ```
@@ -79,7 +79,7 @@ if (import.meta.main) {
 - Define `NodeId` union type for node identifiers.
 - Use the `bind` callback to define transitions: `bind(nodeModule, { edgeName: "nextNodeId", ... })`.
 - Call `ambler(setupCallback)` to create the executor.
-- Use `instanceof Promise` in the loop: `[nodeId, state] = next instanceof Promise ? await next : next`.
+- Use `typeof next === 'function'` in the loop: `[nodeId, state] = typeof next === 'function' ? next : await next`.
 
 ---
 
