@@ -8,7 +8,7 @@ metadata:
 
 # Ambler Specification
 
-This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine, following the format established in `specs/counter.md`.
+This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine.
 
 ## Instructions
 
@@ -33,7 +33,7 @@ This skill guides you in creating a Markdown specification file (`specs/<walk-na
 
 ### 4. Format the Markdown
 
-Follow the exact format of `specs/counter.md`:
+Follow this exact format:
 
 ```markdown
 # Program Specifications
@@ -68,15 +68,34 @@ Use the Write tool to create `specs/<name>.md`.
 
 ## Guidelines
 
-- **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``), matching the style in `specs/counter.md`.
+- **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``).
 - **Clarity**: Describe *what* the program does, not *how* the code implements it.
 - **Consistency**: If `walks/<name>.ts` already exists, ensure the spec reflects the implementation. If it doesn't, treat the spec as a blueprint.
 - **No extra sections**: Stick to `# Program Specifications`, `## Shared State`, and `## Steps` — no additional top-level sections unless the walk clearly requires them.
 
-## Reference Example
+## Example Specification
 
-See `specs/counter.md` for the canonical example:
+```markdown
+# Program Specifications
 
-- Shared state is a single integer (the count).
-- Three steps: `Start`, `Count`, `Stop`.
-- Each step lists role, logic, and transitions as bullet points.
+This program is a simple counter application.
+
+## Shared State
+
+The shared state is an integer representing the current count.
+
+## Steps
+
+### Start
+- This is the initial step of the application.
+- Prompts the user to enter a starting number for the count.
+- If the number entered is valid, it proceeds to `COUNT`.
+- If the number entered is invalid, it displays an error message and proceeds to `START`.
+
+### Count
+- Prints the current count and increments the counter.
+- Transitions to `COUNT` or to `STOP`.
+
+### Stop
+- Displays the final count and terminates.
+```

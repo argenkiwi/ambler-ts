@@ -14,25 +14,13 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
-const amble = ambler({
-  start: ollamaDiscoverNode<State, NodeId>({
-    onDiscovered: "modelSelect",
-    onCancel: null,
-  }),
-  modelSelect: modelSelectNode<State, NodeId>({
-    onSelect: "prompt",
-    onCancel: null,
-  }),
-  prompt: solarPromptNode<State, NodeId>({
-    onPromptComplete: "generate",
-    onCancel: null,
-  }),
-  generate: solarGenerateNode<State, NodeId>({
-    onGenerateComplete: "save",
-    onError: null,
-  }),
-  save: solarSaveNode<State, NodeId>({ onSaveComplete: null }),
-});
+const amble = ambler<State, NodeId>((bind) => ({
+  start: bind(ollamaDiscoverNode, { onDiscovered: "modelSelect", onCancel: null }),
+  modelSelect: bind(modelSelectNode, { onSelect: "prompt", onCancel: null }),
+  prompt: bind(solarPromptNode, { onPromptComplete: "generate", onCancel: null }),
+  generate: bind(solarGenerateNode, { onGenerateComplete: "save", onError: null }),
+  save: bind(solarSaveNode, { onSaveComplete: null }),
+}));
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
