@@ -13,8 +13,6 @@ This skill guides you in creating a complete Ambler walk. A walk is a state-mach
 1. `walks/<name>.ts` — TypeScript file defining the shared `State`, `initialState`, and the wired node graph.
 2. `specs/<name>.md` — Markdown specification describing the shared state and the logic/transitions of each step.
 
-The canonical reference is `walks/counter.ts` and `specs/counter.md`.
-
 ---
 
 ## Step 1 — Identify the Walk
@@ -112,15 +110,3 @@ Before finishing, confirm:
 - [ ] All tests pass.
 - [ ] The walk runs end-to-end without errors.
 
----
-
-## Reference Files
-
-| File | Purpose |
-|------|---------|
-| `walks/counter.ts` | Canonical wiring example |
-| `specs/counter.md` | Canonical specification example |
-| `nodes/startNode.ts` | Example node with input + error handling |
-| `nodes/countNode.ts` | Example node with randomized transition |
-| `nodes/stopNode.ts` | Example terminal node (returns `null`) |
-| `ambler.ts` | Core primitives: `Node`, `Edges`, `Next`, `ambler` |

@@ -87,7 +87,7 @@ For terminal nodes (which return `[null, state]`), substitute `{}` for edges and
 
 ### Test rules
 
-- **Import `assertEquals` from `@std/assert`** — same as the rest of the project.
+- **Import `assertEquals` from `@std/assert`**.
 - **Import the node with `import * as <Name>Node`** — matches the flat module-level export pattern; gives access to `<Name>Node.State`, `<Name>Node.Utils`, `<Name>Node.create`, etc.
 - **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
 - **One test per edge/branch** — cover every `[edges.onEdgeName, ...]` return and the `[null, state]` case for terminal nodes.
