@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Ambler Walk
