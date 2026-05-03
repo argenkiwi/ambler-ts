@@ -3,7 +3,7 @@ name: ambler-util
 description: Creates or extracts utility modules into the utils/ directory of an Ambler project. Use this whenever a node's defaultUtils needs external npm/jsr dependencies, contains logic reusable across multiple nodes, or has implementations too complex to inline — even if the user just says "add a util", "extract this helper", "share this function", "create a utility", or "this code is getting too long for the node". When a user creates a node that imports an npm package or has complex async logic, proactively suggest using this skill.
 metadata:
   author: leandro
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Ambler Util
