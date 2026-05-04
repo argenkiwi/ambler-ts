@@ -39,7 +39,7 @@ export type Node<S, K extends string> = (
  * @template U The utilities object injected into the node (e.g., API clients, loggers).
  * @template SConstraint A constraint on the state type.
  */
-export interface NodeFactory<E extends string, U, SConstraint> {
+export interface NodeFactory<E extends string, U, SConstraint = unknown> {
   /**
    * @template S The actual state type used in the machine (must satisfy SConstraint).
    * @template N The union of all node IDs in the machine.
