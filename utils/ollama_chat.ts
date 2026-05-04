@@ -1,4 +1,4 @@
-import { Ollama } from "npm:ollama";
+import { Ollama } from "ollama";
 
 const ollamaInstances = new Map<string, Ollama>();
 

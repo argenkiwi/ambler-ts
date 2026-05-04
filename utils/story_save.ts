@@ -1,5 +1,3 @@
-import fs from "node:fs/promises";
-
 const OUTPUT_DIR = "cyoa";
 
 /**
@@ -12,6 +10,6 @@ export async function saveFile(
   filename: string,
   content: string,
 ): Promise<void> {
-  await fs.mkdir(OUTPUT_DIR, { recursive: true });
-  await fs.writeFile(`${OUTPUT_DIR}/${filename}.md`, content);
+  await Deno.mkdir(OUTPUT_DIR, { recursive: true });
+  await Deno.writeTextFile(`${OUTPUT_DIR}/${filename}.md`, content);
 }
