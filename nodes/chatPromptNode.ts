@@ -20,7 +20,7 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-const create: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, State> = (
   edges,
   utils = defaultUtils,
 ) => {
@@ -43,5 +43,3 @@ const create: NodeFactory<Edge, Utils, State> = (
     return [edges.onChat, { ...state, messages }];
   };
 };
-
-export default create;

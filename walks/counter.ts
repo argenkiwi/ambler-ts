@@ -1,7 +1,7 @@
 import { ambler } from "../ambler.ts";
-import startNode from "../nodes/startNode.ts";
-import countNode from "../nodes/countNode.ts";
-import stopNode from "../nodes/stopNode.ts";
+import { factory as startNode } from "../nodes/startNode.ts";
+import { factory as countNode } from "../nodes/countNode.ts";
+import { factory as stopNode } from "../nodes/stopNode.ts";
 
 export interface State {
   count: number;
@@ -23,6 +23,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === "function" ? next : await next;
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }

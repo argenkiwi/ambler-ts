@@ -1,9 +1,5 @@
 import { assertEquals } from "@std/assert";
-import chatResponseNode, {
-  Message,
-  State,
-  Utils,
-} from "../chatResponseNode.ts";
+import { factory, Message, State, Utils } from "../chatResponseNode.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
@@ -23,7 +19,7 @@ Deno.test(
       },
     };
 
-    const result = await chatResponseNode(
+    const result = await factory(
       { onPrompt: "onPrompt" },
       utils,
     )(initialState);
@@ -64,7 +60,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatResponseNode(
+    const result = await factory(
       { onPrompt: "onPrompt" },
       utils,
     )(initialState);

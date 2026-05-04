@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import ollamaDiscoverNode, { State, Utils } from "../ollamaDiscoverNode.ts";
+import { factory, State, Utils } from "../ollamaDiscoverNode.ts";
 
 const baseState: State = { ollamaHost: "" };
 
@@ -13,7 +13,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await ollamaDiscoverNode(
+    const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -32,7 +32,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await ollamaDiscoverNode(
+    const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -51,7 +51,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await ollamaDiscoverNode(
+    const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
     )(baseState);

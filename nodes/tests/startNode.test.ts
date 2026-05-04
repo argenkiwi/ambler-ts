@@ -1,4 +1,4 @@
-import startNode, { State, Utils } from "../startNode.ts";
+import { factory, State, Utils } from "../startNode.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test(
@@ -11,7 +11,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await startNode(
+    const result = await factory(
       { onSuccess: "next", onError: "error" },
       utils,
     )(initialState);
@@ -31,7 +31,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await startNode(
+    const result = await factory(
       { onSuccess: "next", onError: "error" },
       utils,
     )(initialState);
@@ -51,7 +51,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await startNode(
+    const result = await factory(
       { onSuccess: "next", onError: "error" },
       utils,
     )(initialState);

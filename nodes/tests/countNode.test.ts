@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import countNode, { State, Utils } from "../countNode.ts";
+import { factory, State, Utils } from "../countNode.ts";
 
 Deno.test(
   "countNode should increment count and transition to onCount if random > 0.5",
@@ -12,7 +12,7 @@ Deno.test(
       random: () => 0.6,
     };
 
-    const result = await countNode(
+    const result = await factory(
       { onCount: "onCount", onStop: "onStop" },
       utils,
     )(initialState);
@@ -33,7 +33,7 @@ Deno.test(
       random: () => 0.4,
     };
 
-    const result = await countNode(
+    const result = await factory(
       { onCount: "onCount", onStop: "onStop" },
       utils,
     )(initialState);

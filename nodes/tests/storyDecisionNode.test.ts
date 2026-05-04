@@ -1,5 +1,5 @@
-import storyDecisionNode, { State, Utils } from "../storyDecisionNode.ts";
-import { assertEquals } from "@std/assert/equals";
+import { factory, State, Utils } from "../storyDecisionNode.ts";
+import { assertEquals } from "@std/assert";
 
 const baseState: State = {
   selectedModel: "llama3",
@@ -19,7 +19,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyDecisionNode(
+    const result = await factory(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -42,7 +42,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyDecisionNode(
+    const result = await factory(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -67,7 +67,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyDecisionNode(
+    const result = await factory(
       {
         onDecisionMade: "made",
         onCancel: "cancel",
@@ -92,7 +92,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyDecisionNode(
+    const result = await factory(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);
@@ -116,7 +116,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyDecisionNode(
+    const result = await factory(
       { onDecisionMade: "made", onCancel: "cancel", onError: "error" },
       utils,
     )(state);

@@ -1,4 +1,4 @@
-import storyPageNode, { State, Utils } from "../storyPageNode.ts";
+import { factory, State, Utils } from "../storyPageNode.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: State = {
@@ -23,7 +23,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyPageNode(
+    const result = await factory(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",
@@ -55,7 +55,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyPageNode(
+    const result = await factory(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",
@@ -84,7 +84,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyPageNode(
+    const result = await factory(
       {
         onPageComplete: "complete",
         onDecisionRequired: "decision",

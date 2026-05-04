@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import chatPromptNode, { State, Utils } from "../chatPromptNode.ts";
+import { factory, State, Utils } from "../chatPromptNode.ts";
 
 Deno.test(
   "chatPromptNode should transition to onChat with user message appended",
@@ -11,7 +11,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -31,7 +31,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -50,7 +50,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -69,7 +69,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -88,7 +88,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);
@@ -112,7 +112,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await chatPromptNode(
+    const result = await factory(
       { onChat: "onChat", onQuit: "onQuit" },
       utils,
     )(initialState);

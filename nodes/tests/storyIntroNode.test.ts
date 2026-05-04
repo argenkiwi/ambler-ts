@@ -1,4 +1,4 @@
-import storyIntroNode, { State, Utils } from "../storyIntroNode.ts";
+import { factory, State, Utils } from "../storyIntroNode.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: State = {
@@ -15,7 +15,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyIntroNode(
+    const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
@@ -34,7 +34,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyIntroNode(
+    const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
@@ -56,7 +56,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyIntroNode(
+    const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
@@ -76,7 +76,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storyIntroNode(
+    const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
     )(baseState);
