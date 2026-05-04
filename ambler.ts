@@ -33,24 +33,6 @@ export interface NodeFactory<E extends string, U, SConstraint = unknown> {
 }
 
 /**
- * Creates an adapter that maps between a walk's full state and a node's local state slice.
- *
- * @param pick - Extracts the node-local state from the full walk state.
- * @param merge - Merges the node's returned state back into the full walk state.
- * @returns An adapter compatible with the `adapter` parameter of `bind`.
- */
-export function stateAdapter<S, NS, K extends string>(
-  pick: (state: S) => NS,
-  merge: (state: S, nodeState: NS) => S,
-) {
-  return async (state: S, node: Node<NS, K>): Promise<Next<S, K>> => {
-    const next = node(pick(state));
-    const [nextNodeId, nextState] =typeof next === 'function' ? next : await next;
-    return [nextNodeId, merge(state, nextState)];
-  };
-}
-
-/**
  * The function passed to the ambler setup callback.
  * Binds a node factory to its edge map, deferring instantiation until first execution.
  *
@@ -63,6 +45,27 @@ export type Bind<S, K extends string> = <E extends string, U>(
   adapter?: (state: S, node: Node<S, K>) => Next<S, K> | Promise<Next<S, K>>,
   utils?: U,
 ) => Node<S, K>;
+
+/**
+ * Creates an adapter that maps between a walk's full state and a node's local state slice.
+ *
+ * @param pick - Extracts the node-local state from the full walk state.
+ * @param merge - Merges the node's returned state back into the full walk state.
+ * @returns An adapter compatible with the `adapter` parameter of `bind`.
+ */
+export function stateAdapter<S, NS, K extends string>(
+  pick: (state: S) => NS,
+  merge: (state: S, nodeState: NS) => S,
+) {
+  return async (state: S, node: Node<NS, K>): Promise<Next<S, K>> => {
+    const next = node(pick(state));
+    const [nextNodeId, nextState] = typeof next === "function"
+      ? next
+      : await next;
+
+    return [nextNodeId, merge(state, nextState)];
+  };
+}
 
 /**
  * Creates a single-step executor for a node registry.
