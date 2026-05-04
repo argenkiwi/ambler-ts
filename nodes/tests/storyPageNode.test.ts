@@ -15,8 +15,11 @@ Deno.test(
   "storyPageNode should transition onPageComplete when reply ends with 'The End'",
   async () => {
     const utils: Utils = {
-      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) =>
-        Promise.resolve("You discovered the secret. The End"),
+      chat: (
+        _host: string,
+        _model: string,
+        _messages: { role: string; content: string }[],
+      ) => Promise.resolve("You discovered the secret. The End"),
       print: (_msg: string) => {},
     };
 
@@ -44,7 +47,11 @@ Deno.test(
   async () => {
     const reply = "You stand at a crossroads.\n1. [ ] Go left\n2. [ ] Go right";
     const utils: Utils = {
-      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) => Promise.resolve(reply),
+      chat: (
+        _host: string,
+        _model: string,
+        _messages: { role: string; content: string }[],
+      ) => Promise.resolve(reply),
       print: (_msg: string) => {},
     };
 
@@ -67,7 +74,11 @@ Deno.test(
   "storyPageNode should call onError when chat throws",
   async () => {
     const utils: Utils = {
-      chat: (_host: string, _model: string, _messages: { role: string; content: string }[]) => {
+      chat: (
+        _host: string,
+        _model: string,
+        _messages: { role: string; content: string }[],
+      ) => {
         throw new Error("connection failed");
       },
       print: (_msg: string) => {},

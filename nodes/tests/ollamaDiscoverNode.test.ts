@@ -7,7 +7,8 @@ Deno.test(
   "ollamaDiscoverNode should set ollamaHost when a candidate host is reachable",
   async () => {
     const utils: Utils = {
-      tryHost: (host: string) => Promise.resolve(host === "http://localhost:11434"),
+      tryHost: (host: string) =>
+        Promise.resolve(host === "http://localhost:11434"),
       readLine: (_msg: string) => null,
       print: (_msg: string) => {},
     };

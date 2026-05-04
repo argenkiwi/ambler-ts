@@ -1,5 +1,9 @@
 import { assertEquals } from "@std/assert";
-import chatResponseNode, { State, Utils, Message } from "../chatResponseNode.ts";
+import chatResponseNode, {
+  Message,
+  State,
+  Utils,
+} from "../chatResponseNode.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
@@ -12,7 +16,8 @@ Deno.test(
 
     let printed: string | undefined;
     const utils: Utils = {
-      chat: (_host: string, _model: string, _messages: Message[]) => Promise.resolve("Hi there!"),
+      chat: (_host: string, _model: string, _messages: Message[]) =>
+        Promise.resolve("Hi there!"),
       print: (msg: string) => {
         printed = msg;
       },

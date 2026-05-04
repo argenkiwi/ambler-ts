@@ -56,11 +56,11 @@ try {
   console.log(`  Created: ambler.ts (copied)`);
 } catch (err: unknown) {
   if (err instanceof Error) {
-    console.log(err.message); 
+    console.log(err.message);
   } else {
-    console.log('Failed to copy ambler.ts:', err);
+    console.log("Failed to copy ambler.ts:", err);
   }
-  
+
   Deno.exit(1);
 }
 

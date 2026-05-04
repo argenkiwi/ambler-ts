@@ -19,7 +19,10 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
 const amble = ambler<State, NodeId>((bind) => ({
-  start: bind(ollamaDiscoverNode, { onDiscovered: "modelSelect", onCancel: null }),
+  start: bind(ollamaDiscoverNode, {
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  }),
   modelSelect: bind(modelSelectNode, { onSelect: "intro", onCancel: null }),
   intro: bind(storyIntroNode, { onIntroComplete: "page", onCancel: null }),
   page: bind(storyPageNode, {
@@ -49,6 +52,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === 'function' ? next : await next;
+    [nodeId, state] = typeof next === "function" ? next : await next;
   }
 }

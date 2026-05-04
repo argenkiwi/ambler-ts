@@ -15,10 +15,19 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
 const amble = ambler<State, NodeId>((bind) => ({
-  start: bind(ollamaDiscoverNode, { onDiscovered: "modelSelect", onCancel: null }),
+  start: bind(ollamaDiscoverNode, {
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  }),
   modelSelect: bind(modelSelectNode, { onSelect: "prompt", onCancel: null }),
-  prompt: bind(solarPromptNode, { onPromptComplete: "generate", onCancel: null }),
-  generate: bind(solarGenerateNode, { onGenerateComplete: "save", onError: null }),
+  prompt: bind(solarPromptNode, {
+    onPromptComplete: "generate",
+    onCancel: null,
+  }),
+  generate: bind(solarGenerateNode, {
+    onGenerateComplete: "save",
+    onError: null,
+  }),
   save: bind(solarSaveNode, { onSaveComplete: null }),
 }));
 
@@ -33,6 +42,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === 'function' ? next : await next;
+    [nodeId, state] = typeof next === "function" ? next : await next;
   }
 }
