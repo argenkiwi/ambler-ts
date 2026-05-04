@@ -54,8 +54,13 @@ const amblerSrc = new URL("ambler.ts", import.meta.url).pathname;
 try {
   await Deno.copyFile(amblerSrc, `${targetDir}/ambler.ts`);
   console.log(`  Created: ambler.ts (copied)`);
-} catch (err) {
-  console.error(`Error copying ambler.ts: ${err.message}`);
+} catch (err: unknown) {
+  if (err instanceof Error) {
+    console.log(err.message); 
+  } else {
+    console.log('Failed to copy ambler.ts:', err);
+  }
+  
   Deno.exit(1);
 }
 
