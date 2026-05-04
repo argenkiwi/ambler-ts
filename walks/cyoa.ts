@@ -1,10 +1,10 @@
 import { ambler } from "../ambler.ts";
-import ollamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
-import modelSelectNode from "../nodes/modelSelectNode.ts";
-import storyIntroNode from "../nodes/storyIntroNode.ts";
-import storyPageNode from "../nodes/storyPageNode.ts";
-import storyDecisionNode from "../nodes/storyDecisionNode.ts";
-import storySaveNode from "../nodes/storySaveNode.ts";
+import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
+import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
+import { factory as storyIntroNode } from "../nodes/storyIntroNode.ts";
+import { factory as storyPageNode } from "../nodes/storyPageNode.ts";
+import { factory as storyDecisionNode } from "../nodes/storyDecisionNode.ts";
+import { factory as storySaveNode } from "../nodes/storySaveNode.ts";
 
 export interface State {
   ollamaHost: string;
@@ -52,6 +52,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === "function" ? next : await next;
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }

@@ -1,4 +1,4 @@
-import storySaveNode, { State, Utils } from "../storySaveNode.ts";
+import { factory, State, Utils } from "../storySaveNode.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: State = {
@@ -22,7 +22,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storySaveNode(
+    const result = await factory(
       { onSaveComplete: "complete" },
       utils,
     )(baseState);
@@ -43,7 +43,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await storySaveNode(
+    const result = await factory(
       { onSaveComplete: "complete" },
       utils,
     )(baseState);

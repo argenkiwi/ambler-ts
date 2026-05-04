@@ -1,4 +1,4 @@
-import solarGenerateNode, { State, Utils } from "../solarGenerateNode.ts";
+import { factory, State, Utils } from "../solarGenerateNode.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: State = {
@@ -17,7 +17,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarGenerateNode(
+    const result = await factory(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
     )(baseState);
@@ -40,7 +40,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarGenerateNode(
+    const result = await factory(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
     )(baseState);

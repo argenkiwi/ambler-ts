@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import chatByeNode, { Utils } from "../chatByeNode.ts";
+import { factory, Utils } from "../chatByeNode.ts";
 
 Deno.test("chatByeNode should print goodbye and return terminal edge", async () => {
   let printed: string | undefined;
@@ -10,7 +10,7 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", async () 
     },
   };
 
-  const nodeResult = await chatByeNode({ onDone: null }, utils)(
+  const nodeResult = await factory({ onDone: null }, utils)(
     {},
   );
 

@@ -3,7 +3,7 @@ name: ambler-test
 description: Creates a test file for an Ambler node in the nodes/tests/ directory. Use this whenever the user wants tests for a node — including "test this node", "add tests", "write tests for X", or any time a node is created without a corresponding test file.
 metadata:
   author: leandro
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Ambler Test
@@ -39,7 +39,7 @@ Write one `Deno.test` per meaningful branch of logic (one per edge + one per err
 
 ```typescript
 import { assertEquals } from "@std/assert";
-import <name>Node, { State, Utils } from "../<name>Node.ts";
+import { factory, State, Utils } from "../<name>Node.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", () => {
   const initialState: State = { /* ... */ };
@@ -49,7 +49,7 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
     // Override each util to be deterministic and side-effect-free.
   };
 
-  const result = <name>Node(
+  const result = factory(
     { onSuccess: "next" /*, onError: "error" */ },
     utils,
   )(initialState);
@@ -63,7 +63,7 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
 
 ```typescript
 import { assertEquals } from "@std/assert";
-import <name>Node, { State, Utils } from "../<name>Node.ts";
+import { factory, State, Utils } from "../<name>Node.ts";
 
 Deno.test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: State = { /* ... */ };
@@ -73,7 +73,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
     // Override each util to be deterministic and side-effect-free.
   };
 
-  const result = await <name>Node(
+  const result = await factory(
     { onSuccess: "next" /*, onError: "error" */ },
     utils,
   )(initialState);
@@ -88,7 +88,7 @@ For terminal nodes (which return `[null, state]`), substitute `{}` for edges and
 ### Test rules
 
 - **Import `assertEquals` from `@std/assert`**.
-- **Import the node with `import * as <Name>Node`** — matches the flat module-level export pattern; gives access to `<Name>Node.State`, `<Name>Node.Utils`, `<Name>Node.create`, etc.
+- **Import the node with `import { factory, State, Utils } from "../<name>Node.ts"`** — matches the flat module-level export pattern; gives access to `State`, `Utils`, and `factory`.
 - **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
 - **One test per edge/branch** — cover every `[edges.onEdgeName, ...]` return and the `[null, state]` case for terminal nodes.
 - **Assert `result[0]`** for the next node key (or `null`) and **`result[1]`** for the updated state.

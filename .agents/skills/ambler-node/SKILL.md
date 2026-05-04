@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node in the nodes/ directory. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node".
 metadata:
   author: leandro
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Ambler Node
@@ -48,7 +48,7 @@ const defaultUtils: Utils = {
   // readLine: (msg) => prompt(msg),
 };
 
-const create: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, State> = (
   edges,
   utils = defaultUtils,
 ) => {
@@ -63,19 +63,16 @@ const create: NodeFactory<Edge, Utils, State> = (
     return [edges.onSuccess, nextState];
   };
 };
-
-export default create;
 ```
 
 ### Key rules
 
 - **Imports**: Always import `NodeFactory` from `"../ambler.ts"`.
-- **Default Export**: Export `create` as `default`.
 - **Named Exports**: Export `State`, `Edge`, and `Utils` at the module level.
-- **NodeFactory Type**: Use `const create: NodeFactory<Edge, Utils, State> = ...` to ensure types are correctly enforced.
+- **NodeFactory Type**: Use `const factory: NodeFactory<Edge, Utils, State> = ...` to ensure types are correctly enforced.
 - **Utils**: `defaultUtils` contains production implementations. Complex or reusable logic (e.g., LLM calls, file I/O) should be moved to `utils/` and imported.
 - **Immutability**: Never mutate `state` directly; always return a new object: `{ ...state, ...updates }`.
-- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their `create` signature via `NodeFactory`. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `stopNode({ onDone: null })`).
+- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their `factory` signature via `NodeFactory`. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `stopNode({ onDone: null })`).
 
 ---
 
@@ -88,7 +85,7 @@ Use the `/ambler-test` skill to generate the test file.
 ## 4. Checklist before finishing
 
 - [ ] `nodes/<name>Node.ts` uses the `Edge` naming convention for edge keys.
-- [ ] `create` function uses `NodeFactory` and is the `default` export.
+- [ ] `factory` function uses `NodeFactory`.
 - [ ] `State` interface is minimal.
 - [ ] `defaultUtils` provides real implementations.
 - [ ] No direct state mutation.

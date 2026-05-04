@@ -1,9 +1,9 @@
 import { ambler } from "../ambler.ts";
-import ollamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
-import modelSelectNode from "../nodes/modelSelectNode.ts";
-import solarPromptNode from "../nodes/solarPromptNode.ts";
-import solarGenerateNode from "../nodes/solarGenerateNode.ts";
-import solarSaveNode from "../nodes/solarSaveNode.ts";
+import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
+import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
+import { factory as solarPromptNode } from "../nodes/solarPromptNode.ts";
+import { factory as solarGenerateNode } from "../nodes/solarGenerateNode.ts";
+import { factory as solarSaveNode } from "../nodes/solarSaveNode.ts";
 
 export interface State {
   ollamaHost: string;
@@ -42,6 +42,6 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === "function" ? next : await next;
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }

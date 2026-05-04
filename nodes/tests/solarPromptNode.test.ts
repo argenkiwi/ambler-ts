@@ -1,4 +1,4 @@
-import solarPromptNode, { State, Utils } from "../solarPromptNode.ts";
+import { factory, State, Utils } from "../solarPromptNode.ts";
 import { assertEquals } from "@std/assert";
 
 const baseState: State = { solarPrompt: "" };
@@ -11,7 +11,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarPromptNode(
+    const result = await factory(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -29,7 +29,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarPromptNode(
+    const result = await factory(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
     )(baseState);

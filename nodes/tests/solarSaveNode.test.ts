@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import solarSaveNode, { State, Utils } from "../solarSaveNode.ts";
+import { factory, State, Utils } from "../solarSaveNode.ts";
 
 const baseState: State = {
   generatedStory: "Once upon a time in a solarpunk world...",
@@ -19,7 +19,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarSaveNode(
+    const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
@@ -44,7 +44,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await solarSaveNode(
+    const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);
@@ -66,7 +66,7 @@ Deno.test(
       print: (msg: string) => printed.push(msg),
     };
 
-    const result = await solarSaveNode(
+    const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
     )(baseState);

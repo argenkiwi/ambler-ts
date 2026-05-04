@@ -1,9 +1,9 @@
 import { ambler } from "../ambler.ts";
-import ollamaDiscoverNode from "../nodes/ollamaDiscoverNode.ts";
-import modelSelectNode from "../nodes/modelSelectNode.ts";
-import chatPromptNode from "../nodes/chatPromptNode.ts";
-import chatResponseNode from "../nodes/chatResponseNode.ts";
-import chatByeNode from "../nodes/chatByeNode.ts";
+import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
+import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
+import { factory as chatPromptNode } from "../nodes/chatPromptNode.ts";
+import { factory as chatResponseNode } from "../nodes/chatResponseNode.ts";
+import { factory as chatByeNode } from "../nodes/chatByeNode.ts";
 
 export interface State {
   ollamaHost: string;
@@ -13,7 +13,7 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
-const amble = ambler<State, NodeId>((bind) => ({
+const step = ambler<State, NodeId>((bind) => ({
   start: bind(ollamaDiscoverNode, {
     onDiscovered: "modelSelect",
     onCancel: null,
@@ -33,7 +33,7 @@ if (import.meta.main) {
   };
 
   while (nodeId) {
-    const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === "function" ? next : await next;
+    const next = step(nodeId, state);
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }

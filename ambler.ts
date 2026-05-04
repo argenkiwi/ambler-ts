@@ -53,6 +53,20 @@ export interface NodeFactory<E extends string, U, SConstraint = unknown> {
 }
 
 /**
+ * A middleware or transformation layer that wraps a node's execution.
+ *
+ * Adapters can be used to transform state before/after node execution,
+ * implement logging, or provide other cross-cutting concerns.
+ *
+ * @template S The type of the machine's state.
+ * @template K The union of valid node identifier strings.
+ */
+export type Adapter<S, K extends string> = (
+  state: S,
+  node: Node<S, K>,
+) => Next<S, K> | Promise<Next<S, K>>;
+
+/**
  * Registers and wires a node into the state machine.
  *
  * This function is passed to the `setup` callback of {@link ambler}. It defers the actual
@@ -67,7 +81,7 @@ export type Bind<S, K extends string> = <E extends string, U>(
   /** Map of internal edge names to external node IDs. */
   edges: Record<E, K | null>,
   /** Optional adapter for state transformation or middleware. */
-  adapter?: (state: S, node: Node<S, K>) => Next<S, K> | Promise<Next<S, K>>,
+  adapter?: Adapter<S, K>,
   /** Utilities to inject into the factory. */
   utils?: U,
 ) => Node<S, K>;
@@ -97,10 +111,7 @@ export function stateAdapter<S, NS, K extends string>(
 ) {
   return async (state: S, node: Node<NS, K>): Promise<Next<S, K>> => {
     const next = node(pick(state));
-    const [nextNodeId, nextState] = typeof next === "function"
-      ? next
-      : await next;
-
+    const [nextNodeId, nextState] = next instanceof Promise ? await next : next;
     return [nextNodeId, merge(state, nextState)];
   };
 }

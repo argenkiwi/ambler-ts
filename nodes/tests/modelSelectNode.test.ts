@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import modelSelectNode, { State, Utils } from "../modelSelectNode.ts";
+import { factory, State, Utils } from "../modelSelectNode.ts";
 
 const baseState: State = {
   selectedModel: "",
@@ -17,7 +17,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await modelSelectNode(
+    const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -36,7 +36,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await modelSelectNode(
+    const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -55,7 +55,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await modelSelectNode(
+    const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
     )(baseState);
@@ -74,7 +74,7 @@ Deno.test(
       print: (_msg: string) => {},
     };
 
-    const result = await modelSelectNode(
+    const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
     )(baseState);
