@@ -16,7 +16,6 @@ export type Next<S, K extends string> = [key: K | null, state: S];
  */
 export type Node<S, K extends string> = (
   state: S,
-  key?: K,
 ) => Next<S, K> | Promise<Next<S, K>>;
 
 /**
@@ -41,8 +40,9 @@ export interface NodeFactory<E extends string, U, SConstraint = unknown> {
  * @template K The union of valid node identifier strings.
  */
 export type Bind<S, K extends string> = <E extends string, U>(
-  factory: NodeFactory<E, U, any>,
+  factory: NodeFactory<E, U, S>,
   edges: Record<E, K | null>,
+  adapter?: (state: S, node: Node<S, K>) => Next<S, K> | Promise<Next<S, K>>,
   utils?: U,
 ) => Node<S, K>;
 
@@ -59,19 +59,21 @@ export type Bind<S, K extends string> = <E extends string, U>(
 export function ambler<S, K extends string>(
   setup: (bind: Bind<S, K>) => Record<K, Node<S, K>>,
 ) {
-  function bind<E extends string, U>(
-    factory: NodeFactory<E, U, any>,
-    edges: Record<E, K | null>,
-    utils?: U,
-  ): Node<S, K> {
+  const bind: Bind<S, K> = (
+    factory,
+    edges,
+    adapter = (state, node) => node(state),
+    utils?,
+  ): Node<S, K> => {
     let node: Node<S, K> | undefined;
-    return (state: S, key?: K) => {
+    return (state: S) => {
       if (!node) {
         node = factory<S, K>(edges, utils);
       }
-      return node(state, key);
+
+      return adapter(state, node);
     };
-  }
+  };
 
   const nodes = setup(bind);
 
@@ -80,6 +82,6 @@ export function ambler<S, K extends string>(
     if (!node) {
       throw new Error(`Node not found: ${nodeId}`);
     }
-    return node(state, nodeId);
+    return node(state);
   };
 }
