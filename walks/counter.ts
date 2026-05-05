@@ -11,7 +11,11 @@ type NodeId = "start" | "count" | "stop";
 
 const amble = ambler<State, NodeId>({
   start: startNodeFactory({ onSuccess: "count", onError: "start" }),
-  count: countNodeFactory({ onCount: "count", onStop: "stop" }),
+  count: async(state) => {
+    const run = countNodeFactory({ onCount: "count", onStop: "stop" });
+    const [nodeId, count] = await run(state.count);
+    return [nodeId, { ...state, count }];
+  },
   stop: stopNodeFactory<State, NodeId>({ onDone: null }),
 });
 

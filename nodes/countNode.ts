@@ -1,9 +1,3 @@
-import { NodeFactory } from "../ambler.ts";
-
-export interface State {
-  count: number;
-}
-
 export type Edge = "onCount" | "onStop";
 
 export type Utils = {
@@ -18,19 +12,14 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
-  edges,
-  utils = defaultUtils,
-) => {
-  return async (state) => {
-    utils.print(`Current count: ${state.count}`);
-    await utils.sleep(1000);
-    const nextState = { ...state, count: state.count + 1 };
-
-    if (utils.random() > 0.5) {
-      return [edges.onCount, nextState];
-    } else {
-      return [edges.onStop, nextState];
-    }
-  };
+export const factory = <N extends string>(
+  edges: Record<Edge, N | null>,
+  utils: Utils = defaultUtils,
+): (count: number) => Promise<[N | null, number]> =>
+async (count: number) => {
+  utils.print(`Current count: ${count}`);
+  await utils.sleep(1000);
+  const nextEdge = utils.random() > 0.5 ? "onCount" : "onStop";
+  const nextNumber = count + 1;
+  return [edges[nextEdge], nextNumber];
 };

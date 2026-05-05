@@ -1,10 +1,10 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../countNode.ts";
+import { factory, Utils } from "../countNode.ts";
 
 Deno.test(
   "countNode should increment count and transition to onCount if random > 0.5",
   async () => {
-    const initialState: State = { count: 5 };
+    const initialCount = 5;
 
     const utils: Utils = {
       print: (_msg: string) => {},
@@ -15,17 +15,17 @@ Deno.test(
     const result = await factory(
       { onCount: "onCount", onStop: "onStop" },
       utils,
-    )(initialState);
+    )(initialCount);
 
     assertEquals(result[0], "onCount");
-    assertEquals(result[1].count, 6);
+    assertEquals(result[1], 6);
   },
 );
 
 Deno.test(
   "countNode should increment count and transition to onStop if random <= 0.5",
   async () => {
-    const initialState: State = { count: 10 };
+    const initialCount = 10;
 
     const utils: Utils = {
       print: (_msg: string) => {},
@@ -36,9 +36,9 @@ Deno.test(
     const result = await factory(
       { onCount: "onCount", onStop: "onStop" },
       utils,
-    )(initialState);
+    )(initialCount);
 
     assertEquals(result[0], "onStop");
-    assertEquals(result[1].count, 11);
+    assertEquals(result[1], 11);
   },
 );
