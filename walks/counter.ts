@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { ambler, defer } from "../ambler.ts";
 import { factory as startNodeFactory } from "../nodes/startNode.ts";
 import { factory as countNodeFactory } from "../nodes/countNode.ts";
 import { factory as stopNodeFactory } from "../nodes/stopNode.ts";
@@ -9,7 +9,7 @@ export interface State {
 
 type NodeId = "start" | "count" | "stop";
 
-const countNode = countNodeFactory({ onCount: "count", onStop: "stop" });
+const countNode = defer(() => countNodeFactory<NodeId>({ onCount: "count", onStop: "stop" }));
 
 const amble = ambler<State, NodeId>({
   start: startNodeFactory({ onSuccess: "count", onError: "start" }),
