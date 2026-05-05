@@ -37,20 +37,12 @@ export type Node<S, K extends string> = (
  *
  * @template E The union of internal edge names this node can traverse (e.g., "onSuccess" | "onError").
  * @template U The utilities object injected into the node (e.g., API clients, loggers).
- * @template SConstraint A constraint on the state type.
+ * @template S The state type this node operates on.
  */
-export interface NodeFactory<E extends string, U, SConstraint = unknown> {
-  /**
-   * @template S The actual state type used in the machine (must satisfy SConstraint).
-   * @template N The union of all node IDs in the machine.
-   * @param edges A mapping from internal edge names (`E`) to external node IDs (`N`).
-   * @param utils Optional utility dependencies for the node.
-   */
-  <S extends SConstraint, N extends string>(
-    edges: Record<E, N | null>,
-    utils?: U,
-  ): Node<S, N>;
-}
+export type NodeFactory<E extends string, U, S = unknown> = <N extends string>(
+  edges: Record<E, N | null>,
+  utils?: U,
+) => Node<S, N>;
 
 /**
  * Wraps a {@link Node} to operate on a different state type.
