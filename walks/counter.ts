@@ -17,7 +17,7 @@ const amble = ambler<State, NodeId>({
     const [nodeId, count] = await countNode(state.count);
     return [nodeId, { ...state, count }];
   },
-  stop: stopNodeFactory<State, NodeId>({ onDone: null }),
+  stop: stopNodeFactory<NodeId>({ onDone: null }),
 });
 
 if (import.meta.main) {
