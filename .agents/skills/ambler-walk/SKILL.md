@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Ambler Walk
@@ -42,10 +42,10 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { ambler } from "../ambler.ts";
-import startNode from "../nodes/startNode.ts";
-import nextNode from "../nodes/nextNode.ts";
-import stopNode from "../nodes/stopNode.ts";
+import { ambler, defer } from "../ambler.ts";
+import { factory as startNodeFactory } from "../nodes/startNode.ts";
+import { factory as nextNodeFactory } from "../nodes/nextNode.ts";
+import { factory as stopNodeFactory } from "../nodes/stopNode.ts";
 
 export interface State {
   field: string;
@@ -53,11 +53,11 @@ export interface State {
 
 type NodeId = "start" | "next" | "stop";
 
-const amble = ambler<State, NodeId>((bind) => ({
-  start: bind(startNode, { onSuccess: "next", onError: "start" }),
-  next:  bind(nextNode, { onComplete: "stop" }),
-  stop:  bind(stopNode, { onDone: null }),
-}));
+const amble = ambler<State, NodeId>({
+  start: defer(() => startNodeFactory<State, NodeId>({ onSuccess: "next", onError: "start" })),
+  next:  defer(() => nextNodeFactory<State, NodeId>({ onComplete: "stop" })),
+  stop:  defer(() => stopNodeFactory<State, NodeId>({ onDone: null })),
+});
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
@@ -67,19 +67,20 @@ if (import.meta.main) {
 
   while (nodeId) {
     const next = amble(nodeId, state);
-    [nodeId, state] = typeof next === 'function' ? next : await next;
+    [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }
 ```
 
 **Key rules:**
-- Import `ambler` from `../ambler.ts`.
-- Import each node module as a **default import**.
+- Import `ambler`, `defer`, and optionally `adapt` from `../ambler.ts`.
+- Import each node factory as a **named import** (e.g., `import { factory as startNodeFactory } from "../nodes/startNode.ts"`).
 - Define `State` interface at the top of the file.
 - Define `NodeId` union type for node identifiers.
-- Use the `bind` callback to define transitions: `bind(nodeModule, { edgeName: "nextNodeId", ... })`.
-- Call `ambler(setupCallback)` to create the executor.
-- Use `typeof next === 'function'` in the loop: `[nodeId, state] = typeof next === 'function' ? next : await next`.
+- Use `ambler<State, NodeId>({ ... })` to create the executor, passing a record of node IDs to node implementations.
+- Use `defer(() => factory<State, NodeId>(edges, utils))` for lazy initialization and to break circular dependencies. Always provide explicit type parameters `<State, NodeId>` to the factory to ensure proper type inference.
+- Use `adapt` to wrap nodes that operate on a different state type.
+- The main loop uses `instanceof Promise` to handle both sync and async nodes: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
 ---
 

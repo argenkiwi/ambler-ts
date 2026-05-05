@@ -53,63 +53,24 @@ export interface NodeFactory<E extends string, U, SConstraint = unknown> {
 }
 
 /**
- * A middleware or transformation layer that wraps a node's execution.
+ * Wraps a {@link Node} to operate on a different state type.
  *
- * Adapters can be used to transform state before/after node execution,
- * implement logging, or provide other cross-cutting concerns.
- *
- * @template S The type of the machine's state.
- * @template K The union of valid node identifier strings.
- */
-export type Adapter<S, K extends string> = (
-  state: S,
-  node: Node<S, K>,
-) => Next<S, K> | Promise<Next<S, K>>;
-
-/**
- * Registers and wires a node into the state machine.
- *
- * This function is passed to the `setup` callback of {@link ambler}. It defers the actual
- * instantiation of the node (via its factory) until it is first executed.
+ * Useful for reusing nodes that operate on a sub-state within a machine that has a larger state.
  *
  * @template S The type of the machine's state.
+ * @template NS The type of the sub-state the node expects.
  * @template K The union of valid node identifier strings.
+ * @param node The node to adapt.
+ * @param pick A function to extract the sub-state from the machine state.
+ * @param merge A function to merge the updated sub-state back into the machine state.
+ * @returns A new node that operates on the machine state.
  */
-export type Bind<S, K extends string> = <E extends string, U>(
-  /** The factory used to create the node. */
-  factory: NodeFactory<E, U, S>,
-  /** Map of internal edge names to external node IDs. */
-  edges: Record<E, K | null>,
-  /** Optional adapter for state transformation or middleware. */
-  adapter?: Adapter<S, K>,
-  /** Utilities to inject into the factory. */
-  utils?: U,
-) => Node<S, K>;
-
-/**
- * Creates an adapter that maps between a walk's shared state and a node's internal state slice.
- *
- * This is useful for building reusable nodes that only care about a specific part of the state.
- *
- * @example
- * ```ts
- * const adapter = stateAdapter(
- *   (walkState) => ({ path: walkState.sourcePath }),
- *   (walkState, nodeState) => ({ ...walkState, sourcePath: nodeState.path })
- * );
- *
- * bind(selectFileNode, { next: "edit" }, adapter);
- * ```
- *
- * @param pick - Extracts the node-local state from the shared state.
- * @param merge - Merges the node's updated internal state back into the shared state.
- * @returns An adapter compatible with the `adapter` parameter of `bind`.
- */
-export function stateAdapter<S, NS, K extends string>(
+export function adapt<S, NS, K extends string>(
+  node: Node<NS, K>,
   pick: (state: S) => NS,
   merge: (state: S, nodeState: NS) => S,
-) {
-  return async (state: S, node: Node<NS, K>): Promise<Next<S, K>> => {
+): Node<S, K> {
+  return async (state: S) => {
     const next = node(pick(state));
     const [nextNodeId, nextState] = next instanceof Promise ? await next : next;
     return [nextNodeId, merge(state, nextState)];
@@ -117,52 +78,48 @@ export function stateAdapter<S, NS, K extends string>(
 }
 
 /**
- * Creates a state machine executor.
+ * Lazily initializes a {@link Node} on its first execution.
  *
- * The `setup` callback is used to register nodes using the provided `bind` function.
- * Nodes are instantiated lazily on their first execution.
+ * This is useful for breaking circular dependencies between nodes or delaying the
+ * initialization of expensive resources (like network clients) until they are actually needed.
  *
- * @example
- * ```ts
- * const run = ambler((bind) => ({
- *   start: bind(startNode, { onSuccess: "end" }),
- *   end: bind(stopNode, { onDone: null }),
- * }));
+ * @template S The type of the machine's state.
+ * @template N The union of valid node identifier strings.
+ * @param create A factory function that constructs the node.
+ * @returns A node that will initialize itself using `create` when first called.
+ */
+export function defer<S, N extends string>(
+  create: () => Node<S, N>,
+): Node<S, N> {
+  let node: Node<S, N> | null = null;
+  return (state: S) => {
+    if (!node) {
+      node = create();
+    }
+
+    return node(state);
+  };
+}
+
+/**
+ * Creates a state machine runner from a collection of nodes.
  *
- * let [next, state] = await run("start", { count: 0 });
- * ```
+ * The returned function takes a node ID and the current state, and executes the corresponding node.
+ * It is typically used in a loop to drive the machine until it terminates.
  *
  * @template S The type of the machine's state.
  * @template K The union of valid node identifier strings.
- * @param setup A callback that registers nodes and returns the node registry.
- * @returns A function that executes a single node step and returns the next transition.
+ * @param nodes A mapping of node IDs to their implementations.
+ * @returns A runner function that executes a specific node.
+ * @throws {Error} If the requested nodeId does not exist in the nodes record.
  */
-export function ambler<S, K extends string>(
-  setup: (bind: Bind<S, K>) => Record<K, Node<S, K>>,
-) {
-  const bind: Bind<S, K> = (
-    factory,
-    edges,
-    adapter = (state, node) => node(state),
-    utils?,
-  ): Node<S, K> => {
-    let node: Node<S, K> | undefined;
-    return (state: S) => {
-      if (!node) {
-        node = factory<S, K>(edges, utils);
-      }
-
-      return adapter(state, node);
-    };
-  };
-
-  const nodes = setup(bind);
-
+export function ambler<S, K extends string>(nodes: Record<K, Node<S, K>>) {
   return (nodeId: K, state: S): Next<S, K> | Promise<Next<S, K>> => {
     const node: Node<S, K> | undefined = nodes[nodeId];
     if (!node) {
       throw new Error(`Node not found: ${nodeId}`);
     }
+
     return node(state);
   };
 }
