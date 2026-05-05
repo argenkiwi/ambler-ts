@@ -18,25 +18,25 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
-const amble = ambler<State, NodeId>((bind) => ({
-  start: bind(ollamaDiscoverNode, {
+const amble = ambler<State, NodeId>({
+  start: ollamaDiscoverNode({
     onDiscovered: "modelSelect",
     onCancel: null,
   }),
-  modelSelect: bind(modelSelectNode, { onSelect: "intro", onCancel: null }),
-  intro: bind(storyIntroNode, { onIntroComplete: "page", onCancel: null }),
-  page: bind(storyPageNode, {
+  modelSelect: modelSelectNode({ onSelect: "intro", onCancel: null }),
+  intro: storyIntroNode({ onIntroComplete: "page", onCancel: null }),
+  page: storyPageNode({
     onPageComplete: "save",
     onDecisionRequired: "decision",
     onError: null,
   }),
-  decision: bind(storyDecisionNode, {
+  decision: storyDecisionNode({
     onDecisionMade: "page",
     onCancel: null,
     onError: null,
   }),
-  save: bind(storySaveNode, { onSaveComplete: null }),
-}));
+  save: storySaveNode<State, NodeId>({ onSaveComplete: null }),
+});
 
 if (import.meta.main) {
   let nodeId: NodeId | null = "start";
