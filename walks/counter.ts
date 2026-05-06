@@ -1,7 +1,7 @@
-import { ambler } from "../ambler.ts";
-import { factory as startFactory } from "../cores/start.ts";
-import { factory as countFactory } from "../cores/count.ts";
-import { factory as stopFactory } from "../cores/stop.ts";
+import { ambler, Node } from "../ambler.ts";
+import { factory as startCore } from "../cores/start.ts";
+import { factory as countCore } from "../cores/count.ts";
+import { factory as stopCore } from "../cores/stop.ts";
 
 export interface State {
   count: number;
@@ -9,31 +9,42 @@ export interface State {
 
 type NodeId = "start" | "count" | "stop";
 
-const startCore = startFactory<NodeId>({
-  onSuccess: "count",
-  onError: "start",
-});
+const startNode = (): Node<State, NodeId> => {
+  const core = startCore<NodeId>({
+    onSuccess: "count",
+    onError: "start",
+  });
 
-const countCore = countFactory<NodeId>({
-  onCount: "count",
-  onStop: "stop",
-});
+  return (state: State) => {
+    const [nodeId, output] = core();
+    return [nodeId, { ...state, count: output }];
+  };
+};
 
-const stopCore = stopFactory<NodeId>({ onDone: null });
+const countNode = (): Node<State, NodeId> => {
+  const core = countCore<NodeId>({
+    onCount: "count",
+    onStop: "stop",
+  });
+
+  return async (state: State) => {
+    const [nodeId, output] = await core(state.count);
+    return [nodeId, { ...state, count: output }];
+  };
+};
+
+const stopNode = (): Node<State, NodeId> => {
+  const core = stopCore<NodeId>({ onDone: null });
+  return (state: State) => {
+    const [nodeId, _] = core(state.count);
+    return [nodeId, state];
+  };
+};
 
 const amble = ambler<State, NodeId>({
-  start: (state) => {
-    const [nodeId, output] = startCore();
-    return [nodeId, { ...state, count: output }];
-  },
-  count: async (state) => {
-    const [nodeId, output] = await countCore(state.count);
-    return [nodeId, { ...state, count: output }];
-  },
-  stop: (state) => {
-    const [nodeId, _] = stopCore(state.count);
-    return [nodeId, state];
-  },
+  start: startNode(),
+  count: countNode(),
+  stop: stopNode(),
 });
 
 if (import.meta.main) {
