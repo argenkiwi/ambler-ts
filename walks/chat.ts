@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import { factory as ollamaDiscoverFactory } from "../cores/ollamaDiscover.ts";
 import { factory as modelSelectFactory } from "../cores/modelSelect.ts";
 import { factory as chatPromptFactory } from "../cores/chatPrompt.ts";
@@ -13,54 +13,71 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
-const ollamaDiscoverCore = ollamaDiscoverFactory<NodeId>({
-  onDiscovered: "modelSelect",
-  onCancel: null,
-});
+const startNode = (): Node<State, NodeId> => {
+  const core = ollamaDiscoverFactory({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  });
 
-const modelSelectCore = modelSelectFactory<NodeId>({
-  onSelect: "prompt",
-  onCancel: null,
-});
-
-const chatPromptCore = chatPromptFactory<NodeId>({
-  onChat: "response",
-  onQuit: "bye",
-});
-
-const chatResponseCore = chatResponseFactory<NodeId>({
-  onPrompt: "prompt",
-});
-
-const chatByeCore = chatByeFactory<NodeId>({
-  onDone: null,
-});
-
-const amble = ambler<State, NodeId>({
-  start: async (state) => {
-    const [nodeId, ollamaHost] = await ollamaDiscoverCore();
+  return async (state: State) => {
+    const [nodeId, ollamaHost] = await core();
     return [nodeId, { ...state, ollamaHost }];
-  },
-  modelSelect: async (state) => {
-    const [nodeId, selectedModel] = await modelSelectCore(state.ollamaHost);
+  };
+};
+
+const modelSelectNode = (): Node<State, NodeId> => {
+  const core = modelSelectFactory({
+    onSelect: "prompt",
+    onCancel: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, selectedModel] = await core(state.ollamaHost);
     return [nodeId, { ...state, selectedModel }];
-  },
-  prompt: (state) => {
-    const [nodeId, messages] = chatPromptCore(state.messages);
+  };
+};
+
+const promptNode = (): Node<State, NodeId> => {
+  const core = chatPromptFactory({
+    onChat: "response",
+    onQuit: "bye",
+  });
+
+  return (state: State) => {
+    const [nodeId, messages] = core(state.messages);
     return [nodeId, { ...state, messages }];
-  },
-  response: async (state) => {
-    const [nodeId, messages] = await chatResponseCore({
+  };
+};
+
+const responseNode = (): Node<State, NodeId> => {
+  const core = chatResponseFactory({
+    onPrompt: "prompt",
+  });
+
+  return async (state: State) => {
+    const [nodeId, messages] = await core({
       ollamaHost: state.ollamaHost,
       selectedModel: state.selectedModel,
       messages: state.messages,
     });
     return [nodeId, { ...state, messages }];
-  },
-  bye: (state) => {
-    const [nodeId, _] = chatByeCore();
+  };
+};
+
+const byeNode = (): Node<State, NodeId> => {
+  const core = chatByeFactory<NodeId>({ onDone: null });
+  return (state: State) => {
+    const [nodeId, _] = core();
     return [nodeId, state];
-  },
+  };
+};
+
+const amble = ambler<State, NodeId>({
+  start: startNode(),
+  modelSelect: modelSelectNode(),
+  prompt: promptNode(),
+  response: responseNode(),
+  bye: byeNode(),
 });
 
 if (import.meta.main) {

@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import { factory as ollamaDiscoverFactory } from "../cores/ollamaDiscover.ts";
 import { factory as modelSelectFactory } from "../cores/modelSelect.ts";
 import { factory as solarPromptFactory } from "../cores/solarPrompt.ts";
@@ -14,55 +14,75 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
-const ollamaDiscoverCore = ollamaDiscoverFactory<NodeId>({
-  onDiscovered: "modelSelect",
-  onCancel: null,
-});
+const startNode = (): Node<State, NodeId> => {
+  const core = ollamaDiscoverFactory({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  });
 
-const modelSelectCore = modelSelectFactory<NodeId>({
-  onSelect: "prompt",
-  onCancel: null,
-});
-
-const solarPromptCore = solarPromptFactory<NodeId>({
-  onPromptComplete: "generate",
-  onCancel: null,
-});
-
-const solarGenerateCore = solarGenerateFactory<NodeId>({
-  onGenerateComplete: "save",
-  onError: null,
-});
-
-const solarSaveCore = solarSaveFactory<NodeId>({
-  onSaveComplete: null,
-});
-
-const amble = ambler<State, NodeId>({
-  start: async (state) => {
-    const [nodeId, ollamaHost] = await ollamaDiscoverCore();
+  return async (state: State) => {
+    const [nodeId, ollamaHost] = await core();
     return [nodeId, { ...state, ollamaHost }];
-  },
-  modelSelect: async (state) => {
-    const [nodeId, selectedModel] = await modelSelectCore(state.ollamaHost);
+  };
+};
+
+const modelSelectNode = (): Node<State, NodeId> => {
+  const core = modelSelectFactory({
+    onSelect: "prompt",
+    onCancel: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, selectedModel] = await core(state.ollamaHost);
     return [nodeId, { ...state, selectedModel }];
-  },
-  prompt: (state) => {
-    const [nodeId, solarPrompt] = solarPromptCore();
+  };
+};
+
+const promptNode = (): Node<State, NodeId> => {
+  const core = solarPromptFactory({
+    onPromptComplete: "generate",
+    onCancel: null,
+  });
+
+  return (state: State) => {
+    const [nodeId, solarPrompt] = core();
     return [nodeId, { ...state, solarPrompt }];
-  },
-  generate: async (state) => {
-    const [nodeId, generatedStory] = await solarGenerateCore({
+  };
+};
+
+const generateNode = (): Node<State, NodeId> => {
+  const core = solarGenerateFactory({
+    onGenerateComplete: "save",
+    onError: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, generatedStory] = await core({
       ollamaHost: state.ollamaHost,
       selectedModel: state.selectedModel,
       solarPrompt: state.solarPrompt,
     });
     return [nodeId, { ...state, generatedStory }];
-  },
-  save: async (state) => {
-    const [nodeId, _] = await solarSaveCore(state.generatedStory);
+  };
+};
+
+const saveNode = (): Node<State, NodeId> => {
+  const core = solarSaveFactory<NodeId>({
+    onSaveComplete: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, _] = await core(state.generatedStory);
     return [nodeId, state];
-  },
+  };
+};
+
+const amble = ambler<State, NodeId>({
+  start: startNode(),
+  modelSelect: modelSelectNode(),
+  prompt: promptNode(),
+  generate: generateNode(),
+  save: saveNode(),
 });
 
 if (import.meta.main) {

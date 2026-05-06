@@ -10,24 +10,24 @@ export interface State {
 type NodeId = "start" | "count" | "stop";
 
 const startNode = (): Node<State, NodeId> => {
-  const core = startCore<NodeId>({
+  const core = startCore({
     onSuccess: "count",
     onError: "start",
   });
 
-  return (state: State) => {
+  return (state) => {
     const [nodeId, output] = core();
     return [nodeId, { ...state, count: output }];
   };
 };
 
 const countNode = (): Node<State, NodeId> => {
-  const core = countCore<NodeId>({
+  const core = countCore({
     onCount: "count",
     onStop: "stop",
   });
 
-  return async (state: State) => {
+  return async (state) => {
     const [nodeId, output] = await core(state.count);
     return [nodeId, { ...state, count: output }];
   };
@@ -35,7 +35,7 @@ const countNode = (): Node<State, NodeId> => {
 
 const stopNode = (): Node<State, NodeId> => {
   const core = stopCore<NodeId>({ onDone: null });
-  return (state: State) => {
+  return (state) => {
     const [nodeId, _] = core(state.count);
     return [nodeId, state];
   };

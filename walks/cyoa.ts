@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { ambler, Node } from "../ambler.ts";
 import { factory as ollamaDiscoverFactory } from "../cores/ollamaDiscover.ts";
 import { factory as modelSelectFactory } from "../cores/modelSelect.ts";
 import { factory as storyIntroFactory } from "../cores/storyIntro.ts";
@@ -18,57 +18,56 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
-const ollamaDiscoverCore = ollamaDiscoverFactory<NodeId>({
-  onDiscovered: "modelSelect",
-  onCancel: null,
-});
+const startNode = (): Node<State, NodeId> => {
+  const core = ollamaDiscoverFactory({
+    onDiscovered: "modelSelect",
+    onCancel: null,
+  });
 
-const modelSelectCore = modelSelectFactory<NodeId>({
-  onSelect: "intro",
-  onCancel: null,
-});
-
-const storyIntroCore = storyIntroFactory<NodeId>({
-  onIntroComplete: "page",
-  onCancel: null,
-});
-
-const storyPageCore = storyPageFactory<NodeId>({
-  onPageComplete: "save",
-  onDecisionRequired: "decision",
-  onError: null,
-});
-
-const storyDecisionCore = storyDecisionFactory<NodeId>({
-  onDecisionMade: "page",
-  onCancel: null,
-  onError: null,
-});
-
-const storySaveCore = storySaveFactory<NodeId>({
-  onSaveComplete: null,
-});
-
-const amble = ambler<State, NodeId>({
-  start: async (state) => {
-    const [nodeId, ollamaHost] = await ollamaDiscoverCore();
+  return async (state: State) => {
+    const [nodeId, ollamaHost] = await core();
     return [nodeId, { ...state, ollamaHost }];
-  },
-  modelSelect: async (state) => {
-    const [nodeId, selectedModel] = await modelSelectCore(state.ollamaHost);
+  };
+};
+
+const modelSelectNode = (): Node<State, NodeId> => {
+  const core = modelSelectFactory({
+    onSelect: "intro",
+    onCancel: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, selectedModel] = await core(state.ollamaHost);
     return [nodeId, { ...state, selectedModel }];
-  },
-  intro: (state) => {
-    const [nodeId, output] = storyIntroCore();
+  };
+};
+
+const introNode = (): Node<State, NodeId> => {
+  const core = storyIntroFactory({
+    onIntroComplete: "page",
+    onCancel: null,
+  });
+
+  return (state: State) => {
+    const [nodeId, output] = core();
     return [nodeId, {
       ...state,
       identity: output.identity,
       placement: output.placement,
       circumstances: output.circumstances,
     }];
-  },
-  page: async (state) => {
-    const [nodeId, output] = await storyPageCore({
+  };
+};
+
+const pageNode = (): Node<State, NodeId> => {
+  const core = storyPageFactory({
+    onPageComplete: "save",
+    onDecisionRequired: "decision",
+    onError: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, output] = await core({
       selectedModel: state.selectedModel,
       ollamaHost: state.ollamaHost,
       identity: state.identity,
@@ -82,15 +81,40 @@ const amble = ambler<State, NodeId>({
       storyPages: output.storyPages,
       currentPage: output.currentPage,
     }];
-  },
-  decision: async (state) => {
-    const [nodeId, storyPages] = await storyDecisionCore(state.storyPages);
+  };
+};
+
+const decisionNode = (): Node<State, NodeId> => {
+  const core = storyDecisionFactory({
+    onDecisionMade: "page",
+    onCancel: null,
+    onError: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, storyPages] = await core(state.storyPages);
     return [nodeId, { ...state, storyPages }];
-  },
-  save: async (state) => {
-    const [nodeId, _] = await storySaveCore(state.storyPages);
+  };
+};
+
+const saveNode = (): Node<State, NodeId> => {
+  const core = storySaveFactory<NodeId>({
+    onSaveComplete: null,
+  });
+
+  return async (state: State) => {
+    const [nodeId, _] = await core(state.storyPages);
     return [nodeId, state];
-  },
+  };
+};
+
+const amble = ambler<State, NodeId>({
+  start: startNode(),
+  modelSelect: modelSelectNode(),
+  intro: introNode(),
+  page: pageNode(),
+  decision: decisionNode(),
+  save: saveNode(),
 });
 
 if (import.meta.main) {
