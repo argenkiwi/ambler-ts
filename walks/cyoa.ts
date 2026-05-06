@@ -1,10 +1,10 @@
-import { adapt, ambler } from "../ambler.ts";
-import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
-import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
-import { factory as storyIntroNode } from "../nodes/storyIntroNode.ts";
-import { factory as storyPageNode } from "../nodes/storyPageNode.ts";
-import { factory as storyDecisionNode } from "../nodes/storyDecisionNode.ts";
-import { factory as storySaveNode } from "../nodes/storySaveNode.ts";
+import { ambler } from "../ambler.ts";
+import { factory as ollamaDiscoverFactory } from "../cores/ollamaDiscover.ts";
+import { factory as modelSelectFactory } from "../cores/modelSelect.ts";
+import { factory as storyIntroFactory } from "../cores/storyIntro.ts";
+import { factory as storyPageFactory } from "../cores/storyPage.ts";
+import { factory as storyDecisionFactory } from "../cores/storyDecision.ts";
+import { factory as storySaveFactory } from "../cores/storySave.ts";
 
 export interface State {
   ollamaHost: string;
@@ -18,37 +18,57 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
+const ollamaDiscoverCore = ollamaDiscoverFactory<NodeId>({
+  onDiscovered: "modelSelect",
+  onCancel: null,
+});
+
+const modelSelectCore = modelSelectFactory<NodeId>({
+  onSelect: "intro",
+  onCancel: null,
+});
+
+const storyIntroCore = storyIntroFactory<NodeId>({
+  onIntroComplete: "page",
+  onCancel: null,
+});
+
+const storyPageCore = storyPageFactory<NodeId>({
+  onPageComplete: "save",
+  onDecisionRequired: "decision",
+  onError: null,
+});
+
+const storyDecisionCore = storyDecisionFactory<NodeId>({
+  onDecisionMade: "page",
+  onCancel: null,
+  onError: null,
+});
+
+const storySaveCore = storySaveFactory<NodeId>({
+  onSaveComplete: null,
+});
+
 const amble = ambler<State, NodeId>({
-  start: adapt(
-    ollamaDiscoverNode({
-      onDiscovered: "modelSelect",
-      onCancel: null,
-    }),
-    () => {},
-    (state, output) => ({ ...state, ollamaHost: output.ollamaHost }),
-  ),
-  modelSelect: adapt(
-    modelSelectNode({ onSelect: "intro", onCancel: null }),
-    (state) => ({ ollamaHost: state.ollamaHost }),
-    (state, output) => ({ ...state, selectedModel: output.selectedModel }),
-  ),
-  intro: adapt(
-    storyIntroNode({ onIntroComplete: "page", onCancel: null }),
-    () => {},
-    (state, output) => ({
+  start: async (state) => {
+    const [nodeId, ollamaHost] = await ollamaDiscoverCore();
+    return [nodeId, { ...state, ollamaHost }];
+  },
+  modelSelect: async (state) => {
+    const [nodeId, selectedModel] = await modelSelectCore(state.ollamaHost);
+    return [nodeId, { ...state, selectedModel }];
+  },
+  intro: (state) => {
+    const [nodeId, output] = storyIntroCore();
+    return [nodeId, {
       ...state,
       identity: output.identity,
       placement: output.placement,
       circumstances: output.circumstances,
-    }),
-  ),
-  page: adapt(
-    storyPageNode({
-      onPageComplete: "save",
-      onDecisionRequired: "decision",
-      onError: null,
-    }),
-    (state) => ({
+    }];
+  },
+  page: async (state) => {
+    const [nodeId, output] = await storyPageCore({
       selectedModel: state.selectedModel,
       ollamaHost: state.ollamaHost,
       identity: state.identity,
@@ -56,27 +76,21 @@ const amble = ambler<State, NodeId>({
       circumstances: state.circumstances,
       storyPages: state.storyPages,
       currentPage: state.currentPage,
-    }),
-    (state, output) => ({
+    });
+    return [nodeId, {
       ...state,
       storyPages: output.storyPages,
       currentPage: output.currentPage,
-    }),
-  ),
-  decision: adapt(
-    storyDecisionNode({
-      onDecisionMade: "page",
-      onCancel: null,
-      onError: null,
-    }),
-    (state) => ({ storyPages: state.storyPages }),
-    (state, output) => ({ ...state, storyPages: output.storyPages }),
-  ),
-  save: adapt(
-    storySaveNode<NodeId>({ onSaveComplete: null }),
-    (state) => ({ storyPages: state.storyPages }),
-    (state) => state,
-  ),
+    }];
+  },
+  decision: async (state) => {
+    const [nodeId, storyPages] = await storyDecisionCore(state.storyPages);
+    return [nodeId, { ...state, storyPages }];
+  },
+  save: async (state) => {
+    const [nodeId, _] = await storySaveCore(state.storyPages);
+    return [nodeId, state];
+  },
 });
 
 if (import.meta.main) {

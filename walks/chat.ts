@@ -1,9 +1,9 @@
-import { adapt, ambler } from "../ambler.ts";
-import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
-import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
-import { factory as chatPromptNode } from "../nodes/chatPromptNode.ts";
-import { factory as chatResponseNode } from "../nodes/chatResponseNode.ts";
-import { factory as chatByeNode } from "../nodes/chatByeNode.ts";
+import { ambler } from "../ambler.ts";
+import { factory as ollamaDiscoverFactory } from "../cores/ollamaDiscover.ts";
+import { factory as modelSelectFactory } from "../cores/modelSelect.ts";
+import { factory as chatPromptFactory } from "../cores/chatPrompt.ts";
+import { factory as chatResponseFactory } from "../cores/chatResponse.ts";
+import { factory as chatByeFactory } from "../cores/chatBye.ts";
 
 export interface State {
   ollamaHost: string;
@@ -13,39 +13,54 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
+const ollamaDiscoverCore = ollamaDiscoverFactory<NodeId>({
+  onDiscovered: "modelSelect",
+  onCancel: null,
+});
+
+const modelSelectCore = modelSelectFactory<NodeId>({
+  onSelect: "prompt",
+  onCancel: null,
+});
+
+const chatPromptCore = chatPromptFactory<NodeId>({
+  onChat: "response",
+  onQuit: "bye",
+});
+
+const chatResponseCore = chatResponseFactory<NodeId>({
+  onPrompt: "prompt",
+});
+
+const chatByeCore = chatByeFactory<NodeId>({
+  onDone: null,
+});
+
 const amble = ambler<State, NodeId>({
-  start: adapt(
-    ollamaDiscoverNode({
-      onDiscovered: "modelSelect",
-      onCancel: null,
-    }),
-    () => {},
-    (state, output) => ({ ...state, ollamaHost: output.ollamaHost }),
-  ),
-  modelSelect: adapt(
-    modelSelectNode({ onSelect: "prompt", onCancel: null }),
-    (state) => ({ ollamaHost: state.ollamaHost }),
-    (state, output) => ({ ...state, selectedModel: output.selectedModel }),
-  ),
-  prompt: adapt(
-    chatPromptNode({ onChat: "response", onQuit: "bye" }),
-    (state) => ({ messages: state.messages }),
-    (state, output) => ({ ...state, messages: output.messages }),
-  ),
-  response: adapt(
-    chatResponseNode({ onPrompt: "prompt" }),
-    (state) => ({
+  start: async (state) => {
+    const [nodeId, ollamaHost] = await ollamaDiscoverCore();
+    return [nodeId, { ...state, ollamaHost }];
+  },
+  modelSelect: async (state) => {
+    const [nodeId, selectedModel] = await modelSelectCore(state.ollamaHost);
+    return [nodeId, { ...state, selectedModel }];
+  },
+  prompt: (state) => {
+    const [nodeId, messages] = chatPromptCore(state.messages);
+    return [nodeId, { ...state, messages }];
+  },
+  response: async (state) => {
+    const [nodeId, messages] = await chatResponseCore({
       ollamaHost: state.ollamaHost,
       selectedModel: state.selectedModel,
       messages: state.messages,
-    }),
-    (state, output) => ({ ...state, messages: output.messages }),
-  ),
-  bye: adapt(
-    chatByeNode<NodeId>({ onDone: null }),
-    () => {},
-    (state) => state,
-  ),
+    });
+    return [nodeId, { ...state, messages }];
+  },
+  bye: (state) => {
+    const [nodeId, _] = chatByeCore();
+    return [nodeId, state];
+  },
 });
 
 if (import.meta.main) {
