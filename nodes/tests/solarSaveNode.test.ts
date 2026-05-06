@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../solarSaveNode.ts";
+import { factory, Input, Utils } from "../solarSaveNode.ts";
 
-const baseState: State = {
+const input: Input = {
   generatedStory: "Once upon a time in a solarpunk world...",
 };
 
@@ -22,11 +22,11 @@ Deno.test(
     const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSaveComplete");
-    assertEquals(savedContent, baseState.generatedStory);
-    assertEquals(result[1], baseState);
+    assertEquals(savedContent, input.generatedStory);
+    assertEquals(result[1], undefined);
   },
 );
 
@@ -47,11 +47,11 @@ Deno.test(
     const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSaveComplete");
     assertEquals(saveCalled, false);
-    assertEquals(result[1], baseState);
+    assertEquals(result[1], undefined);
   },
 );
 
@@ -69,13 +69,13 @@ Deno.test(
     const result = await factory(
       { onSaveComplete: "onSaveComplete" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSaveComplete");
     assertEquals(
       printed.some((m) => m.includes("Failed")),
       true,
     );
-    assertEquals(result[1], baseState);
+    assertEquals(result[1], undefined);
   },
 );

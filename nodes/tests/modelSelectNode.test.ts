@@ -1,8 +1,7 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../modelSelectNode.ts";
+import { factory, Input, Utils } from "../modelSelectNode.ts";
 
-const baseState: State = {
-  selectedModel: "",
+const input: Input = {
   ollamaHost: "http://localhost:11434",
 };
 
@@ -20,15 +19,15 @@ Deno.test(
     const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onCancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].selectedModel, "");
   },
 );
 
 Deno.test(
-  "modelSelectNode should transition with unchanged state when input is NaN",
+  "modelSelectNode should transition with empty selection when input is NaN",
   async () => {
     const utils: Utils = {
       listModels: (_host: string) => Promise.resolve(models),
@@ -39,7 +38,7 @@ Deno.test(
     const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSelect");
     assertEquals(result[1].selectedModel, "");
@@ -47,7 +46,7 @@ Deno.test(
 );
 
 Deno.test(
-  "modelSelectNode should transition with unchanged state when index is out of range",
+  "modelSelectNode should transition with empty selection when index is out of range",
   async () => {
     const utils: Utils = {
       listModels: (_host: string) => Promise.resolve(models),
@@ -58,7 +57,7 @@ Deno.test(
     const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSelect");
     assertEquals(result[1].selectedModel, "");
@@ -77,7 +76,7 @@ Deno.test(
     const result = await factory(
       { onSelect: "onSelect", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onSelect");
     assertEquals(result[1].selectedModel, "mistral");

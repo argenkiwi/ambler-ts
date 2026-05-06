@@ -11,10 +11,10 @@ Deno.test("chatByeNode should print goodbye and return terminal edge", async () 
   };
 
   const nodeResult = await factory({ onDone: null }, utils)(
-    {},
+    undefined,
   );
 
   assertEquals(nodeResult[0], null);
-  assertEquals(nodeResult[1], {});
+  assertEquals(nodeResult[1], undefined);
   assertEquals(printed, "Goodbye!");
 });

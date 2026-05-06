@@ -3,9 +3,13 @@ import { NodeFactory } from "../ambler.ts";
 
 export type Message = { role: string; content: string };
 
-export interface State {
+export interface Input {
   ollamaHost: string;
   selectedModel: string;
+  messages: Message[];
+}
+
+export interface Output {
   messages: Message[];
 }
 
@@ -25,23 +29,23 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return async (state) => {
+  return async (input) => {
     const reply = await utils.chat(
-      state.ollamaHost,
-      state.selectedModel,
-      state.messages,
+      input.ollamaHost,
+      input.selectedModel,
+      input.messages,
     );
 
     utils.print(`Assistant: ${reply}`);
     const messages: Message[] = [
-      ...state.messages,
+      ...input.messages,
       { role: "assistant", content: reply },
     ];
 
-    return [edges.onPrompt, { ...state, messages }];
+    return [edges.onPrompt, { messages }];
   };
 };

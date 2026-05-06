@@ -1,7 +1,5 @@
-import { factory, State, Utils } from "../solarPromptNode.ts";
+import { factory, Utils } from "../solarPromptNode.ts";
 import { assertEquals } from "@std/assert";
-
-const baseState: State = { solarPrompt: "" };
 
 Deno.test(
   "solarPromptNode should call onCancel when readLine returns null",
@@ -14,10 +12,10 @@ Deno.test(
     const result = await factory(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "onCancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].solarPrompt, "");
   },
 );
 
@@ -32,7 +30,7 @@ Deno.test(
     const result = await factory(
       { onPromptComplete: "onPromptComplete", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "onPromptComplete");
     assertEquals(

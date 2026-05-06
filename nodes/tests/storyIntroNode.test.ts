@@ -1,11 +1,5 @@
-import { factory, State, Utils } from "../storyIntroNode.ts";
+import { factory, Utils } from "../storyIntroNode.ts";
 import { assertEquals } from "@std/assert";
-
-const baseState: State = {
-  identity: "",
-  placement: "",
-  circumstances: "",
-};
 
 Deno.test(
   "storyIntroNode should call onCancel when identity readLine returns null",
@@ -18,10 +12,10 @@ Deno.test(
     const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "cancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].identity, "");
   },
 );
 
@@ -37,10 +31,10 @@ Deno.test(
     const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "cancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].identity, "");
   },
 );
 
@@ -59,10 +53,10 @@ Deno.test(
     const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "cancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].identity, "");
   },
 );
 
@@ -79,7 +73,7 @@ Deno.test(
     const result = await factory(
       { onIntroComplete: "complete", onCancel: "cancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "complete");
     assertEquals(result[1].identity, "Ada");

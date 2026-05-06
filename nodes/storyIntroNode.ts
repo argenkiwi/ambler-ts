@@ -1,6 +1,6 @@
 import { NodeFactory } from "../ambler.ts";
 
-export interface State {
+export interface Output {
   identity: string;
   placement: string;
   circumstances: string;
@@ -18,11 +18,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, void, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return (state) => {
+  return () => {
     const identity = utils.readLine("Who is the protagonist? ");
     const placement = utils.readLine(
       "Where and when does the story take place? ",
@@ -30,11 +30,14 @@ export const factory: NodeFactory<Edge, Utils, State> = (
     const circumstances = utils.readLine("What is happening? ");
 
     if (identity === null || placement === null || circumstances === null) {
-      return [edges.onCancel, state];
+      return [edges.onCancel, {
+        identity: "",
+        placement: "",
+        circumstances: "",
+      }];
     }
 
     return [edges.onIntroComplete, {
-      ...state,
       identity: identity.trim(),
       placement: placement.trim(),
       circumstances: circumstances.trim(),

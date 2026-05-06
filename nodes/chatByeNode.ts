@@ -10,12 +10,12 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils> = (
+export const factory: NodeFactory<Edge, Utils, void, void> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return (state) => {
+  return () => {
     utils.print("Goodbye!");
-    return [edges.onDone, state];
+    return [edges.onDone, undefined];
   };
 };

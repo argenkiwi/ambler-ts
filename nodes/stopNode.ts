@@ -1,6 +1,6 @@
 import { NodeFactory } from "../ambler.ts";
 
-export interface State {
+export interface Input {
   count: number;
 }
 
@@ -14,12 +14,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, void> = (
   edges,
   utils = defaultUtils,
-) => {
-  return (state) => {
-    utils.print(`Final count: ${state.count}`);
-    return [edges.onDone, state];
-  };
+) =>
+(input) => {
+  utils.print(`Final count: ${input.count}`);
+  return [edges.onDone, undefined];
 };

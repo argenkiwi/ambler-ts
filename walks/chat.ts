@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { adapt, ambler } from "../ambler.ts";
 import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
 import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
 import { factory as chatPromptNode } from "../nodes/chatPromptNode.ts";
@@ -14,14 +14,38 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
 const amble = ambler<State, NodeId>({
-  start: ollamaDiscoverNode({
-    onDiscovered: "modelSelect",
-    onCancel: null,
-  }),
-  modelSelect: modelSelectNode({ onSelect: "prompt", onCancel: null }),
-  prompt: chatPromptNode({ onChat: "response", onQuit: "bye" }),
-  response: chatResponseNode({ onPrompt: "prompt" }),
-  bye: chatByeNode<NodeId>({ onDone: null }),
+  start: adapt(
+    ollamaDiscoverNode({
+      onDiscovered: "modelSelect",
+      onCancel: null,
+    }),
+    () => {},
+    (state, output) => ({ ...state, ollamaHost: output.ollamaHost }),
+  ),
+  modelSelect: adapt(
+    modelSelectNode({ onSelect: "prompt", onCancel: null }),
+    (state) => ({ ollamaHost: state.ollamaHost }),
+    (state, output) => ({ ...state, selectedModel: output.selectedModel }),
+  ),
+  prompt: adapt(
+    chatPromptNode({ onChat: "response", onQuit: "bye" }),
+    (state) => ({ messages: state.messages }),
+    (state, output) => ({ ...state, messages: output.messages }),
+  ),
+  response: adapt(
+    chatResponseNode({ onPrompt: "prompt" }),
+    (state) => ({
+      ollamaHost: state.ollamaHost,
+      selectedModel: state.selectedModel,
+      messages: state.messages,
+    }),
+    (state, output) => ({ ...state, messages: output.messages }),
+  ),
+  bye: adapt(
+    chatByeNode<NodeId>({ onDone: null }),
+    () => {},
+    (state) => state,
+  ),
 });
 
 if (import.meta.main) {

@@ -1,6 +1,6 @@
 import { NodeFactory } from "../ambler.ts";
 
-export interface State {
+export interface Output {
   count: number;
 }
 
@@ -16,23 +16,22 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, void, Output> = (
   edges,
   utils = defaultUtils,
-) => {
-  return (state) => {
-    const input = utils.readLine("Enter a starting number: ");
+) =>
+() => {
+  const userInput = utils.readLine("Enter a starting number: ");
 
-    if (input === null || input === "") {
-      return [edges.onSuccess, { ...state, count: 0 }];
-    }
+  if (userInput === null || userInput === "") {
+    return [edges.onSuccess, { count: 0 }];
+  }
 
-    const n = parseInt(input);
-    if (isNaN(n)) {
-      utils.print("Error: Invalid input. Please enter a number.");
-      return [edges.onError, state];
-    }
+  const n = parseInt(userInput);
+  if (isNaN(n)) {
+    utils.print("Error: Invalid input. Please enter a number.");
+    return [edges.onError, { count: 0 }];
+  }
 
-    return [edges.onSuccess, { ...state, count: n }];
-  };
+  return [edges.onSuccess, { count: n }];
 };

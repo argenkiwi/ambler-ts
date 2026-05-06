@@ -1,12 +1,17 @@
 import { NodeFactory } from "../ambler.ts";
 import { ollamaChat } from "../utils/ollama_chat.ts";
 
-export interface State {
+export interface Input {
   selectedModel: string;
   ollamaHost: string;
   identity: string;
   placement: string;
   circumstances: string;
+  storyPages: string[];
+  currentPage: number;
+}
+
+export interface Output {
   storyPages: string[];
   currentPage: number;
 }
@@ -27,21 +32,21 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return async (state) => {
+  return async (input) => {
     const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
-      Protagonist: ${state.identity}
-      Setting: ${state.placement}
-      Circumstance: ${state.circumstances}
-      Previous story content: ${state.storyPages.join("\n\n")}
+      Protagonist: ${input.identity}
+      Setting: ${input.placement}
+      Circumstance: ${input.circumstances}
+      Previous story content: ${input.storyPages.join("\n\n")}
 
       Rules:
       - Use second person singular.
-      - Decide whether the story should end or continue (chance of ending is ${state.currentPage} in 10).
+      - Decide whether the story should end or continue (chance of ending is ${input.currentPage} in 10).
       - If the story ends, the final line must be "The End".
       - If the story continues, the final lines must be a numbered list of markdown checkboxes representing 2 or 3 actions the protagonist can choose from (e.g., "1. [ ] Option 1\n2. [ ] Option 2").
       - Do not include any other text outside the story and the options/end marker.`;
@@ -49,34 +54,35 @@ export const factory: NodeFactory<Edge, Utils, State> = (
     const messages = [{ role: "user", content: prompt }];
     try {
       const reply = await utils.chat(
-        state.ollamaHost,
-        state.selectedModel,
+        input.ollamaHost,
+        input.selectedModel,
         messages,
       );
 
       const newPage = reply.trim();
-      const updatedStoryPages = [...state.storyPages, newPage];
+      const updatedStoryPages = [...input.storyPages, newPage];
       const fullStory = updatedStoryPages.join("\n\n");
       utils.print(
-        `\n--- Page ${state.currentPage} ---\n${newPage}\n---------------`,
+        `\n--- Page ${input.currentPage} ---\n${newPage}\n---------------`,
       );
 
       if (fullStory.trim().endsWith("The End")) {
         return [edges.onPageComplete, {
-          ...state,
           storyPages: updatedStoryPages,
-          currentPage: state.currentPage + 1,
+          currentPage: input.currentPage + 1,
         }];
       } else {
         return [edges.onDecisionRequired, {
-          ...state,
           storyPages: updatedStoryPages,
-          currentPage: state.currentPage + 1,
+          currentPage: input.currentPage + 1,
         }];
       }
     } catch (error) {
       utils.print(`Error generating page: ${error}`);
-      return [edges.onError, state];
+      return [edges.onError, {
+        storyPages: input.storyPages,
+        currentPage: input.currentPage,
+      }];
     }
   };
 };

@@ -1,11 +1,7 @@
 import { NodeFactory } from "../ambler.ts";
 import { saveFile } from "../utils/story_save.ts";
 
-export interface State {
-  selectedModel: string;
-  identity: string;
-  placement: string;
-  circumstances: string;
+export interface Input {
   storyPages: string[];
 }
 
@@ -21,22 +17,21 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, void> = (
   edges,
   utils = defaultUtils,
-) => {
-  return async (state) => {
-    const fullStory = state.storyPages.join("\n\n");
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `story-${timestamp}`;
+) =>
+async (input) => {
+  const fullStory = input.storyPages.join("\n\n");
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `story-${timestamp}`;
 
-    try {
-      await utils.saveFile(filename, fullStory);
-      utils.print(`Story saved to cyoa/${filename}.md`);
-    } catch (err) {
-      utils.print(`Error saving story: ${err}`);
-    }
+  try {
+    await utils.saveFile(filename, fullStory);
+    utils.print(`Story saved to cyoa/${filename}.md`);
+  } catch (err) {
+    utils.print(`Error saving story: ${err}`);
+  }
 
-    return [edges.onSaveComplete, state];
-  };
+  return [edges.onSaveComplete, undefined];
 };

@@ -1,10 +1,10 @@
 import { assertEquals } from "@std/assert";
-import { factory, Message, State, Utils } from "../chatResponseNode.ts";
+import { factory, Input, Message, Utils } from "../chatResponseNode.ts";
 
 Deno.test(
   "chatResponseNode should send messages to chat, print reply, and append to history",
   async () => {
-    const initialState: State = {
+    const input: Input = {
       ollamaHost: "http://localhost:11434",
       selectedModel: "llama3.2",
       messages: [{ role: "user", content: "Hello" }],
@@ -22,7 +22,7 @@ Deno.test(
     const result = await factory(
       { onPrompt: "onPrompt" },
       utils,
-    )(initialState);
+    )(input);
 
     assertEquals(printed, "Assistant: Hi there!");
     assertEquals(result[1].messages, [
@@ -37,7 +37,7 @@ Deno.test(
 Deno.test(
   "chatResponseNode should pass the full message history to the chat util",
   async () => {
-    const initialState: State = {
+    const input: Input = {
       ollamaHost: "http://localhost:11434",
       selectedModel: "llama3.2",
       messages: [
@@ -63,7 +63,7 @@ Deno.test(
     const result = await factory(
       { onPrompt: "onPrompt" },
       utils,
-    )(initialState);
+    )(input);
 
     assertEquals(receivedMessages?.length, 3);
     assertEquals(receivedMessages?.[2], {

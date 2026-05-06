@@ -1,11 +1,10 @@
-import { factory, State, Utils } from "../solarGenerateNode.ts";
+import { factory, Input, Utils } from "../solarGenerateNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: State = {
+const input: Input = {
   ollamaHost: "http://localhost:11434",
   selectedModel: "llama3",
   solarPrompt: "A village harnesses solar energy",
-  generatedStory: "",
 };
 
 Deno.test(
@@ -20,7 +19,7 @@ Deno.test(
     const result = await factory(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onGenerateComplete");
     assertEquals(
@@ -43,9 +42,9 @@ Deno.test(
     const result = await factory(
       { onGenerateComplete: "onGenerateComplete", onError: "onError" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "onError");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].generatedStory, "");
   },
 );

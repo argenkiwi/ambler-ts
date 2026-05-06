@@ -1,7 +1,7 @@
 import { NodeFactory } from "../ambler.ts";
 import { saveToFile } from "../utils/save_to_file.ts";
 
-export interface State {
+export interface Input {
   generatedStory: string;
 }
 
@@ -19,16 +19,16 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, void> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return async (state) => {
-    const input = utils.readLine(
+  return async (input) => {
+    const userInput = utils.readLine(
       "Would you like to save this story? (y/n): ",
     );
-    if (input?.toLowerCase() === "y") {
-      const success = await utils.saveToFile(state.generatedStory);
+    if (userInput?.toLowerCase() === "y") {
+      const success = await utils.saveToFile(input.generatedStory);
       if (!success) {
         utils.print("Failed to save the story.");
       }
@@ -36,6 +36,6 @@ export const factory: NodeFactory<Edge, Utils, State> = (
       utils.print("Story not saved.");
     }
 
-    return [edges.onSaveComplete, state];
+    return [edges.onSaveComplete, undefined];
   };
 };

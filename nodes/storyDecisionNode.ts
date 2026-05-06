@@ -1,13 +1,11 @@
 import { NodeFactory } from "../ambler.ts";
 
-export interface State {
-  selectedModel: string;
-  ollamaHost: string;
-  identity: string;
-  placement: string;
-  circumstances: string;
+export interface Input {
   storyPages: string[];
-  currentPage: number;
+}
+
+export interface Output {
+  storyPages: string[];
 }
 
 export type Edge = "onDecisionMade" | "onCancel" | "onError";
@@ -22,13 +20,13 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return (state) => {
-    const lastPage = state.storyPages[state.storyPages.length - 1];
-    if (!lastPage) return [edges.onError, state];
+  return (input) => {
+    const lastPage = input.storyPages[input.storyPages.length - 1];
+    if (!lastPage) return [edges.onError, input];
 
     // Extract the checkboxes from the last page
     const lines = lastPage.split("\n");
@@ -44,16 +42,16 @@ export const factory: NodeFactory<Edge, Utils, State> = (
 
     if (options.length === 0) {
       // Fallback if no checkboxes found (safety)
-      return [edges.onDecisionMade, state];
+      return [edges.onDecisionMade, input];
     }
 
     let selectedIdx: number;
     while (true) {
-      const input = utils.readLine(
+      const userInput = utils.readLine(
         `Select option (1-${options.length}): `,
       );
-      if (input === null) return [edges.onCancel, state];
-      const parsed = parseInt(input);
+      if (userInput === null) return [edges.onCancel, input];
+      const parsed = parseInt(userInput);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= options.length) {
         selectedIdx = parsed;
         break;
@@ -72,12 +70,11 @@ export const factory: NodeFactory<Edge, Utils, State> = (
 
     const updatedLastPage = updatedLines.join("\n");
     const updatedStoryPages = [
-      ...state.storyPages.slice(0, -1),
+      ...input.storyPages.slice(0, -1),
       updatedLastPage,
     ];
 
     return [edges.onDecisionMade, {
-      ...state,
       storyPages: updatedStoryPages,
     }];
   };

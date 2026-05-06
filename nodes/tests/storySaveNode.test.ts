@@ -1,11 +1,7 @@
-import { factory, State, Utils } from "../storySaveNode.ts";
+import { factory, Input, Utils } from "../storySaveNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: State = {
-  selectedModel: "llama3",
-  identity: "Ada",
-  placement: "London",
-  circumstances: "Crisis",
+const input: Input = {
   storyPages: ["Page one.", "Page two."],
 };
 
@@ -25,11 +21,11 @@ Deno.test(
     const result = await factory(
       { onSaveComplete: "complete" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "complete");
     assertEquals(savedContent, "Page one.\n\nPage two.");
-    assertEquals(result[1].storyPages, baseState.storyPages);
+    assertEquals(result[1], undefined);
   },
 );
 
@@ -46,9 +42,9 @@ Deno.test(
     const result = await factory(
       { onSaveComplete: "complete" },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "complete");
-    assertEquals(result[1].storyPages, baseState.storyPages);
+    assertEquals(result[1], undefined);
   },
 );

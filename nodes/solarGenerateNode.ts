@@ -1,10 +1,13 @@
 import { NodeFactory } from "../ambler.ts";
 import { generateStory } from "../utils/solar_generate.ts";
 
-export interface State {
+export interface Input {
   ollamaHost: string;
   selectedModel: string;
   solarPrompt: string;
+}
+
+export interface Output {
   generatedStory: string;
 }
 
@@ -24,19 +27,19 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return async (state) => {
+  return async (input) => {
     utils.print(
       "\nGenerating your solarpunk story... (this may take a moment)",
     );
     try {
       const story = await utils.generateStory(
-        state.ollamaHost,
-        state.selectedModel,
-        state.solarPrompt,
+        input.ollamaHost,
+        input.selectedModel,
+        input.solarPrompt,
       );
 
       utils.print("\n--- GENERATED STORY ---");
@@ -44,12 +47,11 @@ export const factory: NodeFactory<Edge, Utils, State> = (
       utils.print("\n--- END OF STORY ---");
 
       return [edges.onGenerateComplete, {
-        ...state,
         generatedStory: story,
       }];
     } catch (error) {
       utils.print(`Error generating story: ${error}`);
-      return [edges.onError, state];
+      return [edges.onError, { generatedStory: "" }];
     }
   };
 };

@@ -1,4 +1,4 @@
-import { ambler } from "../ambler.ts";
+import { adapt, ambler } from "../ambler.ts";
 import { factory as ollamaDiscoverNode } from "../nodes/ollamaDiscoverNode.ts";
 import { factory as modelSelectNode } from "../nodes/modelSelectNode.ts";
 import { factory as solarPromptNode } from "../nodes/solarPromptNode.ts";
@@ -15,14 +15,38 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
 const amble = ambler<State, NodeId>({
-  start: ollamaDiscoverNode({
-    onDiscovered: "modelSelect",
-    onCancel: null,
-  }),
-  modelSelect: modelSelectNode({ onSelect: "prompt", onCancel: null }),
-  prompt: solarPromptNode({ onPromptComplete: "generate", onCancel: null }),
-  generate: solarGenerateNode({ onGenerateComplete: "save", onError: null }),
-  save: solarSaveNode<NodeId>({ onSaveComplete: null }),
+  start: adapt(
+    ollamaDiscoverNode({
+      onDiscovered: "modelSelect",
+      onCancel: null,
+    }),
+    () => {},
+    (state, output) => ({ ...state, ollamaHost: output.ollamaHost }),
+  ),
+  modelSelect: adapt(
+    modelSelectNode({ onSelect: "prompt", onCancel: null }),
+    (state) => ({ ollamaHost: state.ollamaHost }),
+    (state, output) => ({ ...state, selectedModel: output.selectedModel }),
+  ),
+  prompt: adapt(
+    solarPromptNode({ onPromptComplete: "generate", onCancel: null }),
+    () => {},
+    (state, output) => ({ ...state, solarPrompt: output.solarPrompt }),
+  ),
+  generate: adapt(
+    solarGenerateNode({ onGenerateComplete: "save", onError: null }),
+    (state) => ({
+      ollamaHost: state.ollamaHost,
+      selectedModel: state.selectedModel,
+      solarPrompt: state.solarPrompt,
+    }),
+    (state, output) => ({ ...state, generatedStory: output.generatedStory }),
+  ),
+  save: adapt(
+    solarSaveNode<NodeId>({ onSaveComplete: null }),
+    (state) => ({ generatedStory: state.generatedStory }),
+    (state) => state,
+  ),
 });
 
 if (import.meta.main) {

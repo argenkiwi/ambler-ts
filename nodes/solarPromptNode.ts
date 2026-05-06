@@ -1,6 +1,6 @@
 import { NodeFactory } from "../ambler.ts";
 
-export interface State {
+export interface Output {
   solarPrompt: string;
 }
 
@@ -16,15 +16,15 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, void, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return (state) => {
+  return () => {
     utils.print("\n--- Solar Prompt Input ---");
     const promptText = utils.readLine("Enter your solar prompt: ");
-    if (promptText === null) return [edges.onCancel, state];
+    if (promptText === null) return [edges.onCancel, { solarPrompt: "" }];
 
-    return [edges.onPromptComplete, { ...state, solarPrompt: promptText }];
+    return [edges.onPromptComplete, { solarPrompt: promptText }];
   };
 };

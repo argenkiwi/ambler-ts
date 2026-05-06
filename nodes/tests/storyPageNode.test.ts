@@ -1,7 +1,7 @@
-import { factory, State, Utils } from "../storyPageNode.ts";
+import { factory, Input, Utils } from "../storyPageNode.ts";
 import { assertEquals } from "@std/assert";
 
-const baseState: State = {
+const input: Input = {
   selectedModel: "llama3",
   ollamaHost: "http://localhost:11434",
   identity: "Ada",
@@ -30,7 +30,7 @@ Deno.test(
         onError: "error",
       },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "complete");
     assertEquals(result[1].storyPages.length, 1);
@@ -62,7 +62,7 @@ Deno.test(
         onError: "error",
       },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "decision");
     assertEquals(result[1].storyPages.length, 1);
@@ -91,9 +91,9 @@ Deno.test(
         onError: "error",
       },
       utils,
-    )(baseState);
+    )(input);
 
     assertEquals(result[0], "error");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].storyPages, input.storyPages);
   },
 );

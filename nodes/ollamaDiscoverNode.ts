@@ -1,7 +1,7 @@
 import { NodeFactory } from "../ambler.ts";
 import { tryHost } from "../utils/ollama_discover.ts";
 
-export interface State {
+export interface Output {
   ollamaHost: string;
 }
 
@@ -21,26 +21,26 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, void, Output> = (
   edges,
   utils = defaultUtils,
 ) => {
-  return async (state) => {
+  return async () => {
     utils.print("Searching for Ollama server...");
 
     for (const host of CANDIDATE_HOSTS) {
       if (await utils.tryHost(host)) {
         utils.print(`Found Ollama server at ${host}`);
-        return [edges.onDiscovered, { ...state, ollamaHost: host }];
+        return [edges.onDiscovered, { ollamaHost: host }];
       }
     }
 
     utils.print("No Ollama server found automatically.");
-    const input = utils.readLine(
+    const userInput = utils.readLine(
       "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
     );
-    if (input === null) return [edges.onCancel, state];
+    if (userInput === null) return [edges.onCancel, { ollamaHost: "" }];
 
-    return [edges.onDiscovered, { ...state, ollamaHost: input.trim() }];
+    return [edges.onDiscovered, { ollamaHost: userInput.trim() }];
   };
 };

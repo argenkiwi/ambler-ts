@@ -1,9 +1,12 @@
 import { NodeFactory } from "../ambler.ts";
 import { listModels } from "../utils/ollama_models.ts";
 
-export interface State {
-  selectedModel: string;
+export interface Input {
   ollamaHost: string;
+}
+
+export interface Output {
+  selectedModel: string;
 }
 
 export type Edge = "onSelect" | "onCancel";
@@ -20,24 +23,24 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, State> = (
+export const factory: NodeFactory<Edge, Utils, Input, Output> = (
   edges,
   utils = defaultUtils,
 ) =>
-async (state) => {
-  const models = await utils.listModels(state.ollamaHost);
+async (input) => {
+  const models = await utils.listModels(input.ollamaHost);
   utils.print("Available models:");
   models.forEach((m, i) => utils.print(`${i}: ${m}`));
 
-  const input = utils.readLine("Select model index: ");
-  if (input === null) return [edges.onCancel, state];
+  const userInput = utils.readLine("Select model index: ");
+  if (userInput === null) return [edges.onCancel, { selectedModel: "" }];
 
-  const index = parseInt(input);
+  const index = parseInt(userInput);
   if (isNaN(index) || index < 0 || index >= models.length) {
     utils.print("Invalid selection.");
-    return [edges.onSelect, state];
+    return [edges.onSelect, { selectedModel: "" }];
   }
 
   utils.print(`Selected model: ${models[index]}`);
-  return [edges.onSelect, { ...state, selectedModel: models[index] }];
+  return [edges.onSelect, { selectedModel: models[index] }];
 };

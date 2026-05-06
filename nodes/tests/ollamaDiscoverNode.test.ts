@@ -1,7 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../ollamaDiscoverNode.ts";
-
-const baseState: State = { ollamaHost: "" };
+import { factory, Utils } from "../ollamaDiscoverNode.ts";
 
 Deno.test(
   "ollamaDiscoverNode should set ollamaHost when a candidate host is reachable",
@@ -16,7 +14,7 @@ Deno.test(
     const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "onDiscovered");
     assertEquals(result[1].ollamaHost, "http://localhost:11434");
@@ -35,10 +33,10 @@ Deno.test(
     const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "onCancel");
-    assertEquals(result[1], baseState);
+    assertEquals(result[1].ollamaHost, "");
   },
 );
 
@@ -54,7 +52,7 @@ Deno.test(
     const result = await factory(
       { onDiscovered: "onDiscovered", onCancel: "onCancel" },
       utils,
-    )(baseState);
+    )(undefined);
 
     assertEquals(result[0], "onDiscovered");
     assertEquals(result[1].ollamaHost, "http://192.168.1.5:11434");
