@@ -35,7 +35,7 @@ const amble = ambler<State, NodeId>({
     onCancel: null,
     onError: null,
   }),
-  save: storySaveNode<State, NodeId>({ onSaveComplete: null }),
+  save: storySaveNode<NodeId>({ onSaveComplete: null }),
 });
 
 if (import.meta.main) {

@@ -39,7 +39,10 @@ export type Node<S, K extends string> = (
  * @template U The utilities object injected into the node (e.g., API clients, loggers).
  * @template S The state type this node operates on.
  */
-export type NodeFactory<E extends string, U, S = unknown> = <N extends string>(
+export type NodeFactory<E extends string, U, S_Base = any> = <
+  N extends string,
+  S extends S_Base = any,
+>(
   edges: Record<E, N | null>,
   utils?: U,
 ) => Node<S, N>;

@@ -13,7 +13,7 @@ export interface State {
 
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
-const step = ambler<State, NodeId>({
+const amble = ambler<State, NodeId>({
   start: ollamaDiscoverNode({
     onDiscovered: "modelSelect",
     onCancel: null,
@@ -21,7 +21,7 @@ const step = ambler<State, NodeId>({
   modelSelect: modelSelectNode({ onSelect: "prompt", onCancel: null }),
   prompt: chatPromptNode({ onChat: "response", onQuit: "bye" }),
   response: chatResponseNode({ onPrompt: "prompt" }),
-  bye: chatByeNode<State, NodeId>({ onDone: null }),
+  bye: chatByeNode<NodeId>({ onDone: null }),
 });
 
 if (import.meta.main) {
@@ -33,7 +33,7 @@ if (import.meta.main) {
   };
 
   while (nodeId) {
-    const next = step(nodeId, state);
+    const next = amble(nodeId, state);
     [nodeId, state] = next instanceof Promise ? await next : next;
   }
 }

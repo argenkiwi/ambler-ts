@@ -22,7 +22,7 @@ const amble = ambler<State, NodeId>({
   modelSelect: modelSelectNode({ onSelect: "prompt", onCancel: null }),
   prompt: solarPromptNode({ onPromptComplete: "generate", onCancel: null }),
   generate: solarGenerateNode({ onGenerateComplete: "save", onError: null }),
-  save: solarSaveNode<State, NodeId>({ onSaveComplete: null }),
+  save: solarSaveNode<NodeId>({ onSaveComplete: null }),
 });
 
 if (import.meta.main) {

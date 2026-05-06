@@ -9,11 +9,13 @@ export interface State {
 
 type NodeId = "start" | "count" | "stop";
 
-const countNode = defer(() => countNodeFactory<NodeId>({ onCount: "count", onStop: "stop" }));
+const countNode = defer(() =>
+  countNodeFactory<NodeId>({ onCount: "count", onStop: "stop" })
+);
 
 const amble = ambler<State, NodeId>({
   start: startNodeFactory({ onSuccess: "count", onError: "start" }),
-  count: async(state) => {
+  count: async (state) => {
     const [nodeId, count] = await countNode(state.count);
     return [nodeId, { ...state, count }];
   },

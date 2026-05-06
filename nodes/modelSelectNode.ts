@@ -23,22 +23,21 @@ const defaultUtils: Utils = {
 export const factory: NodeFactory<Edge, Utils, State> = (
   edges,
   utils = defaultUtils,
-) => {
-  return async (state) => {
-    const models = await utils.listModels(state.ollamaHost);
-    utils.print("Available models:");
-    models.forEach((m, i) => utils.print(`${i}: ${m}`));
+) =>
+async (state) => {
+  const models = await utils.listModels(state.ollamaHost);
+  utils.print("Available models:");
+  models.forEach((m, i) => utils.print(`${i}: ${m}`));
 
-    const input = utils.readLine("Select model index: ");
-    if (input === null) return [edges.onCancel, state];
+  const input = utils.readLine("Select model index: ");
+  if (input === null) return [edges.onCancel, state];
 
-    const index = parseInt(input);
-    if (isNaN(index) || index < 0 || index >= models.length) {
-      utils.print("Invalid selection.");
-      return [edges.onSelect, state];
-    }
+  const index = parseInt(input);
+  if (isNaN(index) || index < 0 || index >= models.length) {
+    utils.print("Invalid selection.");
+    return [edges.onSelect, state];
+  }
 
-    utils.print(`Selected model: ${models[index]}`);
-    return [edges.onSelect, { ...state, selectedModel: models[index] }];
-  };
+  utils.print(`Selected model: ${models[index]}`);
+  return [edges.onSelect, { ...state, selectedModel: models[index] }];
 };
