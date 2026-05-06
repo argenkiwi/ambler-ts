@@ -1,9 +1,3 @@
-import { NodeFactory } from "../ambler.ts";
-
-export interface Input {
-  count: number;
-}
-
 export type Edge = "onDone";
 
 export type Utils = {
@@ -14,11 +8,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<Edge, Utils, Input, void> = (
-  edges,
-  utils = defaultUtils,
+export const factory = <N extends string>(
+  edges: Record<Edge, N | null>,
+  utils: Utils = defaultUtils,
 ) =>
-(input) => {
-  utils.print(`Final count: ${input.count}`);
-  return [edges.onDone, undefined];
+(count: number): [N | null, number] => {
+  utils.print(`Final count: ${count}`);
+  return [edges.onDone, count];
 };

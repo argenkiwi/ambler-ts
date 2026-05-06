@@ -78,31 +78,6 @@ export function adapt<S, I, O, K extends string>(
 }
 
 /**
- * Lazily initializes a {@link Node} on its first execution.
- *
- * This is useful for breaking circular dependencies between nodes or delaying the
- * initialization of expensive resources (like network clients) until they are actually needed.
- *
- * @template I The type of the input the node expects.
- * @template O The type of the output the node produces.
- * @template K The union of valid node identifier strings.
- * @param create A factory function that constructs the node.
- * @returns A node that will initialize itself using `create` when first called.
- */
-export function defer<I, O, K extends string>(
-  create: () => Node<I, O, K>,
-): Node<I, O, K> {
-  let node: Node<I, O, K> | null = null;
-  return (input: I) => {
-    if (!node) {
-      node = create();
-    }
-
-    return node(input);
-  };
-}
-
-/**
  * Creates a state machine runner from a collection of nodes.
  *
  * The returned function takes a node ID and the current state, and executes the corresponding node.
