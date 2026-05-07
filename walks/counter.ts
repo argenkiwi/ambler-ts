@@ -10,7 +10,7 @@ export interface State {
 type NodeId = "start" | "count" | "stop";
 
 const amble = ambler<State, NodeId>({
-  start: (() => {
+  start: () => {
     const core = startCore({
       onSuccess: "count",
       onError: "start",
@@ -20,8 +20,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, output] = core();
       return [nodeId, { ...state, count: output }];
     };
-  })(),
-  count: (() => {
+  },
+  count: () => {
     const core = countCore({
       onCount: "count",
       onStop: "stop",
@@ -31,14 +31,14 @@ const amble = ambler<State, NodeId>({
       const [nodeId, output] = await core(state.count);
       return [nodeId, { ...state, count: output }];
     };
-  })(),
-  stop: (() => {
+  },
+  stop: () => {
     const core = stopCore<NodeId>({ onDone: null });
     return (state) => {
       const [nodeId, _] = core(state.count);
       return [nodeId, state];
     };
-  })(),
+  },
 });
 
 if (import.meta.main) {

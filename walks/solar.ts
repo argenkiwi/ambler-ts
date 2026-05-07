@@ -5,7 +5,6 @@ import { factory as solarPromptFactory } from "../cores/solarPrompt.ts";
 import { factory as solarGenerateFactory } from "../cores/solarGenerate.ts";
 import { factory as solarSaveFactory } from "../cores/solarSave.ts";
 
-
 export interface State {
   ollamaHost: string;
   selectedModel: string;
@@ -16,7 +15,7 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "generate" | "save";
 
 const amble = ambler<State, NodeId>({
-  start: (() => {
+  start: () => {
     const core = ollamaDiscoverFactory({
       onDiscovered: "modelSelect",
       onCancel: null,
@@ -25,8 +24,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, ollamaHost] = await core();
       return [nodeId, { ...state, ollamaHost }];
     };
-  })(),
-  modelSelect: (() => {
+  },
+  modelSelect: () => {
     const core = modelSelectFactory({
       onSelect: "prompt",
       onCancel: null,
@@ -35,8 +34,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, selectedModel] = await core(state.ollamaHost);
       return [nodeId, { ...state, selectedModel }];
     };
-  })(),
-  prompt: (() => {
+  },
+  prompt: () => {
     const core = solarPromptFactory({
       onPromptComplete: "generate",
       onCancel: null,
@@ -45,8 +44,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, solarPrompt] = core();
       return [nodeId, { ...state, solarPrompt }];
     };
-  })(),
-  generate: (() => {
+  },
+  generate: () => {
     const core = solarGenerateFactory({
       onGenerateComplete: "save",
       onError: null,
@@ -59,8 +58,8 @@ const amble = ambler<State, NodeId>({
       });
       return [nodeId, { ...state, generatedStory }];
     };
-  })(),
-  save: (() => {
+  },
+  save: () => {
     const core = solarSaveFactory<NodeId>({
       onSaveComplete: null,
     });
@@ -68,7 +67,7 @@ const amble = ambler<State, NodeId>({
       const [nodeId, _] = await core(state.generatedStory);
       return [nodeId, state];
     };
-  })(),
+  },
 });
 
 if (import.meta.main) {

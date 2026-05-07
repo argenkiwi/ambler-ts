@@ -20,7 +20,7 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "intro" | "page" | "decision" | "save";
 
 const amble = ambler<State, NodeId>({
-  start: (() => {
+  start: () => {
     const core = ollamaDiscoverFactory({
       onDiscovered: "modelSelect",
       onCancel: null,
@@ -29,8 +29,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, ollamaHost] = await core();
       return [nodeId, { ...state, ollamaHost }];
     };
-  })(),
-  modelSelect: (() => {
+  },
+  modelSelect: () => {
     const core = modelSelectFactory({
       onSelect: "intro",
       onCancel: null,
@@ -39,8 +39,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, selectedModel] = await core(state.ollamaHost);
       return [nodeId, { ...state, selectedModel }];
     };
-  })(),
-  intro: (() => {
+  },
+  intro: () => {
     const core = storyIntroFactory({
       onIntroComplete: "page",
       onCancel: null,
@@ -54,8 +54,8 @@ const amble = ambler<State, NodeId>({
         circumstances: output.circumstances,
       }];
     };
-  })(),
-  page: (() => {
+  },
+  page: () => {
     const core = storyPageFactory({
       onPageComplete: "save",
       onDecisionRequired: "decision",
@@ -77,8 +77,8 @@ const amble = ambler<State, NodeId>({
         currentPage: output.currentPage,
       }];
     };
-  })(),
-  decision: (() => {
+  },
+  decision: () => {
     const core = storyDecisionFactory({
       onDecisionMade: "page",
       onCancel: null,
@@ -88,8 +88,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, storyPages] = await core(state.storyPages);
       return [nodeId, { ...state, storyPages }];
     };
-  })(),
-  save: (() => {
+  },
+  save: () => {
     const core = storySaveFactory<NodeId>({
       onSaveComplete: null,
     });
@@ -97,7 +97,7 @@ const amble = ambler<State, NodeId>({
       const [nodeId, _] = await core(state.storyPages);
       return [nodeId, state];
     };
-  })(),
+  },
 });
 
 if (import.meta.main) {

@@ -5,7 +5,6 @@ import { factory as chatPromptFactory } from "../cores/chatPrompt.ts";
 import { factory as chatResponseFactory } from "../cores/chatResponse.ts";
 import { factory as chatByeFactory } from "../cores/chatBye.ts";
 
-
 export interface State {
   ollamaHost: string;
   selectedModel: string;
@@ -15,7 +14,7 @@ export interface State {
 type NodeId = "start" | "modelSelect" | "prompt" | "response" | "bye";
 
 const amble = ambler<State, NodeId>({
-  start: (() => {
+  start: () => {
     const core = ollamaDiscoverFactory({
       onDiscovered: "modelSelect",
       onCancel: null,
@@ -24,8 +23,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, ollamaHost] = await core();
       return [nodeId, { ...state, ollamaHost }];
     };
-  })(),
-  modelSelect: (() => {
+  },
+  modelSelect: () => {
     const core = modelSelectFactory({
       onSelect: "prompt",
       onCancel: null,
@@ -34,8 +33,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, selectedModel] = await core(state.ollamaHost);
       return [nodeId, { ...state, selectedModel }];
     };
-  })(),
-  prompt: (() => {
+  },
+  prompt: () => {
     const core = chatPromptFactory({
       onChat: "response",
       onQuit: "bye",
@@ -44,8 +43,8 @@ const amble = ambler<State, NodeId>({
       const [nodeId, messages] = core(state.messages);
       return [nodeId, { ...state, messages }];
     };
-  })(),
-  response: (() => {
+  },
+  response: () => {
     const core = chatResponseFactory({
       onPrompt: "prompt",
     });
@@ -57,14 +56,14 @@ const amble = ambler<State, NodeId>({
       });
       return [nodeId, { ...state, messages }];
     };
-  })(),
-  bye: (() => {
+  },
+  bye: () => {
     const core = chatByeFactory<NodeId>({ onDone: null });
     return (state) => {
       const [nodeId, _] = core();
       return [nodeId, state];
     };
-  })(),
+  },
 });
 
 if (import.meta.main) {
