@@ -3,7 +3,7 @@ name: ambler-core
 description: Creates a new Ambler core in the cores/ directory. Use this whenever the user wants to add a core, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "core".
 metadata:
   author: leandro
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Ambler Core
@@ -39,15 +39,26 @@ const defaultUtils: Utils = {
   // readLine: (msg) => prompt(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return (input: any): [N | null, any] | Promise<[N | null, any]> => {
-    // Core logic here.
-    // Return [edges.onSuccess, outputData] to transition.
-    return [edges.onSuccess, input];
-  };
+) =>
+(input: any): [N, any] => {
+  // Core logic here.
+  // Return [edges.onSuccess, outputData] to transition.
+  return [edges.onSuccess, input];
+};
+```
+
+For an **async** core, add `async` and `Promise<>`:
+
+```typescript
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
+  utils = defaultUtils,
+) =>
+async (input: any): Promise<[N, any]> => {
+  return [edges.onSuccess, input];
 };
 ```
 
@@ -69,8 +80,7 @@ Use the `/ambler-test` skill to generate the test file.
 ## 4. Checklist before finishing
 
 - [ ] `cores/<name>.ts` uses the `Edge` naming convention for edge keys.
-- [ ] `factory` function uses `NodeFactory`.
-- [ ] `State` interface is minimal.
+- [ ] `factory` is generic over `<N extends string | null>` with `edges: Record<Edge, N>`.
 - [ ] `defaultUtils` provides real implementations.
 - [ ] No direct state mutation.
 - [ ] Shared logic is in `utils/`.

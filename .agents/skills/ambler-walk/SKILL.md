@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required cores exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these cores", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Ambler Walk
@@ -53,31 +53,27 @@ export interface State {
 
 type NodeId = "start" | "next" | "stop";
 
-const startCore = startFactory<NodeId>({
-  onSuccess: "next",
-  onError: "start",
-});
-
-const nextCore = nextFactory<NodeId>({
-  onComplete: "stop",
-});
-
-const stopCore = stopFactory<NodeId>({
-  onDone: null,
-});
-
 const amble = ambler<State, NodeId>({
-  start: async (state) => {
-    const [nodeId, output] = await startCore(state.field);
-    return [nodeId, { ...state, field: output }];
+  start: () => {
+    const core = startFactory({ onSuccess: "next", onError: "start" });
+    return async (state) => {
+      const [nodeId, output] = await core(state.field);
+      return [nodeId, { ...state, field: output }];
+    };
   },
-  next: async (state) => {
-    const [nodeId, output] = await nextCore(state.field);
-    return [nodeId, { ...state, field: output }];
+  next: () => {
+    const core = nextFactory({ onComplete: "stop" });
+    return async (state) => {
+      const [nodeId, output] = await core(state.field);
+      return [nodeId, { ...state, field: output }];
+    };
   },
-  stop: (state) => {
-    const [nodeId, _] = stopCore(state.field);
-    return [nodeId, state];
+  stop: () => {
+    const core = stopFactory({ onDone: null });
+    return (state) => {
+      const [nodeId, _] = core(state.field);
+      return [nodeId, state];
+    };
   },
 });
 
@@ -99,8 +95,8 @@ if (import.meta.main) {
 - Import each core factory as a **named import** (e.g., `import { factory as startFactory } from "../cores/start.ts"`).
 - Define `State` interface at the top of the file.
 - Define `NodeId` union type for core identifiers.
-- Instantiate cores outside the `ambler` call using the factories and providing `NodeId` as the generic.
-- The `ambler` configuration maps each `NodeId` to a function that takes the current `state`, calls a core, and returns the next `NodeId` and updated `state`.
+- Each entry in `ambler` is a **thunk** `() => Node<State, NodeId>`. Inside the thunk, instantiate the core (no explicit `<NodeId>` generic needed — TypeScript infers it) and return a node function `(state) => Next`.
+- The thunk is called once on first use; the resulting node is cached by the engine for all subsequent steps.
 - Manually manage state updates (e.g., using spread operator `{ ...state, field: newValue }`).
 - The main loop uses `instanceof Promise` to handle both sync and async ambler steps: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
@@ -127,7 +123,7 @@ deno test cores/tests/
 Before finishing, confirm:
 
 - [ ] `specs/<name>.md` exists and matches the core names in the `.ts` file.
-- [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `cores`.
+- [ ] `walks/<name>.ts` exists with the correct `State`, initial state inline in the main loop, and wired cores.
 - [ ] Every core used in the walk has a corresponding `cores/<coreName>.ts`.
 - [ ] Every new core has a `cores/tests/<coreName>.test.ts` with at least one test.
 - [ ] All tests pass.

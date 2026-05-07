@@ -3,7 +3,7 @@ name: ambler-test
 description: Creates a test file for an Ambler core in the cores/tests/ directory. Use this whenever the user wants tests for a core — including "test this core", "add tests", "write tests for X", or any time a core is created without a corresponding test file.
 metadata:
   author: leandro
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Ambler Test
@@ -15,8 +15,8 @@ Follow these steps to create a test file for a core in the `cores/tests/` direct
 Before writing any code, determine:
 
 - **Core name**: The camelCase name (e.g., `retry`, `prompt`, `validate`) — the test file will be `cores/tests/<name>.test.ts`.
-- **Core's State, Edges, and Utils**: Read `cores/<name>.ts` to understand what the core does, which edges it has, and what utils it uses.
-- **Branches to cover**: Every `return [edges.onEdgeName, ...]` line is one branch; terminal cores return `[null, state]`. List them all before writing any test.
+- **Core's input type, Edges, and Utils**: Read `cores/<name>.ts` to understand what the core does, which edges it has, what input it receives, and what utils it uses.
+- **Branches to cover**: Every `return [edges.onEdgeName, ...]` line is one branch. Terminal cores also return `[edges.onDone, ...]`, but the walk passes `null` for that edge — so you pass `{ onDone: null }` in the test and assert `result[0] === null`. List all branches before writing any test.
 
 If any of the above is unclear, read the core file first.
 
@@ -83,7 +83,7 @@ Deno.test("<name> should <behavior> when <condition>", async () => {
 ```
 
 
-For terminal cores (which return `[null, state]`), substitute `{}` for edges and assert `result[0] === null`. Apply `async`/`await` only if the core is asynchronous.
+For terminal cores, pass `{ onDone: null }` (or the appropriate edge name mapped to `null`) and assert `result[0] === null`. Apply `async`/`await` only if the core is asynchronous.
 
 ### Test rules
 
