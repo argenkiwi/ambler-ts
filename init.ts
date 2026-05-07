@@ -26,7 +26,7 @@ try {
 // Create directory structure
 const dirs = [
   targetDir,
-  `${targetDir}/nodes/tests`,
+  `${targetDir}/cores/tests`,
   `${targetDir}/walks`,
   `${targetDir}/specs`,
   `${targetDir}/utils`,

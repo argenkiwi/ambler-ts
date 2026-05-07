@@ -8,7 +8,7 @@ metadata:
 
 # Ambler Specification
 
-This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (node) in the state machine.
+This skill guides you in creating a Markdown specification file (`specs/<walk-name>.md`) for an Ambler walk. These specs describe the program's shared state and the logic for each step (core) in the state machine.
 
 ## Instructions
 
@@ -19,13 +19,13 @@ This skill guides you in creating a Markdown specification file (`specs/<walk-na
 
 ### 2. Determine the Shared State
 
-- Identify the data structure passed between nodes.
+- Identify the data structure passed between cores.
 - Describe it under a `## Shared State` heading.
 
-### 3. Map the Steps (Nodes)
+### 3. Map the Steps (Cores)
 
-- Identify all nodes in the walk.
-- For each node, create a `### <Node Name>` subsection under `## Steps`.
+- Identify all cores in the walk.
+- For each core, create a `### <Core Name>` subsection under `## Steps`.
 - Describe:
   - Its role (e.g., "This is the initial step").
   - Its logic (what it does).
@@ -42,21 +42,21 @@ Follow this exact format:
 
 ## Shared State
 
-<Description of the state object shared across the nodes.>
+<Description of the state object shared across the cores.>
 
 ## Steps
 
-### <Node Name 1>
+### <Core Name 1>
 - <Role — e.g., "This is the initial step.">
 - <Logic — e.g., "Prompts the user to enter X.">
 - <Transitions — e.g., "If valid, proceeds to `NEXT`. If invalid, proceeds to `START`.">
 
-### <Node Name 2>
+### <Core Name 2>
 - <Role.>
 - <Logic.>
 - <Transitions.>
 
-### <Node Name N>
+### <Core Name N>
 - <Role — e.g., final step.>
 - <Logic.>
 - <Termination — e.g., "Displays result and terminates.">
@@ -68,7 +68,7 @@ Use the Write tool to create `specs/<name>.md`.
 
 ## Guidelines
 
-- **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``).
+- **Core name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in transition descriptions (`` `COUNT` ``).
 - **Clarity**: Describe *what* the program does, not *how* the code implements it.
 - **Consistency**: If `walks/<name>.ts` already exists, ensure the spec reflects the implementation. If it doesn't, treat the spec as a blueprint.
 - **No extra sections**: Stick to `# Program Specifications`, `## Shared State`, and `## Steps` — no additional top-level sections unless the walk clearly requires them.

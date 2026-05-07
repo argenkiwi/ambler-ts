@@ -1,16 +1,16 @@
 ---
 name: ambler-walk
-description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
+description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required cores exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these cores", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Ambler Walk
 
 This skill guides you in creating a complete Ambler walk. A walk is a state-machine program consisting of two files:
 
-1. `walks/<name>.ts` — TypeScript file defining the shared `State`, `initialState`, and the wired node graph.
+1. `walks/<name>.ts` — TypeScript file defining the shared `State`, `initialState`, and the wired core graph.
 2. `specs/<name>.md` — Markdown specification describing the shared state and the logic/transitions of each step.
 
 ---
@@ -19,17 +19,17 @@ This skill guides you in creating a complete Ambler walk. A walk is a state-mach
 
 - Determine the walk name (lowercase, hyphen-separated, e.g. `my-walk`). The file will be `walks/<name>.ts`.
 - Clarify the walk's purpose: what program does it implement?
-- Identify the nodes (steps) required and their transitions.
+- Identify the cores (steps) required and their transitions.
 
 ---
 
-## Step 2 — Ensure Nodes Exist
+## Step 2 — Ensure Cores Exist
 
-For each node the walk requires:
+For each core the walk requires:
 
-- Check if a file `nodes/<nodeName>.ts` already exists (use Glob).
-- If it does **not** exist, create it using the `/ambler-node` skill **before** writing the walk.
-- Also ensure `nodes/tests/<nodeName>.test.ts` exists for every new node using the `/ambler-test` skill, then verify with `deno test nodes/tests/<nodeName>.test.ts`.
+- Check if a file `cores/<coreName>.ts` already exists (use Glob).
+- If it does **not** exist, create it using the `/ambler-core` skill **before** writing the walk.
+- Also ensure `cores/tests/<coreName>.test.ts` exists for every new core using the `/ambler-test` skill, then verify with `deno test cores/tests/<coreName>.test.ts`.
 
 ---
 
@@ -42,10 +42,10 @@ Create the Markdown spec **before** the TypeScript file using the `/ambler-spec`
 ## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { ambler, defer } from "../ambler.ts";
-import { factory as startNodeFactory } from "../nodes/startNode.ts";
-import { factory as nextNodeFactory } from "../nodes/nextNode.ts";
-import { factory as stopNodeFactory } from "../nodes/stopNode.ts";
+import { ambler } from "../ambler.ts";
+import { factory as startFactory } from "../cores/start.ts";
+import { factory as nextFactory } from "../cores/next.ts";
+import { factory as stopFactory } from "../cores/stop.ts";
 
 export interface State {
   field: string;
@@ -54,9 +54,27 @@ export interface State {
 type NodeId = "start" | "next" | "stop";
 
 const amble = ambler<State, NodeId>({
-  start: defer(() => startNodeFactory<State, NodeId>({ onSuccess: "next", onError: "start" })),
-  next:  defer(() => nextNodeFactory<State, NodeId>({ onComplete: "stop" })),
-  stop:  defer(() => stopNodeFactory<State, NodeId>({ onDone: null })),
+  start: () => {
+    const core = startFactory({ onSuccess: "next", onError: "start" });
+    return async (state) => {
+      const [nodeId, output] = await core(state.field);
+      return [nodeId, { ...state, field: output }];
+    };
+  },
+  next: () => {
+    const core = nextFactory({ onComplete: "stop" });
+    return async (state) => {
+      const [nodeId, output] = await core(state.field);
+      return [nodeId, { ...state, field: output }];
+    };
+  },
+  stop: () => {
+    const core = stopFactory({ onDone: null });
+    return (state) => {
+      const [nodeId, _] = core(state.field);
+      return [nodeId, state];
+    };
+  },
 });
 
 if (import.meta.main) {
@@ -73,14 +91,14 @@ if (import.meta.main) {
 ```
 
 **Key rules:**
-- Import `ambler`, `defer`, and optionally `adapt` from `../ambler.ts`.
-- Import each node factory as a **named import** (e.g., `import { factory as startNodeFactory } from "../nodes/startNode.ts"`).
+- Import `ambler` from `../ambler.ts`.
+- Import each core factory as a **named import** (e.g., `import { factory as startFactory } from "../cores/start.ts"`).
 - Define `State` interface at the top of the file.
-- Define `NodeId` union type for node identifiers.
-- Use `ambler<State, NodeId>({ ... })` to create the executor, passing a record of node IDs to node implementations.
-- Use `defer(() => factory<State, NodeId>(edges, utils))` for lazy initialization and to break circular dependencies. Always provide explicit type parameters `<State, NodeId>` to the factory to ensure proper type inference.
-- Use `adapt` to wrap nodes that operate on a different state type.
-- The main loop uses `instanceof Promise` to handle both sync and async nodes: `[nodeId, state] = next instanceof Promise ? await next : next`.
+- Define `NodeId` union type for core identifiers.
+- Each entry in `ambler` is a **thunk** `() => Node<State, NodeId>`. Inside the thunk, instantiate the core (no explicit `<NodeId>` generic needed — TypeScript infers it) and return a node function `(state) => Next`.
+- The thunk is called once on first use; the resulting node is cached by the engine for all subsequent steps.
+- Manually manage state updates (e.g., using spread operator `{ ...state, field: newValue }`).
+- The main loop uses `instanceof Promise` to handle both sync and async ambler steps: `[nodeId, state] = next instanceof Promise ? await next : next`.
 
 ---
 
@@ -92,10 +110,10 @@ Run the walk to confirm it behaves as specified:
 deno run --allow-all walks/<name>.ts
 ```
 
-If the walk has new nodes, also run:
+If the walk has new cores, also run:
 
 ```
-deno test nodes/tests/
+deno test cores/tests/
 ```
 
 ---
@@ -104,10 +122,10 @@ deno test nodes/tests/
 
 Before finishing, confirm:
 
-- [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
-- [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
-- [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
-- [ ] Every new node has a `nodes/tests/<nodeName>.test.ts` with at least one test.
+- [ ] `specs/<name>.md` exists and matches the core names in the `.ts` file.
+- [ ] `walks/<name>.ts` exists with the correct `State`, initial state inline in the main loop, and wired cores.
+- [ ] Every core used in the walk has a corresponding `cores/<coreName>.ts`.
+- [ ] Every new core has a `cores/tests/<coreName>.test.ts` with at least one test.
 - [ ] All tests pass.
 - [ ] The walk runs end-to-end without errors.
 

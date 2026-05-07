@@ -3,7 +3,7 @@ name: ambler-init
 description: Initializes a new Ambler state-machine project. Use this whenever a user wants to start a new Ambler project, bootstrap a state-machine app, or set up the Ambler folder structure — even if they just say "new project" or "set up ambler" or "create ambler folder".
 metadata:
   author: leandro
-  version: "1.7"
+  version: "1.8"
 ---
 
 # Ambler Init
@@ -37,7 +37,7 @@ Two core files are read from the `assets/` directory within this skill and writt
 ### 3. Create the directory structure
 
 ```bash
-mkdir -p "<target>/nodes/tests" "<target>/walks" "<target>/specs" "<target>/utils"
+mkdir -p "<target>/cores/tests" "<target>/walks" "<target>/specs" "<target>/utils"
 ```
 
 ### 4. Write template files
@@ -63,14 +63,14 @@ deno check "<target>/ambler.ts"
 Initialized Ambler project in "<target>":
   ambler.ts
   deno.json
-  nodes/
+  cores/
   walks/
   specs/
   utils/
 
 Next steps:
   /ambler-walk   — create your first walk
-  /ambler-node   — create a standalone node
+  /ambler-core   — create a standalone core
 ```
 
 ```
