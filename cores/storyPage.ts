@@ -31,12 +31,12 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return async (input: Input): Promise<[N | null, Output]> => {
-    const prompt = `Write a page (max 280 characters) of a CYOA story.
+) =>
+async (input: Input): Promise<[N, Output]> => {
+  const prompt = `Write a page (max 280 characters) of a CYOA story.
       Context:
       Protagonist: ${input.identity}
       Setting: ${input.placement}
@@ -50,38 +50,37 @@ export const factory = <N extends string>(
       - If the story continues, the final lines must be a numbered list of markdown checkboxes representing 2 or 3 actions the protagonist can choose from (e.g., "1. [ ] Option 1\n2. [ ] Option 2").
       - Do not include any other text outside the story and the options/end marker.`;
 
-    const messages = [{ role: "user", content: prompt }];
-    try {
-      const reply = await utils.chat(
-        input.ollamaHost,
-        input.selectedModel,
-        messages,
-      );
+  const messages = [{ role: "user", content: prompt }];
+  try {
+    const reply = await utils.chat(
+      input.ollamaHost,
+      input.selectedModel,
+      messages,
+    );
 
-      const newPage = reply.trim();
-      const updatedStoryPages = [...input.storyPages, newPage];
-      const fullStory = updatedStoryPages.join("\n\n");
-      utils.print(
-        `\n--- Page ${input.currentPage} ---\n${newPage}\n---------------`,
-      );
+    const newPage = reply.trim();
+    const updatedStoryPages = [...input.storyPages, newPage];
+    const fullStory = updatedStoryPages.join("\n\n");
+    utils.print(
+      `\n--- Page ${input.currentPage} ---\n${newPage}\n---------------`,
+    );
 
-      if (fullStory.trim().endsWith("The End")) {
-        return [edges.onPageComplete, {
-          storyPages: updatedStoryPages,
-          currentPage: input.currentPage + 1,
-        }];
-      } else {
-        return [edges.onDecisionRequired, {
-          storyPages: updatedStoryPages,
-          currentPage: input.currentPage + 1,
-        }];
-      }
-    } catch (error) {
-      utils.print(`Error generating page: ${error}`);
-      return [edges.onError, {
-        storyPages: input.storyPages,
-        currentPage: input.currentPage,
+    if (fullStory.trim().endsWith("The End")) {
+      return [edges.onPageComplete, {
+        storyPages: updatedStoryPages,
+        currentPage: input.currentPage + 1,
+      }];
+    } else {
+      return [edges.onDecisionRequired, {
+        storyPages: updatedStoryPages,
+        currentPage: input.currentPage + 1,
       }];
     }
-  };
+  } catch (error) {
+    utils.print(`Error generating page: ${error}`);
+    return [edges.onError, {
+      storyPages: input.storyPages,
+      currentPage: input.currentPage,
+    }];
+  }
 };

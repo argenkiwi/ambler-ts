@@ -16,26 +16,25 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return async (): Promise<[N | null, string]> => {
-    utils.print("Searching for Ollama server...");
+) =>
+async (): Promise<[N, string]> => {
+  utils.print("Searching for Ollama server...");
 
-    for (const host of CANDIDATE_HOSTS) {
-      if (await utils.tryHost(host)) {
-        utils.print(`Found Ollama server at ${host}`);
-        return [edges.onDiscovered, host];
-      }
+  for (const host of CANDIDATE_HOSTS) {
+    if (await utils.tryHost(host)) {
+      utils.print(`Found Ollama server at ${host}`);
+      return [edges.onDiscovered, host];
     }
+  }
 
-    utils.print("No Ollama server found automatically.");
-    const userInput = utils.readLine(
-      "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
-    );
-    if (userInput === null) return [edges.onCancel, ""];
+  utils.print("No Ollama server found automatically.");
+  const userInput = utils.readLine(
+    "Enter Ollama host URL (e.g. http://192.168.1.5:11434): ",
+  );
+  if (userInput === null) return [edges.onCancel, ""];
 
-    return [edges.onDiscovered, userInput.trim()];
-  };
+  return [edges.onDiscovered, userInput.trim()];
 };

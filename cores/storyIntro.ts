@@ -16,29 +16,28 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return (): [N | null, Output] => {
-    const identity = utils.readLine("Who is the protagonist? ");
-    const placement = utils.readLine(
-      "Where and when does the story take place? ",
-    );
-    const circumstances = utils.readLine("What is happening? ");
+) =>
+(): [N, Output] => {
+  const identity = utils.readLine("Who is the protagonist? ");
+  const placement = utils.readLine(
+    "Where and when does the story take place? ",
+  );
+  const circumstances = utils.readLine("What is happening? ");
 
-    if (identity === null || placement === null || circumstances === null) {
-      return [edges.onCancel, {
-        identity: "",
-        placement: "",
-        circumstances: "",
-      }];
-    }
-
-    return [edges.onIntroComplete, {
-      identity: identity.trim(),
-      placement: placement.trim(),
-      circumstances: circumstances.trim(),
+  if (identity === null || placement === null || circumstances === null) {
+    return [edges.onCancel, {
+      identity: "",
+      placement: "",
+      circumstances: "",
     }];
-  };
+  }
+
+  return [edges.onIntroComplete, {
+    identity: identity.trim(),
+    placement: placement.trim(),
+    circumstances: circumstances.trim(),
+  }];
 };

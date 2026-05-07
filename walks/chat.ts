@@ -58,7 +58,7 @@ const amble = ambler<State, NodeId>({
     };
   },
   bye: () => {
-    const core = chatByeFactory<NodeId>({ onDone: null });
+    const core = chatByeFactory({ onDone: null });
     return (state) => {
       const [nodeId, _] = core();
       return [nodeId, state];

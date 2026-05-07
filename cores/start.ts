@@ -10,7 +10,7 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
+export const factory = <N extends string | null>(
   edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>

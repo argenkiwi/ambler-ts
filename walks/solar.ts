@@ -60,7 +60,7 @@ const amble = ambler<State, NodeId>({
     };
   },
   save: () => {
-    const core = solarSaveFactory<NodeId>({
+    const core = solarSaveFactory({
       onSaveComplete: null,
     });
     return async (state) => {

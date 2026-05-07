@@ -6,7 +6,6 @@ import { factory as storyPageFactory } from "../cores/storyPage.ts";
 import { factory as storyDecisionFactory } from "../cores/storyDecision.ts";
 import { factory as storySaveFactory } from "../cores/storySave.ts";
 
-
 export interface State {
   ollamaHost: string;
   selectedModel: string;
@@ -90,7 +89,7 @@ const amble = ambler<State, NodeId>({
     };
   },
   save: () => {
-    const core = storySaveFactory<NodeId>({
+    const core = storySaveFactory({
       onSaveComplete: null,
     });
     return async (state) => {

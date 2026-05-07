@@ -12,11 +12,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>
-async (storyPages: string[]): Promise<[N | null, undefined]> => {
+async (storyPages: string[]): Promise<[N, undefined]> => {
   const fullStory = storyPages.join("\n\n");
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `story-${timestamp}`;

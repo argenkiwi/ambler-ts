@@ -33,7 +33,7 @@ const amble = ambler<State, NodeId>({
     };
   },
   stop: () => {
-    const core = stopCore<NodeId>({ onDone: null });
+    const core = stopCore({ onDone: null });
     return (state) => {
       const [nodeId, _] = core(state.count);
       return [nodeId, state];

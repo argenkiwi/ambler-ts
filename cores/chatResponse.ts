@@ -24,23 +24,22 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return async (input: Input): Promise<[N | null, Message[]]> => {
-    const reply = await utils.chat(
-      input.ollamaHost,
-      input.selectedModel,
-      input.messages,
-    );
+) =>
+async (input: Input): Promise<[N, Message[]]> => {
+  const reply = await utils.chat(
+    input.ollamaHost,
+    input.selectedModel,
+    input.messages,
+  );
 
-    utils.print(`Assistant: ${reply}`);
-    const messages: Message[] = [
-      ...input.messages,
-      { role: "assistant", content: reply },
-    ];
+  utils.print(`Assistant: ${reply}`);
+  const messages: Message[] = [
+    ...input.messages,
+    { role: "assistant", content: reply },
+  ];
 
-    return [edges.onPrompt, messages];
-  };
+  return [edges.onPrompt, messages];
 };

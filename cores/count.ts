@@ -12,11 +12,11 @@ const defaultUtils: Utils = {
   random: () => Math.random(),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>
-async (count: number): Promise<[N | null, number]> => {
+async (count: number): Promise<[N, number]> => {
   utils.print(`Current count: ${count}`);
   await utils.sleep(1000);
   return [utils.random() > 0.5 ? edges.onCount : edges.onStop, count + 1];

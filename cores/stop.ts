@@ -8,11 +8,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>
-(count: number): [N | null, number] => {
+(count: number): [N, number] => {
   utils.print(`Final count: ${count}`);
   return [edges.onDone, count];
 };

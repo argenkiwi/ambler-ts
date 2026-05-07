@@ -8,12 +8,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return (): [N | null, undefined] => {
-    utils.print("Goodbye!");
-    return [edges.onDone, undefined];
-  };
+) =>
+(): [N, undefined] => {
+  utils.print("Goodbye!");
+  return [edges.onDone, undefined];
 };

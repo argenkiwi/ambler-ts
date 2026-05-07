@@ -13,12 +13,11 @@ const defaultUtils: Utils = {
 export const factory = <N extends string>(
   edges: Record<Edge, N | null>,
   utils = defaultUtils,
-) => {
-  return (): [N | null, string] => {
-    utils.print("\n--- Solar Prompt Input ---");
-    const promptText = utils.readLine("Enter your solar prompt: ");
-    if (promptText === null) return [edges.onCancel, ""];
+) =>
+(): [N | null, string] => {
+  utils.print("\n--- Solar Prompt Input ---");
+  const promptText = utils.readLine("Enter your solar prompt: ");
+  if (promptText === null) return [edges.onCancel, ""];
 
-    return [edges.onPromptComplete, promptText];
-  };
+  return [edges.onPromptComplete, promptText];
 };

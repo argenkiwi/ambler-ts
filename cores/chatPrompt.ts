@@ -14,11 +14,11 @@ const defaultUtils: Utils = {
 
 const QUIT_WORDS = new Set(["bye", "exit", "quit"]);
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>
-(messages: Message[]): [N | null, Message[]] => {
+(messages: Message[]): [N, Message[]] => {
   const userInput = utils.readLine("You: ");
   if (userInput === null) {
     return [edges.onQuit, messages];

@@ -14,23 +14,22 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
-) => {
-  return async (generatedStory: string): Promise<[N | null, undefined]> => {
-    const userInput = utils.readLine(
-      "Would you like to save this story? (y/n): ",
-    );
-    if (userInput?.toLowerCase() === "y") {
-      const success = await utils.saveToFile(generatedStory);
-      if (!success) {
-        utils.print("Failed to save the story.");
-      }
-    } else {
-      utils.print("Story not saved.");
+) =>
+async (generatedStory: string): Promise<[N, undefined]> => {
+  const userInput = utils.readLine(
+    "Would you like to save this story? (y/n): ",
+  );
+  if (userInput?.toLowerCase() === "y") {
+    const success = await utils.saveToFile(generatedStory);
+    if (!success) {
+      utils.print("Failed to save the story.");
     }
+  } else {
+    utils.print("Story not saved.");
+  }
 
-    return [edges.onSaveComplete, undefined];
-  };
+  return [edges.onSaveComplete, undefined];
 };

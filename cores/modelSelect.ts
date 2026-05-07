@@ -14,11 +14,11 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory = <N extends string>(
-  edges: Record<Edge, N | null>,
+export const factory = <N extends string | null>(
+  edges: Record<Edge, N>,
   utils = defaultUtils,
 ) =>
-async (ollamaHost: string): Promise<[N | null, string]> => {
+async (ollamaHost: string): Promise<[N, string]> => {
   const models = await utils.listModels(ollamaHost);
   utils.print("Available models:");
   models.forEach((m, i) => utils.print(`${i}: ${m}`));

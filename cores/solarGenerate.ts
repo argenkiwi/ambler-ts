@@ -25,26 +25,25 @@ const defaultUtils: Utils = {
 export const factory = <N extends string>(
   edges: Record<Edge, N | null>,
   utils = defaultUtils,
-) => {
-  return async (input: Input): Promise<[N | null, string]> => {
-    utils.print(
-      "\nGenerating your solarpunk story... (this may take a moment)",
+) =>
+async (input: Input): Promise<[N | null, string]> => {
+  utils.print(
+    "\nGenerating your solarpunk story... (this may take a moment)",
+  );
+  try {
+    const story = await utils.generateStory(
+      input.ollamaHost,
+      input.selectedModel,
+      input.solarPrompt,
     );
-    try {
-      const story = await utils.generateStory(
-        input.ollamaHost,
-        input.selectedModel,
-        input.solarPrompt,
-      );
 
-      utils.print("\n--- GENERATED STORY ---");
-      utils.print(story);
-      utils.print("\n--- END OF STORY ---");
+    utils.print("\n--- GENERATED STORY ---");
+    utils.print(story);
+    utils.print("\n--- END OF STORY ---");
 
-      return [edges.onGenerateComplete, story];
-    } catch (error) {
-      utils.print(`Error generating story: ${error}`);
-      return [edges.onError, ""];
-    }
-  };
+    return [edges.onGenerateComplete, story];
+  } catch (error) {
+    utils.print(`Error generating story: ${error}`);
+    return [edges.onError, ""];
+  }
 };
