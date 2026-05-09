@@ -1,6 +1,6 @@
 # Ambler
 
-Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as graphs. These programs, called **walks**, are composed of individual **cores** and **edges**, enabling the creation of complex command-line applications and agentic workflows.
+Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as a graph of nodes. These programs, called **walks**, consist of **nodes** that execute logic using reusable **cores**, enabling the creation of complex command-line applications and agentic workflows.
 
 ## Starting a New Project
 
@@ -36,18 +36,17 @@ Both options create the folder structure (`cores/`, `walks/`, `specs/`, `utils/`
 
 ## Goals
 
-The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic as a series of cores, it becomes possible for an agent to:
-- Define individual atomic steps (cores) with clear inputs and outputs.
-- Wire these steps together into complex, directed graphs (walks).
+The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic through a series of nodes and cores, it becomes possible for an agent to:
+- Define a walk as a graph of **nodes**, where each node represents a step in a process.
+- Use **cores** as reusable abstractions for the business logic within those nodes.
+- Wire nodes together into complex, directed graphs (**walks**).
 - Create reusable, testable components for CLI tools and automated workflows.
 
 ## Architecture
 
-The framework follows a graph-based execution model:
-
-- **Core Engine (`ambler.ts`)**: Implements the `amble` function which drives the machine through the graph. It manages the execution loop, transitioning from one core to the next until the process terminates.
-- **Cores (`cores/`)**: The fundamental building blocks. Each core is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data) and returns the next step to execute. Termination is expressed in the walk wiring via `stop()`. Cores are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`.
-- **Walks (`walks/`)**: The concrete implementation of a program. A walk wires cores together into a specific graph structure and initiates the execution.
+- **Core Engine (`ambler.ts`)**: Implements the `amble` function which drives the machine through the graph. It manages the execution loop, transitioning from one node to the next until the process terminates.
+- **Cores (`cores/`)**: Reusable logic abstractions. A core is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data). Cores are designed to be used by multiple nodes within a walk or across different walks. They are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`.
+- **Walks (`walks/`)**: The concrete implementation of a program. A walk consists of a graph of **nodes**, where each node handles the mapping between the walk's shared state and a **core**'s inputs/outputs. A walk wires these nodes together into a specific graph structure and initiates the execution.
 - **Specs (`specs/`)**: Design documents written in Markdown that describe the intended behavior of a walk before implementation. This provides a blueprint for both humans and agents.
 - **Utilities (`utils/`)**: Reusable logic and helpers used across cores and walks.
 
@@ -60,7 +59,7 @@ Before implementing a new walk, create a specification in the `specs/` directory
 When a new core is needed, implement it in the `cores/` directory. Follow the pattern of using a factory function that accepts injected dependencies.
 
 ### 3. Compose a Walk
-Create a new walk in `walks/` by importing the necessary cores and defining their connections.
+Create a new walk in `walks/` by defining its nodes, assigning cores to them, and defining their connections.
 
 ### 4. Test and Execute
 - **Testing Cores**: Each core should have a corresponding test file in `cores/tests/` (e.g., `my.test.ts`). Run tests using:
