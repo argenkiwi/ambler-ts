@@ -1,6 +1,6 @@
 # Ambler
 
-Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as a graph of nodes. These programs, called **walks**, consist of **nodes** that execute logic using reusable **cores**, enabling the creation of complex command-line applications and agentic workflows.
+Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as graphs. These programs, called **walks**, are composed of individual **nodes** and **edges**, enabling the creation of complex command-line applications and agentic workflows.
 
 ## Starting a New Project
 
@@ -32,43 +32,44 @@ Run `init.ts` directly from this repo:
 deno run --allow-write --allow-read init.ts <target-dir>
 ```
 
-Both options create the folder structure (`cores/`, `walks/`, `specs/`, `utils/`), copy `ambler.ts`, generate a minimal `deno.json`, and set up the project — ready to use with no sample code.
+Both options create the folder structure (`nodes/`, `walks/`, `specs/`, `utils/`), copy `ambler.ts`, generate a minimal `deno.json`, and set up the project — ready to use with no sample code.
 
 ## Goals
 
-The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic through a series of nodes and cores, it becomes possible for an agent to:
-- Define a walk as a graph of **nodes**, where each node represents a step in a process.
-- Use **cores** as reusable abstractions for the business logic within those nodes.
-- Wire nodes together into complex, directed graphs (**walks**).
+The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic as a series of nodes, it becomes possible for an agent to:
+- Define individual atomic steps (nodes) with clear inputs and outputs.
+- Wire these steps together into complex, directed graphs (walks).
 - Create reusable, testable components for CLI tools and automated workflows.
 
 ## Architecture
 
-- **Core Engine (`ambler.ts`)**: Implements the `amble` function which drives the machine through the graph. It manages the execution loop, transitioning from one node to the next until the process terminates.
-- **Cores (`cores/`)**: Reusable logic abstractions. A core is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data). Cores are designed to be used by multiple nodes within a walk or across different walks. They are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`.
-- **Walks (`walks/`)**: The concrete implementation of a program. A walk consists of a graph of **nodes**, where each node handles the mapping between the walk's shared state and a **core**'s inputs/outputs. A walk wires these nodes together into a specific graph structure and initiates the execution.
+The framework follows a graph-based execution model:
+
+- **Core Engine (`ambler.ts`)**: Implements the `ambler` function which creates a lazy-loading state machine runner. It manages the execution loop, transitioning from one node to the next until a node returns `null` as the next node ID.
+- **Nodes (`nodes/`)**: The fundamental building blocks. Each node is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data) and returns the next step to execute. Termination is expressed in the walk wiring by mapping a terminal edge to `null`. Nodes are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`. Tests live in `nodes/tests/`.
+- **Walks (`walks/`)**: The concrete implementation of a program. A walk wires nodes together into a specific graph structure and initiates the execution.
 - **Specs (`specs/`)**: Design documents written in Markdown that describe the intended behavior of a walk before implementation. This provides a blueprint for both humans and agents.
-- **Utilities (`utils/`)**: Reusable logic and helpers used across cores and walks.
+- **Utilities (`utils/`)**: Reusable logic and helpers used across nodes and walks.
 
 ## Developer Workflow
 
 ### 1. Define a Specification
-Before implementing a new walk, create a specification in the `specs/` directory. This `.md` file should clearly outline the cores involved and the transitions between them.
+Before implementing a new walk, create a specification in the `specs/` directory. This `.md` file should clearly outline the nodes involved and the transitions between them.
 
-### 2. Implement Cores
-When a new core is needed, implement it in the `cores/` directory. Follow the pattern of using a factory function that accepts injected dependencies.
+### 2. Implement Nodes
+When a new node is needed, implement it in the `nodes/` directory. Follow the pattern of using a factory function that accepts injected dependencies.
 
 ### 3. Compose a Walk
-Create a new walk in `walks/` by defining its nodes, assigning cores to them, and defining their connections.
+Create a new walk in `walks/` by importing the necessary nodes and defining their connections.
 
 ### 4. Test and Execute
-- **Testing Cores**: Each core should have a corresponding test file in `cores/tests/` (e.g., `my.test.ts`). Run tests using:
+- **Testing Nodes**: Each node should have a corresponding test file in `nodes/tests/` (e.g., `nodes/tests/myNode.test.ts`). Run all node tests using:
   ```bash
-  deno test
+  deno test nodes/tests/
   ```
-  To run a specific core test:
+  To run a specific node test:
   ```bash
-  deno test cores/tests/my.test.ts
+  deno test nodes/tests/myNode.test.ts
   ```
 - **Running Walks**: Execute a complete walk directly using `deno run`:
   ```bash
@@ -83,11 +84,11 @@ Create a new walk in `walks/` by defining its nodes, assigning cores to them, an
 
 Ambler is designed to be used with agents equipped with **skills**. These skills automate the entire development lifecycle:
 
-- `ambler-init`: Bootstraps a new project with the required folder structure and core files.
-- `ambler-core`: Scaffolds a new core with the correct structure and dependencies.
-- `ambler-test`: Generates a comprehensive test suite for an existing core.
-- `ambler-walk`: Creates a new walk and its corresponding specification.
-- `ambler-spec`: Generates a new specification file.
-- `ambler-util`: Extracts or creates reusable utility modules in the `utils/` directory.
+- `ambler-init`: Bootstraps a new project — creates the folder structure (`nodes/`, `walks/`, `specs/`, `utils/`), writes `ambler.ts` and `deno.json`.
+- `ambler-node`: Scaffolds a new node in `nodes/` with the correct `State`, `Edge`, `Utils`, and `factory` exports.
+- `ambler-test`: Generates a test file in `nodes/tests/` for an existing node, covering every edge branch.
+- `ambler-walk`: Creates a walk wiring file (`walks/<name>.ts`) and its Markdown spec (`specs/<name>.md`), ensuring all required nodes exist.
+- `ambler-spec`: Generates or updates a Markdown specification file in `specs/`.
+- `ambler-util`: Extracts or creates reusable utility modules in `utils/`.
 
-By using these skills, an augmented agent can efficiently expand the project's capabilities, turning high-level requirements (specs) into executable code (cores and walks).
+By using these skills, an augmented agent can efficiently expand the project's capabilities, turning high-level requirements (specs) into executable code (nodes and walks).
