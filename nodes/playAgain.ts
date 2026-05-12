@@ -1,4 +1,5 @@
 import { NodeFactory } from "../ambler.ts";
+import { Confirm } from "@cliffy/prompt";
 
 export interface State {
   userChoice: string | null;
@@ -9,12 +10,12 @@ export interface State {
 export type Edge = "onPlayAgain" | "onQuit";
 
 export type Utils = {
-  readLine: (msg: string) => string | null;
+  readLine: (msg: string) => Promise<boolean>;
   print: (msg: string) => void;
 };
 
 const defaultUtils: Utils = {
-  readLine: (msg) => prompt(msg),
+  readLine: async (msg) => await Confirm.prompt({ message: msg, default: false }),
   print: (msg) => console.log(msg),
 };
 
@@ -22,10 +23,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) =>
-(state) => {
-  const input = utils.readLine("Play again? (yes/no): ");
+async (state) => {
+  const input = await utils.readLine("Play again? (yes/no): ");
 
-  if (input === null || input.trim().toLowerCase() === "yes" || input.trim().toLowerCase() === "y") {
+  if (input) {
     return [edges.onPlayAgain, { ...state, userChoice: null, computerChoice: null, result: null }];
   }
 

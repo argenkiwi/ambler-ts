@@ -11,7 +11,7 @@ Deno.test(
     };
 
     const utils: Utils = {
-      readLine: (_msg: string) => "rock",
+      selectChoice: (_msg: string) => Promise.resolve("rock"),
       print: (_msg: string) => {},
     };
 
@@ -35,7 +35,7 @@ Deno.test(
     };
 
     const utils: Utils = {
-      readLine: (_msg: string) => "Paper",
+      selectChoice: (_msg: string) => Promise.resolve("paper"),
       print: (_msg: string) => {},
     };
 
@@ -59,7 +59,7 @@ Deno.test(
     };
 
     const utils: Utils = {
-      readLine: (_msg: string) => "SCISSORS",
+      selectChoice: (_msg: string) => Promise.resolve("scissors"),
       print: (_msg: string) => {},
     };
 
@@ -83,7 +83,7 @@ Deno.test(
     };
 
     const utils: Utils = {
-      readLine: (_msg: string) => "lizard",
+      selectChoice: (_msg: string) => Promise.resolve("lizard"),
       print: (_msg: string) => {},
     };
 
@@ -107,7 +107,7 @@ Deno.test(
     };
 
     const utils: Utils = {
-      readLine: (_msg: string) => null,
+      selectChoice: (_msg: string) => Promise.resolve(null),
       print: (_msg: string) => {},
     };
 

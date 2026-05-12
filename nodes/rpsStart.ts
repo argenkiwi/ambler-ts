@@ -1,3 +1,4 @@
+import { Select } from "@cliffy/prompt";
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {
@@ -9,34 +10,36 @@ export interface State {
 export type Edge = "onSuccess" | "onError";
 
 export type Utils = {
-  readLine: (msg: string) => string | null;
+  selectChoice: (msg: string) => Promise<string | null>;
   print: (msg: string) => void;
 };
 
+const validChoices = ["rock", "paper", "scissors"];
 const defaultUtils: Utils = {
-  readLine: (msg) => prompt(msg),
-  print: (msg) => console.log(msg),
+  selectChoice: async (msg: string) => await Select.prompt({
+    message: msg,
+    options: validChoices.map((choice) => ({
+      name: choice.charAt(0).toUpperCase() + choice.slice(1),
+      value: choice
+    })),
+  }),
+  print: (msg: string) => console.log(msg),
 };
-
-const VALID_CHOICES = ["rock", "paper", "scissors"];
 
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) =>
-(state) => {
-  const input = utils.readLine("Enter Rock, Paper, or Scissors: ");
+  async (state) => {
+    try {
+      const choice = await utils.selectChoice("Choose your weapon:");
 
-  if (input === null) {
-    return [edges.onError, state];
-  }
+      if (choice === null || !validChoices.includes(choice)) {
+        return [edges.onError, state];
+      }
 
-  const choice = input.trim().toLowerCase();
-
-  if (!VALID_CHOICES.includes(choice)) {
-    utils.print("Error: Invalid choice. Please enter Rock, Paper, or Scissors.");
-    return [edges.onError, state];
-  }
-
-  return [edges.onSuccess, { ...state, userChoice: choice }];
-};
+      return [edges.onSuccess, { ...state, userChoice: choice }];
+    } catch {
+      return [edges.onError, state];
+    }
+  };
