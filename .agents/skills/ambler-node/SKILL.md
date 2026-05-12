@@ -14,7 +14,7 @@ Follow these steps to create a new node in the `nodes/` directory.
 
 Before writing any code, determine:
 
-- **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>Node.ts`.
+- **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>.ts`.
 - **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches.
 - **Edges**: What named transitions can this node take? Define an `Edge` type (union of strings) for these names.
 - **Utils**: What side-effectful operations does the node perform? List them (e.g., `print`, `readLine`). Each becomes a field on the `Utils` type with a production default in `defaultUtils`.
@@ -22,7 +22,7 @@ Before writing any code, determine:
 
 ---
 
-## 2. Create `nodes/<name>Node.ts`
+## 2. Create `nodes/<name>.ts`
 
 Use the following structure exactly. Adhere to naming conventions.
 
@@ -118,7 +118,7 @@ Use the `/ambler-test` skill to generate the test file.
 
 ## 4. Checklist before finishing
 
-- [ ] `nodes/<name>Node.ts` uses the `Edge` naming convention for edge keys.
+- [ ] `nodes/<name>.ts` uses the `Edge` naming convention for edge keys.
 - [ ] Factory uses `NodeFactory<State, Edge, Utils>` and is exported as `factory`.
 - [ ] `State` interface is minimal.
 - [ ] `defaultUtils` provides real implementations.

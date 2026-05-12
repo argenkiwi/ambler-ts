@@ -14,7 +14,7 @@ This skill initializes a new Ambler project.
 
 ## Template Files
 
-Two core files are read from `~/.claude/skills/ambler-init/assets/` and written to the target.
+Two core files are read from the skill's `assets/` directory and written to the target.
 
 | Source | Writes to |
 |--------|-----------|
@@ -42,10 +42,10 @@ mkdir -p "<target>/nodes/tests" "<target>/walks" "<target>/specs" "<target>/util
 
 ### 4. Write template files
 
-Read from `~/.claude/skills/ambler-init/assets/` and write to the target.
+Read from the skill's `assets/` directory and write to the target.
 
-1. Read `~/.claude/skills/ambler-init/assets/ambler.ts` → write to `<target>/ambler.ts`
-2. Read `~/.claude/skills/ambler-init/assets/deno.json` → write to `<target>/deno.json`
+1. Read `assets/ambler.ts` → write to `<target>/ambler.ts`
+2. Read `assets/deno.json` → write to `<target>/deno.json`
 
 Read and write both files. Do not skip any.
 
