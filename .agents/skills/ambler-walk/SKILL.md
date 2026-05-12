@@ -1,101 +1,111 @@
 ---
 name: ambler-walk
-description: Explains how to create a walk in the ambler project. Use this when the user wants to add a new workflow, process, or end-to-end feature that involves multiple steps (nodes) and shared state.
+description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
-  author: argenkiwi
-  version: "1.5"
+  author: leandro
+  version: "2.0"
 ---
 
 # Ambler Walk
 
-Follow these steps to create a new walk in the Ambler project. A "walk" represents a directed graph of nodes where each node performs a specific task (via a core) and transitions to the next node based on the outcome.
+This skill guides you in creating a complete Ambler walk. A walk is a state-machine program consisting of two files:
 
-## 1. Identify Walk Nodes
+1. `walks/<name>.ts` — TypeScript file defining the shared `State`, `initialState`, and the wired node graph.
+2. `specs/<name>.md` — Markdown specification describing the shared state and the logic/transitions of each step.
 
-Break down the desired process into discrete, logical steps. Each step will be a **Node** in the walk.
-- Identify the starting point.
-- Identify decision points and error states.
-- Identify the termination point (where the walk stops).
+---
 
-## 2. Determine Shared State
+## Step 1 — Identify the Walk
 
-The shared state is the single source of truth that travels through the walk.
-- List all inputs required by each node's core.
-- List all outputs produced by each node's core that need to be persisted for later steps.
-- Combine these into a `State` interface. This interface should be defined at the top of your walk file in `walks/`.
+- Determine the walk name (lowercase, hyphen-separated, e.g. `my-walk`). The file will be `walks/<name>.ts`.
+- Clarify the walk's purpose: what program does it implement?
+- Identify the nodes (steps) required and their transitions.
 
-## 3. Write the Specification
+---
 
-Create a markdown file in `specs/` named after your walk (e.g., `specs/my-walk.md`).
-- Describe the overall purpose of the walk.
-- Define the `Shared State` structure.
-- Document each **Step** (Node), including:
-    - Its responsibility.
-    - Possible outcomes and where they lead.
-    - Side effects (e.g., printing to console, file I/O).
+## Step 2 — Ensure Nodes Exist
 
-## 4. Implement Cores and Tests
+For each node the walk requires:
 
-For each unique behavior in your walk, implement or reuse a **Core**.
-- **Cores** are the "brains" of the nodes. They are pure functions (wrapped in factories) that take specific inputs and return a tuple `[nextEdge, output]`.
-- Follow the instructions in the `ambler-core` skill to create files in `cores/`.
-- **Reusability**: Remember that one core can be used by multiple nodes or even across different walks.
-- **Testing**: Every core MUST have a corresponding test in `cores/tests/`. Use the `ambler-test` skill to ensure full coverage of all edges.
+- Check if a file `nodes/<nodeName>.ts` already exists (use Glob).
+- If it does **not** exist, create it using the `/ambler-node` skill **before** writing the walk.
+- Also ensure `nodes/tests/<nodeName>.test.ts` exists for every new node using the `/ambler-test` skill, then verify with `deno test nodes/tests/<nodeName>.test.ts`.
 
-## 5. Implement the Walk
+---
 
-Create the walk file in `walks/` (e.g., `walks/my-walk.ts`).
+## Step 3 — Create the Specification File (`specs/<name>.md`)
 
-### Step-by-Step Implementation
+Create the Markdown spec **before** the TypeScript file using the `/ambler-spec` skill, so it acts as a blueprint.
 
-1. **Define Types**:
-   ```typescript
-   export interface State {
-     // ... define shared fields
-   }
+---
 
-   type NodeId = "start" | "step1" | "step2" | "end"; // All node keys
-   ```
+## Step 4 — Create the Wiring File (`walks/<name>.ts`)
 
-2. **Initialize Ambler**:
-   Use the `ambler<State, NodeId>` function to define the graph. Each key is a node ID, and its value is a factory that returns a `Node` function.
+```typescript
+import { ambler } from "../ambler.ts";
+import { factory as startNode } from "../nodes/start.ts";
+import { factory as nextNode } from "../nodes/next.ts";
+import { factory as stopNode } from "../nodes/stop.ts";
 
-   ```typescript
-   const amble = ambler<State, NodeId>({
-     start: () => {
-       const core = someCoreFactory({
-         onSuccess: "step1",
-         onError: "end"
-       });
-       return async (state) => {
-         const [edge, output] = await core(state.inputData);
-         return [edge, { ...state, result: output }];
-       };
-     },
-     // ... other nodes
-   });
-   ```
+export interface State {
+  field: string;
+}
 
-3. **Explicit Type Declarations**:
-   Ensure all return types and parameters match the `ambler.ts` definitions. Node functions must return `[NodeId | null, State]` or a Promise of it.
+type NodeId = "start" | "next" | "stop";
 
-4. **Main Loop (Optional)**:
-   If the walk is meant to be executed directly, add an `if (import.meta.main)` block to run the state machine until `nodeId` becomes `null`.
+const amble = ambler<State, NodeId>({
+  start: () => startNode({ onSuccess: "next", onError: "start" }),
+  next:  () => nextNode({ onComplete: "stop" }),
+  stop:  () => stopNode<NodeId>({ onDone: null }),
+});
 
-   ```typescript
-   if (import.meta.main) {
-     let nodeId: NodeId | null = "start";
-     let state: State = { /* initial state */ };
+if (import.meta.main) {
+  let nodeId: NodeId | null = "start";
+  let state: State = {
+    field: "initial",
+  };
 
-     while (nodeId) {
-       const next = amble(nodeId, state);
-       [nodeId, state] = next instanceof Promise ? await next : next;
-     }
-   }
-   ```
+  while (nodeId) {
+    const next = amble(nodeId, state);
+    [nodeId, state] = next instanceof Promise ? await next : next;
+  }
+}
+```
 
-## Key Architectural Principles
+**Key rules:**
+- Import `ambler` from `../ambler.ts`.
+- Import each node's `factory` as a named import and alias it for clarity.
+- Define `State` interface at the top of the file.
+- Define `NodeId` union type for node identifiers.
+- Provide a map of node IDs to **functions that return nodes** to `ambler<State, NodeId>({ ... })`.
+- Use arrow functions to defer node creation: `start: () => startNode({ ... })`.
+- Call `ambler` outside the `if` guard and use `instanceof Promise` in the loop.
 
-- **Node-Core Split**: The **Core** handles the business logic and logical transitions (Edges). The **Node** (inside the walk) handles the mapping between the Core's outputs and the Walk's shared **State**, as well as mapping the Core's **Edges** to actual **NodeIds**.
-- **Immutability**: Always return a new state object (using spread syntax `{...state}`) rather than mutating the existing one.
-- **Type Safety**: Leverage TypeScript's type system to ensure that node transitions are valid and state transitions are consistent.
+---
+
+## Step 5 — Verify
+
+Run the walk to confirm it behaves as specified:
+
+```
+deno run --allow-all walks/<name>.ts
+```
+
+If the walk has new nodes, also run:
+
+```
+deno test nodes/tests/
+```
+
+---
+
+## Checklist
+
+Before finishing, confirm:
+
+- [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
+- [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
+- [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
+- [ ] Every new node has a `nodes/tests/<nodeName>.test.ts` with at least one test.
+- [ ] All tests pass.
+- [ ] The walk runs end-to-end without errors.

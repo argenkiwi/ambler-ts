@@ -1,7 +1,7 @@
 import { ambler } from "../ambler.ts";
-import { factory as startCore } from "../cores/start.ts";
-import { factory as countCore } from "../cores/count.ts";
-import { factory as stopCore } from "../cores/stop.ts";
+import { factory as startNode } from "../nodes/start.ts";
+import { factory as countNode } from "../nodes/count.ts";
+import { factory as stopNode } from "../nodes/stop.ts";
 
 export interface State {
   count: number;
@@ -10,35 +10,9 @@ export interface State {
 type NodeId = "start" | "count" | "stop";
 
 const amble = ambler<State, NodeId>({
-  start: () => {
-    const core = startCore({
-      onSuccess: "count",
-      onError: "start",
-    });
-
-    return (state) => {
-      const [nodeId, output] = core();
-      return [nodeId, { ...state, count: output }];
-    };
-  },
-  count: () => {
-    const core = countCore({
-      onCount: "count",
-      onStop: "stop",
-    });
-
-    return async (state) => {
-      const [nodeId, output] = await core(state.count);
-      return [nodeId, { ...state, count: output }];
-    };
-  },
-  stop: () => {
-    const core = stopCore({ onDone: null });
-    return (state) => {
-      const [nodeId, _] = core(state.count);
-      return [nodeId, state];
-    };
-  },
+  start: () => startNode({ onSuccess: "count", onError: "start" }),
+  count: () => countNode({ onCount: "count", onStop: "stop" }),
+  stop: () => stopNode<NodeId, State>({ onDone: null }),
 });
 
 if (import.meta.main) {
