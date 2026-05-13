@@ -18,8 +18,8 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  prompt: (msg) => getPrompt(msg),
-  print: (msg) => console.log(msg),
+  prompt: (msg: string) => getPrompt(msg),
+  print: (msg: string) => console.log(msg),
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (
