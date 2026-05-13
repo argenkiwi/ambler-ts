@@ -1,23 +1,23 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../chat-response.ts";
+import { factory, State, Utils } from "../response.ts";
 
-Deno.test("chat-responseNode should transition to onComplete and append assistant response", async () => {
+Deno.test("responseNode should transition to onComplete and append assistant response", async () => {
   const initialState: State = {
     messages: [{ role: "user", content: "hello" }],
     host: "http://localhost:11434",
     model: "llama3",
-  };
+   };
   const utils: Utils = {
     chat: async (_messages, _model, _host) => "hi there",
     print: (_msg: string) => {},
-  };
+   };
 
   const result = await factory(
-    { onComplete: "next" },
+     { onComplete: "prompt" },
     utils,
-  )(initialState);
+   )(initialState);
 
-  assertEquals(result[0], "next");
+  assertEquals(result[0], "prompt");
   assertEquals(result[1].messages.length, 2);
   assertEquals(result[1].messages[1], { role: "assistant", content: "hi there" });
 });

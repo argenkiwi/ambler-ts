@@ -1,8 +1,8 @@
 import { ambler } from "../ambler.ts";
 import { factory as ollamaCheck } from "../nodes/ollama-check.ts";
 import { factory as modelSelect } from "../nodes/model-select.ts";
-import { factory as chatPrompt, Message } from "../nodes/chat-prompt.ts";
-import { factory as chatResponse } from "../nodes/chat-response.ts";
+import { factory as chatPrompt, Message } from "../nodes/prompt.ts";
+import { factory as chatResponse } from "../nodes/response.ts";
 import { factory as chatBye } from "../nodes/chat-bye.ts";
 
 export interface State {
