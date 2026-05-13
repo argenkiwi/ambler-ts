@@ -35,6 +35,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     }
 
     const trolledContent = utils.transpose(lastMsg.content);
+    utils.print(`Troll: ${trolledContent}`);
 
     const nextState = {
       ...state,
