@@ -31,26 +31,40 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   state.word.split("").forEach((letter, i) => {
     if (letter === lastLetter) {
       newRevealed[i] = true;
-     }
+    }
   });
 
   let newWrongGuesses = state.wrongGuesses;
   if (!state.word.includes(lastLetter)) {
     newWrongGuesses = state.wrongGuesses + 1;
     utils.print(`'${lastLetter}' is not in the word.`);
-   } else {
+  } else {
     utils.print(`'${lastLetter}' is in the word!`);
-   }
+  }
 
   const allRevealed = state.word.split("").every((letter, i) => newRevealed[i]);
 
   if (allRevealed) {
-    return [edges.onWin, { ...state, revealed: newRevealed, wrongGuesses: newWrongGuesses, gameOver: true }];
-   }
+    return [edges.onWin, {
+      ...state,
+      revealed: newRevealed,
+      wrongGuesses: newWrongGuesses,
+      gameOver: true,
+    }];
+  }
 
   if (newWrongGuesses >= state.maxWrong) {
-    return [edges.onLose, { ...state, revealed: newRevealed, wrongGuesses: newWrongGuesses, gameOver: true }];
-   }
+    return [edges.onLose, {
+      ...state,
+      revealed: newRevealed,
+      wrongGuesses: newWrongGuesses,
+      gameOver: true,
+    }];
+  }
 
-  return [edges.onContinue, { ...state, revealed: newRevealed, wrongGuesses: newWrongGuesses }];
+  return [edges.onContinue, {
+    ...state,
+    revealed: newRevealed,
+    wrongGuesses: newWrongGuesses,
+  }];
 };

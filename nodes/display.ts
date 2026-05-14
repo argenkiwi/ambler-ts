@@ -12,49 +12,49 @@ export interface State {
 export type Edge = "onDisplay";
 
 const HANGMAN: string[] = [
-`  +---+
+  `  +---+
   |   |
   |   |
   |   |
       |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
   |   |
       |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
   |   |
       |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
  /|   |
       |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
  /|\\  |
       |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
  /|\\  |
  /    |
       |
 =======`,
-`  +---+
+  `  +---+
   |   |
   O   |
  /|\\  |
@@ -89,7 +89,11 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 (state) => {
   utils.print(renderHangman(state.wrongGuesses));
   utils.print(renderWord(state.word, state.revealed));
-  utils.print(`Guessed: ${(state.guessedLetters.length > 0 ? state.guessedLetters.join(", ") : "none")}`);
+  utils.print(
+    `Guessed: ${(state.guessedLetters.length > 0
+      ? state.guessedLetters.join(", ")
+      : "none")}`,
+  );
   utils.print(`Wrong: ${state.wrongGuesses}/${state.maxWrong}`);
   utils.print("");
 

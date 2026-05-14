@@ -28,9 +28,12 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 (state) => {
   const input = utils.readLine("Play again? (y/n): ");
 
-  if (input && (input.trim().toLowerCase() === "y" || input.trim().toLowerCase() === "yes")) {
+  if (
+    input &&
+    (input.trim().toLowerCase() === "y" || input.trim().toLowerCase() === "yes")
+  ) {
     return [edges.onContinue, { ...state }];
-   }
+  }
 
   return [edges.onQuit, { ...state }];
 };

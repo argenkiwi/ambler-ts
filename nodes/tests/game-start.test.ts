@@ -23,10 +23,18 @@ Deno.test("game-start should pick a word and reset state", async () => {
 
 Deno.test("game-start should print a new game message", async () => {
   let capturedMsg = "";
-  const utils = { print: (msg: string) => { capturedMsg = msg; } };
+  const utils = {
+    print: (msg: string) => {
+      capturedMsg = msg;
+    },
+  };
   const initialState: State = {
-    word: "test", revealed: [], wrongGuesses: 0, maxWrong: 5,
-    guessedLetters: [], gameOver: false,
+    word: "test",
+    revealed: [],
+    wrongGuesses: 0,
+    maxWrong: 5,
+    guessedLetters: [],
+    gameOver: false,
   };
 
   await factory({ onReady: "display" }, utils)(initialState);

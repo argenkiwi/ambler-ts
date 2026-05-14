@@ -1,5 +1,5 @@
-import { factory, State, renderWord, renderHangman } from "../display.ts";
-import { assertEquals, assert } from "@std/assert";
+import { factory, renderHangman, renderWord, State } from "../display.ts";
+import { assert, assertEquals } from "@std/assert";
 
 Deno.test("renderWord should show underscores for unrevealed letters", () => {
   assertEquals(renderWord("cat", [false, true, false]), "_ a _");
@@ -27,10 +27,14 @@ Deno.test("display should transition to onDisplay with unchanged state", async (
     maxWrong: 6,
     guessedLetters: ["a"],
     gameOver: false,
-    };
+  };
 
   let printedOutput = "";
-  const utils = { print: (msg: string) => { printedOutput += msg + "\n"; } };
+  const utils = {
+    print: (msg: string) => {
+      printedOutput += msg + "\n";
+    },
+  };
 
   const result = await factory({ onDisplay: "input" }, utils)(initialState);
   assertEquals(result[0], "input");

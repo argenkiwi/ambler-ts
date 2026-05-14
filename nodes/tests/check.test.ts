@@ -13,7 +13,11 @@ Deno.test("check should reveal correct letter and transition to continue", async
 
   const utils = { print: (_msg: string) => {} };
 
-  const result = await factory({ onWin: "win", onLose: "lose", onContinue: "display" }, utils)(initialState);
+  const result = await factory({
+    onWin: "win",
+    onLose: "lose",
+    onContinue: "display",
+  }, utils)(initialState);
   assertEquals(result[0], "display");
   assertEquals(result[1].revealed, [false, false, true]);
   assertEquals(result[1].wrongGuesses, 0);
@@ -30,9 +34,17 @@ Deno.test("check should increment wrong guesses for incorrect letter", async () 
   };
 
   let msg = "";
-  const utils = { print: (m: string) => { msg = m; } };
+  const utils = {
+    print: (m: string) => {
+      msg = m;
+    },
+  };
 
-  const result = await factory({ onWin: "win", onLose: "lose", onContinue: "display" }, utils)(initialState);
+  const result = await factory({
+    onWin: "win",
+    onLose: "lose",
+    onContinue: "display",
+  }, utils)(initialState);
   assertEquals(result[0], "display");
   assertEquals(result[1].wrongGuesses, 3);
   assertEquals(result[1].revealed, [false, false, false]);
@@ -51,7 +63,11 @@ Deno.test("check should transition to win when all letters revealed", async () =
 
   const utils = { print: (_msg: string) => {} };
 
-  const result = await factory({ onWin: "win", onLose: "lose", onContinue: "display" }, utils)(initialState);
+  const result = await factory({
+    onWin: "win",
+    onLose: "lose",
+    onContinue: "display",
+  }, utils)(initialState);
   assertEquals(result[0], "win");
   assertEquals(result[1].revealed, [true, true, true]);
   assertEquals(result[1].gameOver, true);
@@ -69,7 +85,11 @@ Deno.test("check should transition to lose when max wrong guesses reached", asyn
 
   const utils = { print: (_msg: string) => {} };
 
-  const result = await factory({ onWin: "win", onLose: "lose", onContinue: "display" }, utils)(initialState);
+  const result = await factory({
+    onWin: "win",
+    onLose: "lose",
+    onContinue: "display",
+  }, utils)(initialState);
   assertEquals(result[0], "lose");
   assertEquals(result[1].wrongGuesses, 6);
   assertEquals(result[1].gameOver, true);
@@ -87,7 +107,11 @@ Deno.test("check should reveal all instances of a repeated letter", async () => 
 
   const utils = { print: (_msg: string) => {} };
 
-  const result = await factory({ onWin: "win", onLose: "lose", onContinue: "display" }, utils)(initialState);
+  const result = await factory({
+    onWin: "win",
+    onLose: "lose",
+    onContinue: "display",
+  }, utils)(initialState);
   assertEquals(result[0], "display");
   assertEquals(result[1].revealed, [false, true, false, true, false, true]);
 });

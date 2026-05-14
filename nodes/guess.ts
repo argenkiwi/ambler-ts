@@ -38,20 +38,24 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   if (input === null || input.trim() === "") {
     utils.print("Error: Please enter a single letter.");
     return [edges.onInvalid, { ...state }];
-   }
+  }
 
   const letter = input.trim().toLowerCase();
 
   if (!isValidGuess(letter, state.guessedLetters)) {
     if (state.guessedLetters.includes(letter)) {
       utils.print(`You already guessed '${letter}'. Try again.`);
-     } else if (!/[a-zA-Z]/.test(letter)) {
+    } else if (!/[a-zA-Z]/.test(letter)) {
       utils.print("Error: Please enter a single alphabetic letter.");
-     } else {
+    } else {
       utils.print("Error: Please enter a single letter.");
-     }
+    }
+    
     return [edges.onInvalid, { ...state }];
-   }
+  }
 
-  return [edges.onValid, { ...state, guessedLetters: [...state.guessedLetters, letter] }];
+  return [edges.onValid, {
+    ...state,
+    guessedLetters: [...state.guessedLetters, letter],
+  }];
 };

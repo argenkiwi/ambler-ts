@@ -16,11 +16,38 @@ export type Utils = {
 };
 
 const WORDS = [
-   "cat", "dog", "bird", "fish", "house", "table", "apple", "banana",
-   "cherry", "dance", "eagle", "flame", "ghost", "heart", "index",
-   "jewel", "karma", "lemon", "maple", "ninja", "ocean", "panda",
-   "queen", "radio", "snake", "tiger", "umbrella", "violin", "whale",
-   "xenon", "yacht", "zebra",
+  "cat",
+  "dog",
+  "bird",
+  "fish",
+  "house",
+  "table",
+  "apple",
+  "banana",
+  "cherry",
+  "dance",
+  "eagle",
+  "flame",
+  "ghost",
+  "heart",
+  "index",
+  "jewel",
+  "karma",
+  "lemon",
+  "maple",
+  "ninja",
+  "ocean",
+  "panda",
+  "queen",
+  "radio",
+  "snake",
+  "tiger",
+  "umbrella",
+  "violin",
+  "whale",
+  "xenon",
+  "yacht",
+  "zebra",
 ];
 
 const defaultUtils: Utils = {
@@ -38,7 +65,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils.print("\n=== New Game: guess the word! ===");
 
   return [edges.onReady, {
-     ...state,
+    ...state,
     word,
     revealed,
     wrongGuesses: 0,

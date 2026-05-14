@@ -29,12 +29,13 @@ type NodeId =
 
 const amble = ambler<State, NodeId>({
   "game-start": () => gameStartNode({ onReady: "display" }),
-  display:   () => displayNode({ onDisplay: "guess" }),
-  guess:     () => guessNode({ onValid: "check", onInvalid: "guess" }),
-  check:     () => checkNode({ onWin: "win", onLose: "lose", onContinue: "display" }),
-  win:       () => winNode({ onWin: "replay" }),
-  lose:      () => loseNode({ onLose: "replay" }),
-  replay:    () => replayNode({ onContinue: "game-start", onQuit: "terminate" }),
+  display: () => displayNode({ onDisplay: "guess" }),
+  guess: () => guessNode({ onValid: "check", onInvalid: "guess" }),
+  check: () =>
+    checkNode({ onWin: "win", onLose: "lose", onContinue: "display" }),
+  win: () => winNode({ onWin: "replay" }),
+  lose: () => loseNode({ onLose: "replay" }),
+  replay: () => replayNode({ onContinue: "game-start", onQuit: "terminate" }),
   terminate: () => terminateNode<NodeId, State>({ onDone: null }),
 });
 
@@ -54,5 +55,5 @@ if (import.meta.main) {
   while (nodeId) {
     const next = amble(nodeId, state);
     [nodeId, state] = next instanceof Promise ? await next : next;
-   }
+  }
 }
