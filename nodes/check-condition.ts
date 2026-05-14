@@ -4,6 +4,7 @@ import { Message } from "./game-start.ts";
 export interface State {
   messages: Message[];
   questionCount: number;
+  guessCount: number;
   outcome?: "win" | "loss" | "quit";
 }
 
@@ -25,20 +26,30 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const lastUserMsg = state.messages[state.messages.length - 1].content.toLowerCase().trim();
     const lastAssistantMsg = state.messages[state.messages.length - 2].content.toLowerCase();
 
-    // A simple heuristic for winning:
-    // 1. User says something explicitly victorious.
-    // 2. User says "yes" and the assistant was making a guess (starting with "Is the answer").
-    const winKeywords = ["correct", "got it", "guessed it", "that's it", "you win", "yes!", "exactly"];
-    const isExplicitWin = winKeywords.some((k) => lastUserMsg.includes(k));
     const isGuess = lastAssistantMsg.startsWith("is the answer");
     
+    // Win conditions:
+    // 1. User says something explicitly victorious.
+    // 2. User says "yes" and the assistant was making a guess.
+    const winKeywords = ["correct", "got it", "guessed it", "that's it", "you win", "exactly"];
+    const isExplicitWin = winKeywords.some((k) => lastUserMsg.includes(k));
     const isYesToGuess = (lastUserMsg === "yes" || lastUserMsg === "y") && isGuess;
 
     if (isExplicitWin || isYesToGuess) {
       return [edges.onWin, { ...state, outcome: "win" }];
     }
 
+    // Loss conditions:
+    // 1. Question count reached 20.
+    // 2. Guess count reached 3 and the last guess was incorrect.
     if (state.questionCount >= 20) {
+      utils.print("\nYou've reached the 20 questions limit!");
+      return [edges.onLoss, { ...state, outcome: "loss" }];
+    }
+
+    if (isGuess && state.guessCount >= 3) {
+      // If we just made the 3rd guess and it wasn't a win, it's a loss.
+      utils.print("\nThat was your 3rd and final guess!");
       return [edges.onLoss, { ...state, outcome: "loss" }];
     }
 

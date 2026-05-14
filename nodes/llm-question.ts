@@ -7,6 +7,7 @@ export interface State {
   host: string;
   model: string;
   questionCount: number;
+  guessCount: number;
 }
 
 export type Edge = "onSuccess";
@@ -26,9 +27,27 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const response = await utils.chat(state.messages, state.model, state.host);
+    let messages = [...state.messages];
+    if (state.questionCount >= 15 || state.guessCount > 0) {
+      messages = [
+        ...messages,
+        {
+          role: "system",
+          content: `HINT: You have asked ${state.questionCount}/20 questions and made ${state.guessCount}/3 guesses. ${
+            20 - state.questionCount
+          } questions and ${3 - state.guessCount} guesses remaining.`,
+        } as Message,
+      ];
+    }
 
-    utils.print(`\nLLM (Q ${state.questionCount + 1}): ${response}`);
+    const response = await utils.chat(messages, state.model, state.host);
+    const isGuess = response.toLowerCase().trim().startsWith("is the answer");
+
+    if (isGuess) {
+      utils.print(`\nLLM (Guess ${state.guessCount + 1}): ${response}`);
+    } else {
+      utils.print(`\nLLM (Q ${state.questionCount + 1}): ${response}`);
+    }
 
     const nextState = {
       ...state,
@@ -36,7 +55,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         ...state.messages,
         { role: "assistant", content: response } as Message,
       ],
-      questionCount: state.questionCount + 1,
+      questionCount: isGuess ? state.questionCount : state.questionCount + 1,
+      guessCount: isGuess ? state.guessCount + 1 : state.guessCount,
     };
 
     return [edges.onSuccess, nextState];

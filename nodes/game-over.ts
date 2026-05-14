@@ -2,6 +2,7 @@ import { NodeFactory } from "../ambler.ts";
 
 export interface State {
   questionCount: number;
+  guessCount: number;
   outcome?: "win" | "loss" | "quit";
 }
 
@@ -23,12 +24,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     if (state.outcome === "win") {
       utils.print("\nGG! I guessed it! I'm so smart.");
     } else if (state.outcome === "loss") {
-      utils.print("\nI give up! You win. I couldn't guess it in 20 questions.");
+      utils.print("\nI give up! You win.");
     } else {
       utils.print("\nGame ended. See you next time!");
     }
 
     utils.print(`Total questions asked: ${state.questionCount}`);
+    utils.print(`Total guesses made: ${state.guessCount}`);
     return [edges.onDone, state];
   };
 };

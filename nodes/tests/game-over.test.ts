@@ -4,6 +4,7 @@ import { factory, State, Utils } from "../game-over.ts";
 Deno.test("game-overNode should finish on onDone", async () => {
   const initialState: State = {
     questionCount: 10,
+    guessCount: 1,
     outcome: "win",
   };
 
@@ -15,4 +16,5 @@ Deno.test("game-overNode should finish on onDone", async () => {
   )(initialState);
 
   assertEquals(result[0], "finished");
+  assertEquals(result[1].guessCount, 1);
 });

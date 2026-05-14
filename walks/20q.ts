@@ -12,6 +12,7 @@ export interface State {
   host: string;
   model: string;
   questionCount: number;
+  guessCount: number;
   outcome?: "win" | "loss" | "quit";
 }
 
@@ -52,6 +53,7 @@ if (import.meta.main) {
     host: "",
     model: "",
     questionCount: 0,
+    guessCount: 0,
   };
 
   while (nodeId) {
