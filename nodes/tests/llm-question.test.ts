@@ -51,31 +51,39 @@ Deno.test("llm-questionNode should increment guessCount and NOT questionCount fo
   assertEquals(result[1].guessCount, 2);
 });
 
-Deno.test("llm-questionNode should add a hint when questionCount is 15 or more", async () => {
+Deno.test("llm-questionNode should reject questions and re-prompt if questionCount is 20", async () => {
   const initialState: State = {
     messages: [{ role: "system", content: "test" }],
     host: "localhost",
     model: "test-model",
-    questionCount: 15,
+    questionCount: 20,
     guessCount: 0,
   };
 
-  let capturedMessages: Message[] = [];
+  let callCount = 0;
   const utils: Utils = {
-    chat: (messages, _model, _host) => {
-      capturedMessages = messages;
-      return Promise.resolve("Is the answer a toaster?");
+    chat: (_messages, _model, _host) => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve("Is it red?"); // Invalid question
+      }
+      return Promise.resolve("Is the answer a red ball?"); // Valid guess
     },
     print: (_msg: string) => {},
   };
 
-  await factory(
+  const result = await factory(
     { onSuccess: "next" },
     utils,
   )(initialState);
 
-  // Initial (1) + Hint (1) = 2 messages sent to chat
-  assertEquals(capturedMessages.length, 2);
-  assertEquals(capturedMessages[1].role, "system");
-  assertEquals(capturedMessages[1].content.includes("15/20 questions"), true);
+  assertEquals(callCount, 2);
+  assertEquals(result[0], "next");
+  assertEquals(result[1].questionCount, 20);
+  assertEquals(result[1].guessCount, 1);
+  // messages: [initial] + [invalid question] + [correction system msg] + [valid guess]
+  assertEquals(result[1].messages.length, 4);
+  assertEquals(result[1].messages[1].content, "Is it red?");
+  assertEquals(result[1].messages[2].role, "system");
+  assertEquals(result[1].messages[3].content, "Is the answer a red ball?");
 });

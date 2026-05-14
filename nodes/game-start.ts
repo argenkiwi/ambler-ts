@@ -29,6 +29,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     utils.print("\n=== 20 Questions Game ===");
     utils.print("Think of an object, and I will try to guess it.");
     utils.print("Rules: I have 20 questions and 3 guesses.");
+    utils.print("If I reach 20 questions, I can still use my remaining guesses.");
     utils.print("Please answer with 'yes', 'no', 'sometimes', or 'maybe'.\n");
 
     const systemPrompt: Message = {
@@ -39,7 +40,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         "2. You can make up to 3 guesses.\n" +
         "3. A guess MUST start with 'Is the answer ' (e.g., 'Is the answer a toaster?').\n" +
         "4. Guesses do NOT count towards your 20 questions limit.\n" +
-        "5. The game ends if you guess correctly or use up all questions/guesses.\n" +
+        "5. If you reach 20 questions, you MUST only make guesses. You cannot ask more questions.\n" +
+        "6. The game ends if you guess correctly or use up all questions AND all guesses.\n" +
         "Ask one question at a time. Be strategic!",
     };
 

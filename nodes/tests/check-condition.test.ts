@@ -42,7 +42,7 @@ Deno.test("check-conditionNode should win if explicit keyword used", async () =>
   assertEquals(result[1].outcome, "win");
 });
 
-Deno.test("check-conditionNode should lose if questionCount reaches 20", async () => {
+Deno.test("check-conditionNode should continue if questionCount reaches 20 but guesses remain", async () => {
   const initialState: State = {
     messages: [
       { role: "assistant", content: "Is it alive?" },
@@ -50,6 +50,26 @@ Deno.test("check-conditionNode should lose if questionCount reaches 20", async (
     ],
     questionCount: 20,
     guessCount: 0,
+  };
+
+  const utils: Utils = { print: (_msg: string) => {} };
+
+  const result = await factory(
+    { onContinue: "cont", onWin: "win", onLoss: "loss" },
+    utils,
+  )(initialState);
+
+  assertEquals(result[0], "cont");
+});
+
+Deno.test("check-conditionNode should lose if questionCount reaches 20 and guesses reach 3", async () => {
+  const initialState: State = {
+    messages: [
+      { role: "assistant", content: "Is the answer a dog?" },
+      { role: "user", content: "no" },
+    ],
+    questionCount: 20,
+    guessCount: 3,
   };
 
   const utils: Utils = { print: (_msg: string) => {} };

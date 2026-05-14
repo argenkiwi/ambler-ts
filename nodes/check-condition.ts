@@ -40,10 +40,11 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     }
 
     // Loss conditions:
-    // 1. Question count reached 20.
+    // 1. Question count reached 20 and no guesses left.
     // 2. Guess count reached 3 and the last guess was incorrect.
-    if (state.questionCount >= 20) {
-      utils.print("\nYou've reached the 20 questions limit!");
+    
+    if (state.questionCount >= 20 && state.guessCount >= 3) {
+      utils.print("\nYou've reached both the 20 questions and 3 guesses limit!");
       return [edges.onLoss, { ...state, outcome: "loss" }];
     }
 
