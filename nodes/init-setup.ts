@@ -44,10 +44,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     // Create directory structure
     const dirs = [
       targetDir,
-      `${targetDir}/cores/tests`,
       `${targetDir}/walks`,
       `${targetDir}/specs`,
       `${targetDir}/utils`,
+      `${targetDir}/nodes/tests`,
     ];
 
     try {

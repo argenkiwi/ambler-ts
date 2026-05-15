@@ -7,7 +7,7 @@ This program bootstraps a new Ambler project by creating the necessary directory
 ### Setup
 - Initial node.
 - Validates the `targetDir` from the state. If it's missing or invalid (exists but is not a directory), it transitions to `STOP` with an error.
-- Creates the project directories: `cores/tests`, `walks`, `specs`, and `utils`.
+- Creates the project directories: `walks`, `specs`, `utils`, and `nodes/tests`.
 - If successful, transitions to `COPY`. If an error occurs during directory creation, transitions to `STOP` with an error.
 
 ### Copy
