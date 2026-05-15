@@ -36,7 +36,7 @@ const amble = ambler<State, NodeId>({
   win: () => winNode({ onWin: "replay" }),
   lose: () => loseNode({ onLose: "replay" }),
   replay: () => replayNode({ onContinue: "game-start", onQuit: "terminate" }),
-  terminate: () => terminateNode<NodeId, State>({ onDone: null }),
+  terminate: () => terminateNode({ onDone: null }),
 });
 
 const initialState: State = {
