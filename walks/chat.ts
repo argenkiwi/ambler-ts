@@ -25,7 +25,7 @@ const amble = ambler<State, NodeId>({
   CHAT_PROMPT: () =>
     chatPrompt({ onMessage: "CHAT_RESPONSE", onQuit: "CHAT_BYE" }),
   CHAT_RESPONSE: () => chatResponse({ onComplete: "CHAT_PROMPT" }),
-  CHAT_BYE: () => chatBye<NodeId, State>({ onDone: null }),
+  CHAT_BYE: () => chatBye({ onDone: null }),
 });
 
 if (import.meta.main) {
