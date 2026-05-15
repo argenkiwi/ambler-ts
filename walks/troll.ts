@@ -27,7 +27,7 @@ const amble = ambler<State, NodeId>({
   PROMPT: () => prompt({ onMessage: "TRANSPOSE", onQuit: "CHAT_BYE" }),
   TRANSPOSE: () => transpose({ onComplete: "RESPONSE" }),
   RESPONSE: () => response({ onComplete: "PROMPT" }),
-  CHAT_BYE: () => chatBye<NodeId, State>({ onDone: null }),
+  CHAT_BYE: () => chatBye({ onDone: null }),
 });
 
 if (import.meta.main) {
