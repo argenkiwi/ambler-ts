@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Ambler Walk
@@ -56,7 +56,7 @@ type NodeId = "start" | "next" | "stop";
 const amble = ambler<State, NodeId>({
   start: () => startNode({ onSuccess: "next", onError: "start" }),
   next:  () => nextNode({ onComplete: "stop" }),
-  stop:  () => stopNode<NodeId>({ onDone: null }),
+  stop:  () => stopNode({ onDone: null }),
 });
 
 if (import.meta.main) {

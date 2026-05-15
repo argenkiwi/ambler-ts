@@ -33,7 +33,7 @@ export type NodeFactory<NS, E extends string, U = unknown> = <
   S extends NS,
 >(
   /** A map of edge names to their target node IDs in the walk. */
-  edges: Record<E, N | null>,
+  edges: Record<E, NoInfer<N> | null>,
   /** Optional utilities or dependencies required by the node. */
   utils?: U,
 ) => Node<S, N>;

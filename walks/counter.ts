@@ -12,7 +12,7 @@ type NodeId = "start" | "count" | "stop";
 const amble = ambler<State, NodeId>({
   start: () => startNode({ onSuccess: "count", onError: "start" }),
   count: () => countNode({ onCount: "count", onStop: "stop" }),
-  stop: () => stopNode<NodeId, State>({ onDone: null }),
+  stop: () => stopNode({ onDone: null }),
 });
 
 if (import.meta.main) {
