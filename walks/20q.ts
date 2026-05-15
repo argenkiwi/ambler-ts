@@ -43,7 +43,7 @@ const amble = ambler<State, NodeId>({
       onLoss: "game-over",
     }),
   "game-over": () =>
-    gameOverNode<NodeId, State>({ onDone: null }),
+    gameOverNode({ onDone: null }),
 });
 
 if (import.meta.main) {
