@@ -45,21 +45,25 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       const content = await utils.readFile(walkPath);
       
       // Find nodes: import ... from "../nodes/name.ts"
-      const nodeRegex = /from\s+["']\.\.\/nodes\/([^"']+\.ts)["']/g;
+      // Improved regex to handle leading whitespace, multi-line imports, and avoid comments
+      const nodeRegex = /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/nodes\/([^"']+\.ts)["']/gm;
       let match;
       const nodes: string[] = [];
       while ((match = nodeRegex.exec(content)) !== null) {
-        nodes.push(`nodes/${match[1]}`);
+        const npath = `nodes/${match[1]}`;
+        if (await utils.exists(npath)) {
+          nodes.push(npath);
+        }
       }
 
       // Find utils: import ... from "../utils/name.ts"
-      // Nodes also import utils, so we should check nodes too?
-      // The requirement says "referenced by the walk", but also "only the nodes and utils referenced by the walk are copied".
-      // Usually nodes import utils.
-      const utilRegex = /from\s+["']\.\.\/utils\/([^"']+\.ts)["']/g;
+      const utilRegex = /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/utils\/([^"']+\.ts)["']/gm;
       const utilsList: string[] = [];
       while ((match = utilRegex.exec(content)) !== null) {
-        utilsList.push(`utils/${match[1]}`);
+        const upath = `utils/${match[1]}`;
+        if (await utils.exists(upath)) {
+          utilsList.push(upath);
+        }
       }
 
       filesToCopy.push(...nodes);
@@ -67,14 +71,12 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
       // Recursive analysis for nodes to find their utils
       for (const nodePath of nodes) {
-        if (await utils.exists(nodePath)) {
-          const nodeContent = await utils.readFile(nodePath);
-          let utilMatch;
-          while ((utilMatch = utilRegex.exec(nodeContent)) !== null) {
-            const upath = `utils/${utilMatch[1]}`;
-            if (!filesToCopy.includes(upath)) {
-              filesToCopy.push(upath);
-            }
+        const nodeContent = await utils.readFile(nodePath);
+        let utilMatch;
+        while ((utilMatch = utilRegex.exec(nodeContent)) !== null) {
+          const upath = `utils/${utilMatch[1]}`;
+          if (!filesToCopy.includes(upath) && await utils.exists(upath)) {
+            filesToCopy.push(upath);
           }
         }
       }

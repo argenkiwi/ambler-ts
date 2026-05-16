@@ -30,12 +30,19 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     }
 
     try {
+      const normalizedTargetDir = targetDir.endsWith("/")
+        ? targetDir.slice(0, -1)
+        : targetDir;
+
       for (const file of filesToCopy) {
-        const dest = `${targetDir}/${file}`;
+        const dest = `${normalizedTargetDir}/${file}`;
         
         // Ensure parent directory exists
-        const parentDir = dest.substring(0, dest.lastIndexOf("/"));
-        await utils.mkdir(parentDir, { recursive: true });
+        const lastSlash = dest.lastIndexOf("/");
+        if (lastSlash !== -1) {
+          const parentDir = dest.substring(0, lastSlash);
+          await utils.mkdir(parentDir, { recursive: true });
+        }
 
         await utils.copyFile(file, dest);
       }

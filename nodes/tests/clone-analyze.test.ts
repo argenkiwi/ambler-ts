@@ -27,6 +27,8 @@ import { otherUtil } from "../utils/other.ts";
       if (path === "specs/test-walk.md") return true;
       if (path === "nodes/start.ts") return true;
       if (path === "nodes/next.ts") return true;
+      if (path === "utils/helper.ts") return true;
+      if (path === "utils/other.ts") return true;
       return false;
     },
   };
