@@ -36,7 +36,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
       for (const file of filesToCopy) {
         const dest = `${normalizedTargetDir}/${file}`;
-        
+
         // Ensure parent directory exists
         const lastSlash = dest.lastIndexOf("/");
         if (lastSlash !== -1) {
@@ -50,7 +50,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       return [edges.onSuccess, state];
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, { ...state, error: `Failed to copy files: ${message}` }];
+      return [edges.onError, {
+        ...state,
+        error: `Failed to copy files: ${message}`,
+      }];
     }
   };
 };

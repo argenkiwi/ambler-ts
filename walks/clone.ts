@@ -25,7 +25,12 @@ type NodeId =
   | "STOP";
 
 const amble = ambler<State, NodeId>({
-  SETUP: () => setupNode({ onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" }),
+  SETUP: () =>
+    setupNode({
+      onNewProject: "INIT_SETUP",
+      onExisting: "ANALYZE",
+      onError: "STOP",
+    }),
   ANALYZE: () => analyzeNode({ onSuccess: "COPY", onError: "STOP" }),
   INIT_SETUP: () => initSetupNode({ onSuccess: "INIT_COPY", onError: "STOP" }),
   INIT_COPY: () => initCopyNode({ onSuccess: "INIT_CONFIG", onError: "STOP" }),

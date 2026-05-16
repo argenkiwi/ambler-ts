@@ -26,7 +26,10 @@ Deno.test("cloneCopyNode should copy all files in filesToCopy list", async () =>
 
   assertEquals(result[0], "STOP");
   assertEquals(filesCopied.includes("walks/my.ts->/target/walks/my.ts"), true);
-  assertEquals(filesCopied.includes("nodes/node.ts->/target/nodes/node.ts"), true);
+  assertEquals(
+    filesCopied.includes("nodes/node.ts->/target/nodes/node.ts"),
+    true,
+  );
   assertEquals(dirsCreated.includes("/target/walks"), true);
   assertEquals(dirsCreated.includes("/target/nodes"), true);
 });

@@ -25,7 +25,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     if (state.error) {
       utils.print(`Error: ${state.error}`);
     } else {
-      utils.print(`Successfully cloned walk "${state.sourceWalk}" to "${state.targetDir}".`);
+      utils.print(
+        `Successfully cloned walk "${state.sourceWalk}" to "${state.targetDir}".`,
+      );
       if (state.filesToCopy) {
         utils.print("Files copied:");
         state.filesToCopy.forEach((f) => utils.print(`  - ${f}`));

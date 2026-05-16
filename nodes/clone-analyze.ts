@@ -43,10 +43,11 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     try {
       const content = await utils.readFile(walkPath);
-      
+
       // Find nodes: import ... from "../nodes/name.ts"
       // Improved regex to handle leading whitespace, multi-line imports, and avoid comments
-      const nodeRegex = /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/nodes\/([^"']+\.ts)["']/gm;
+      const nodeRegex =
+        /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/nodes\/([^"']+\.ts)["']/gm;
       let match;
       const nodes: string[] = [];
       while ((match = nodeRegex.exec(content)) !== null) {
@@ -57,7 +58,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       }
 
       // Find utils: import ... from "../utils/name.ts"
-      const utilRegex = /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/utils\/([^"']+\.ts)["']/gm;
+      const utilRegex =
+        /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/utils\/([^"']+\.ts)["']/gm;
       const utilsList: string[] = [];
       while ((match = utilRegex.exec(content)) !== null) {
         const upath = `utils/${match[1]}`;
@@ -87,7 +89,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       return [edges.onSuccess, { ...state, filesToCopy: uniqueFiles }];
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, { ...state, error: `Failed to analyze walk: ${message}` }];
+      return [edges.onError, {
+        ...state,
+        error: `Failed to analyze walk: ${message}`,
+      }];
     }
   };
 };

@@ -19,7 +19,10 @@ Deno.test("cloneStopNode should print success message when no error is present",
   )(initialState);
 
   assertEquals(result[0], null);
-  assertEquals(messages.includes('Successfully cloned walk "counter" to "/target".'), true);
+  assertEquals(
+    messages.includes('Successfully cloned walk "counter" to "/target".'),
+    true,
+  );
 });
 
 Deno.test("cloneStopNode should print error message when error is present", async () => {

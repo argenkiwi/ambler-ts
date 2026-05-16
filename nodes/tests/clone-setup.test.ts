@@ -63,5 +63,8 @@ Deno.test("cloneSetupNode should return onError when source walk does not exist"
   )(initialState);
 
   assertEquals(result[0], "STOP");
-  assertEquals(result[1].error, 'Source walk "nonexistent" not found at walks/nonexistent.ts.');
+  assertEquals(
+    result[1].error,
+    'Source walk "nonexistent" not found at walks/nonexistent.ts.',
+  );
 });

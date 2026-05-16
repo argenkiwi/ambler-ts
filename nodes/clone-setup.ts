@@ -36,7 +36,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     }
 
     if (!targetDir) {
-      return [edges.onError, { ...state, error: "No target directory provided." }];
+      return [edges.onError, {
+        ...state,
+        error: "No target directory provided.",
+      }];
     }
 
     // Check if source walk exists
@@ -44,7 +47,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     if (!(await utils.exists(sourcePath))) {
       return [
         edges.onError,
-        { ...state, error: `Source walk "${sourceWalk}" not found at ${sourcePath}.` },
+        {
+          ...state,
+          error: `Source walk "${sourceWalk}" not found at ${sourcePath}.`,
+        },
       ];
     }
 
@@ -54,6 +60,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     const isNewProject = !(isAmblerProject && isDenoProject);
 
-    return [isNewProject ? edges.onNewProject : edges.onExisting, { ...state, isNewProject }];
+    return [isNewProject ? edges.onNewProject : edges.onExisting, {
+      ...state,
+      isNewProject,
+    }];
   };
 };

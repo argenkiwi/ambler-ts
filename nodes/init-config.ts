@@ -33,7 +33,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       await utils.writeTextFile(targetPath, DENO_JSON);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, { ...state, error: `Failed to write deno.json: ${message}` }];
+      return [edges.onError, {
+        ...state,
+        error: `Failed to write deno.json: ${message}`,
+      }];
     }
 
     return [edges.onSuccess, state];

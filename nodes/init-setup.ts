@@ -25,7 +25,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const { targetDir } = state;
 
     if (!targetDir) {
-      return [edges.onError, { ...state, error: "No target directory provided." }];
+      return [edges.onError, {
+        ...state,
+        error: "No target directory provided.",
+      }];
     }
 
     // Validate target directory
@@ -56,7 +59,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, { ...state, error: `Failed to create directories: ${message}` }];
+      return [edges.onError, {
+        ...state,
+        error: `Failed to create directories: ${message}`,
+      }];
     }
 
     return [edges.onSuccess, state];

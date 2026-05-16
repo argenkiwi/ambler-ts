@@ -29,7 +29,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       utils.print(`Initializing ambler project in "${state.targetDir}"...`);
       utils.print(`  Created: ambler.ts (copied)`);
       utils.print(`  Created: deno.json`);
-      utils.print(`\nDone! Run "deno check ${state.targetDir}/ambler.ts" to verify.`);
+      utils.print(
+        `\nDone! Run "deno check ${state.targetDir}/ambler.ts" to verify.`,
+      );
     }
     return [edges.onDone, state];
   };

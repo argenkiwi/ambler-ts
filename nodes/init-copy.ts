@@ -29,7 +29,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       await utils.copyFile(amblerSrc, targetPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, { ...state, error: `Failed to copy ambler.ts: ${message}` }];
+      return [edges.onError, {
+        ...state,
+        error: `Failed to copy ambler.ts: ${message}`,
+      }];
     }
 
     return [edges.onSuccess, state];
