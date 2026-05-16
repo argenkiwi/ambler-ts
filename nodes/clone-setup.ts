@@ -7,7 +7,7 @@ export interface State {
   error?: string;
 }
 
-export type Edge = "onSuccess" | "onError";
+export type Edge = "onNewProject" | "onExisting" | "onError";
 
 export type Utils = {
   exists: (path: string) => Promise<boolean>;
@@ -54,6 +54,6 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     const isNewProject = !(isAmblerProject && isDenoProject);
 
-    return [edges.onSuccess, { ...state, isNewProject }];
+    return [isNewProject ? edges.onNewProject : edges.onExisting, { ...state, isNewProject }];
   };
 };

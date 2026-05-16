@@ -1,7 +1,6 @@
 import { ambler } from "../ambler.ts";
 import { factory as setupNode } from "../nodes/clone-setup.ts";
 import { factory as analyzeNode } from "../nodes/clone-analyze.ts";
-import { factory as initNode } from "../nodes/clone-init.ts";
 import { factory as initSetupNode } from "../nodes/init-setup.ts";
 import { factory as initCopyNode } from "../nodes/init-copy.ts";
 import { factory as initConfigNode } from "../nodes/init-config.ts";
@@ -19,7 +18,6 @@ export interface State {
 type NodeId =
   | "SETUP"
   | "ANALYZE"
-  | "INIT"
   | "INIT_SETUP"
   | "INIT_COPY"
   | "INIT_CONFIG"
@@ -27,12 +25,11 @@ type NodeId =
   | "STOP";
 
 const amble = ambler<State, NodeId>({
-  SETUP: () => setupNode({ onSuccess: "ANALYZE", onError: "STOP" }),
-  ANALYZE: () => analyzeNode({ onSuccess: "INIT", onError: "STOP" }),
-  INIT: () => initNode({ onNewProject: "INIT_SETUP", onExisting: "COPY" }),
+  SETUP: () => setupNode({ onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" }),
+  ANALYZE: () => analyzeNode({ onSuccess: "COPY", onError: "STOP" }),
   INIT_SETUP: () => initSetupNode({ onSuccess: "INIT_COPY", onError: "STOP" }),
   INIT_COPY: () => initCopyNode({ onSuccess: "INIT_CONFIG", onError: "STOP" }),
-  INIT_CONFIG: () => initConfigNode({ onSuccess: "COPY", onError: "STOP" }),
+  INIT_CONFIG: () => initConfigNode({ onSuccess: "ANALYZE", onError: "STOP" }),
   COPY: () => copyNode({ onSuccess: "STOP", onError: "STOP" }),
   STOP: () => stopNode({ onDone: null }),
 });

@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { factory, State, Utils } from "../clone-setup.ts";
 
-Deno.test("cloneSetupNode should return onSuccess and isNewProject=false when source walk exists and target is an Ambler project", async () => {
+Deno.test("cloneSetupNode should return onExisting and isNewProject=false when source walk exists and target is an Ambler project", async () => {
   const initialState: State = {
     sourceWalk: "counter",
     targetDir: "/path/to/target",
@@ -17,7 +17,7 @@ Deno.test("cloneSetupNode should return onSuccess and isNewProject=false when so
   };
 
   const result = await factory(
-    { onSuccess: "ANALYZE", onError: "STOP" },
+    { onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
@@ -25,7 +25,7 @@ Deno.test("cloneSetupNode should return onSuccess and isNewProject=false when so
   assertEquals(result[1].isNewProject, false);
 });
 
-Deno.test("cloneSetupNode should return onSuccess and isNewProject=true when target is NOT an Ambler project", async () => {
+Deno.test("cloneSetupNode should return onNewProject and isNewProject=true when target is NOT an Ambler project", async () => {
   const initialState: State = {
     sourceWalk: "counter",
     targetDir: "/path/to/target",
@@ -39,11 +39,11 @@ Deno.test("cloneSetupNode should return onSuccess and isNewProject=true when tar
   };
 
   const result = await factory(
-    { onSuccess: "ANALYZE", onError: "STOP" },
+    { onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(result[0], "ANALYZE");
+  assertEquals(result[0], "INIT_SETUP");
   assertEquals(result[1].isNewProject, true);
 });
 
@@ -58,11 +58,10 @@ Deno.test("cloneSetupNode should return onError when source walk does not exist"
   };
 
   const result = await factory(
-    { onSuccess: "ANALYZE", onError: "STOP" },
+    { onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
   assertEquals(result[0], "STOP");
   assertEquals(result[1].error, 'Source walk "nonexistent" not found at walks/nonexistent.ts.');
 });
-
