@@ -9,18 +9,18 @@ export interface State {
   error?: string;
 }
 
-type NodeId = "setup" | "copy" | "config" | "stop";
+type NodeId = "SETUP" | "COPY" | "CONFIG" | "STOP";
 
 const amble = ambler<State, NodeId>({
-  setup: () => setupNode({ onSuccess: "copy", onError: "stop" }),
-  copy: () => copyNode({ onSuccess: "config", onError: "stop" }),
-  config: () => configNode({ onSuccess: "stop", onError: "stop" }),
-  stop: () => stopNode({ onDone: null }),
+  SETUP: () => setupNode({ onSuccess: "COPY", onError: "STOP" }),
+  COPY: () => copyNode({ onSuccess: "CONFIG", onError: "STOP" }),
+  CONFIG: () => configNode({ onSuccess: "STOP", onError: "STOP" }),
+  STOP: () => stopNode({ onDone: null }),
 });
 
 if (import.meta.main) {
   const targetDir = Deno.args[0];
-  let nodeId: NodeId | null = "setup";
+  let nodeId: NodeId | null = "SETUP";
   let state: State = {
     targetDir,
   };

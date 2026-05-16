@@ -12,11 +12,11 @@ Deno.test(
     };
 
     const result = await factory(
-      { onSuccess: "next", onError: "error" },
+      { onSuccess: "NEXT", onError: "ERROR" },
       utils,
     )(initialState);
 
-    assertEquals(result[0], "next");
+    assertEquals(result[0], "NEXT");
     assertEquals(result[1].count, 0);
   },
 );
@@ -32,11 +32,11 @@ Deno.test(
     };
 
     const result = await factory(
-      { onSuccess: "next", onError: "error" },
+      { onSuccess: "NEXT", onError: "ERROR" },
       utils,
     )(initialState);
 
-    assertEquals(result[0], "next");
+    assertEquals(result[0], "NEXT");
     assertEquals(result[1].count, 42);
   },
 );
@@ -52,11 +52,12 @@ Deno.test(
     };
 
     const result = await factory(
-      { onSuccess: "next", onError: "error" },
+      { onSuccess: "NEXT", onError: "ERROR" },
       utils,
     )(initialState);
 
-    assertEquals(result[0], "error");
+    assertEquals(result[0], "ERROR");
     assertEquals(result[1].count, 123);
   },
 );
+

@@ -17,24 +17,24 @@ export interface State {
 }
 
 type NodeId =
-  | "setup"
-  | "analyze"
-  | "init"
-  | "init-setup"
-  | "init-copy"
-  | "init-config"
-  | "copy"
-  | "stop";
+  | "SETUP"
+  | "ANALYZE"
+  | "INIT"
+  | "INIT_SETUP"
+  | "INIT_COPY"
+  | "INIT_CONFIG"
+  | "COPY"
+  | "STOP";
 
 const amble = ambler<State, NodeId>({
-  setup: () => setupNode({ onSuccess: "analyze", onError: "stop" }),
-  analyze: () => analyzeNode({ onSuccess: "init", onError: "stop" }),
-  init: () => initNode({ onNewProject: "init-setup", onExisting: "copy" }),
-  "init-setup": () => initSetupNode({ onSuccess: "init-copy", onError: "stop" }),
-  "init-copy": () => initCopyNode({ onSuccess: "init-config", onError: "stop" }),
-  "init-config": () => initConfigNode({ onSuccess: "copy", onError: "stop" }),
-  copy: () => copyNode({ onSuccess: "stop", onError: "stop" }),
-  stop: () => stopNode({ onDone: null }),
+  SETUP: () => setupNode({ onSuccess: "ANALYZE", onError: "STOP" }),
+  ANALYZE: () => analyzeNode({ onSuccess: "INIT", onError: "STOP" }),
+  INIT: () => initNode({ onNewProject: "INIT_SETUP", onExisting: "COPY" }),
+  INIT_SETUP: () => initSetupNode({ onSuccess: "INIT_COPY", onError: "STOP" }),
+  INIT_COPY: () => initCopyNode({ onSuccess: "INIT_CONFIG", onError: "STOP" }),
+  INIT_CONFIG: () => initConfigNode({ onSuccess: "COPY", onError: "STOP" }),
+  COPY: () => copyNode({ onSuccess: "STOP", onError: "STOP" }),
+  STOP: () => stopNode({ onDone: null }),
 });
 
 if (import.meta.main) {
@@ -48,7 +48,7 @@ if (import.meta.main) {
     Deno.exit(1);
   }
 
-  let nodeId: NodeId | null = "setup";
+  let nodeId: NodeId | null = "SETUP";
   let state: State = {
     sourceWalk,
     targetDir,

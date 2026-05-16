@@ -12,11 +12,11 @@ Deno.test("initStopNode should print error and exit 1 when error exists", async 
   };
 
   const [edge, state] = await factory(
-    { onDone: "none" },
+    { onDone: "NONE" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "none");
+  assertEquals(edge, "NONE");
   assertEquals(printed.includes("Error: Something went wrong"), true);
   assertEquals(exitCode, 1);
 });
@@ -32,11 +32,11 @@ Deno.test("initStopNode should print success messages when no error", async () =
   };
 
   const [edge, state] = await factory(
-    { onDone: "none" },
+    { onDone: "NONE" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "none");
+  assertEquals(edge, "NONE");
   assertEquals(printed.includes('Initializing ambler project in "new-project"'), true);
   assertEquals(printed.includes("Created: ambler.ts"), true);
   assertEquals(printed.includes("Created: deno.json"), true);

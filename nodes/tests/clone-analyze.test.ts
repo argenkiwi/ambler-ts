@@ -32,11 +32,11 @@ import { otherUtil } from "../utils/other.ts";
   };
 
   const result = await factory(
-    { onSuccess: "init", onError: "stop" },
+    { onSuccess: "INIT", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(result[0], "init");
+  assertEquals(result[0], "INIT");
   const files = result[1].filesToCopy || [];
   assertEquals(files.includes("walks/test-walk.ts"), true);
   assertEquals(files.includes("specs/test-walk.md"), true);

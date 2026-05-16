@@ -14,11 +14,11 @@ Deno.test("initSetupNode should transition to onSuccess when targetDir is valid"
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "copy", onError: "stop" },
+    { onSuccess: "COPY", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "copy");
+  assertEquals(edge, "COPY");
   assertEquals(createdDirs.length, 5);
   assertEquals(state.error, undefined);
 });
@@ -32,11 +32,11 @@ Deno.test("initSetupNode should transition to onError when targetDir is missing"
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "copy", onError: "stop" },
+    { onSuccess: "COPY", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(state.error, "No target directory provided.");
 });
 
@@ -52,11 +52,11 @@ Deno.test("initSetupNode should transition to onError when targetDir is not a di
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "copy", onError: "stop" },
+    { onSuccess: "COPY", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(state.error, '"file.txt" exists and is not a directory.');
 });
 
@@ -69,10 +69,10 @@ Deno.test("initSetupNode should transition to onError when mkdir fails", async (
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "copy", onError: "stop" },
+    { onSuccess: "COPY", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(state.error, "Failed to create directories: Permission denied");
 });

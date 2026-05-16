@@ -7,16 +7,16 @@ export interface State {
   count: number;
 }
 
-type NodeId = "start" | "count" | "stop";
+type NodeId = "START" | "COUNT" | "STOP";
 
 const amble = ambler<State, NodeId>({
-  start: () => startNode({ onSuccess: "count", onError: "start" }),
-  count: () => countNode({ onCount: "count", onStop: "stop" }),
-  stop: () => stopNode({ onDone: null }),
+  START: () => startNode({ onSuccess: "COUNT", onError: "START" }),
+  COUNT: () => countNode({ onCount: "COUNT", onStop: "STOP" }),
+  STOP: () => stopNode({ onDone: null }),
 });
 
 if (import.meta.main) {
-  let nodeId: NodeId | null = "start";
+  let nodeId: NodeId | null = "START";
   let state: State = {
     count: 0,
   };

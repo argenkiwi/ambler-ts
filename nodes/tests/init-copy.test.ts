@@ -16,11 +16,11 @@ Deno.test("initCopyNode should transition to onSuccess when copyFile succeeds", 
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "config", onError: "stop" },
+    { onSuccess: "CONFIG", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "config");
+  assertEquals(edge, "CONFIG");
   assertEquals(copiedFrom, "/source/ambler.ts");
   assertEquals(copiedTo, "new-project/ambler.ts");
   assertEquals(state.error, undefined);
@@ -35,10 +35,10 @@ Deno.test("initCopyNode should transition to onError when copyFile fails", async
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "config", onError: "stop" },
+    { onSuccess: "CONFIG", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(state.error, "Failed to copy ambler.ts: Disk full");
 });

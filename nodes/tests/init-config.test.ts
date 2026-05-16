@@ -15,11 +15,11 @@ Deno.test("initConfigNode should transition to onSuccess when writeTextFile succ
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "stop", onError: "stop" },
+    { onSuccess: "STOP", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(writtenPath, "new-project/deno.json");
   assertEquals(writtenData.includes("imports"), true);
   assertEquals(state.error, undefined);
@@ -33,10 +33,10 @@ Deno.test("initConfigNode should transition to onError when writeTextFile fails"
   };
 
   const [edge, state] = await factory(
-    { onSuccess: "stop", onError: "stop" },
+    { onSuccess: "STOP", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(edge, "stop");
+  assertEquals(edge, "STOP");
   assertEquals(state.error, "Failed to write deno.json: Write error");
 });

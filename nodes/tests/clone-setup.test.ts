@@ -17,11 +17,11 @@ Deno.test("cloneSetupNode should return onSuccess and isNewProject=false when so
   };
 
   const result = await factory(
-    { onSuccess: "analyze", onError: "stop" },
+    { onSuccess: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(result[0], "analyze");
+  assertEquals(result[0], "ANALYZE");
   assertEquals(result[1].isNewProject, false);
 });
 
@@ -39,11 +39,11 @@ Deno.test("cloneSetupNode should return onSuccess and isNewProject=true when tar
   };
 
   const result = await factory(
-    { onSuccess: "analyze", onError: "stop" },
+    { onSuccess: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(result[0], "analyze");
+  assertEquals(result[0], "ANALYZE");
   assertEquals(result[1].isNewProject, true);
 });
 
@@ -58,10 +58,11 @@ Deno.test("cloneSetupNode should return onError when source walk does not exist"
   };
 
   const result = await factory(
-    { onSuccess: "analyze", onError: "stop" },
+    { onSuccess: "ANALYZE", onError: "STOP" },
     utils,
   )(initialState);
 
-  assertEquals(result[0], "stop");
+  assertEquals(result[0], "STOP");
   assertEquals(result[1].error, 'Source walk "nonexistent" not found at walks/nonexistent.ts.');
 });
+
