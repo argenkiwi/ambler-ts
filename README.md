@@ -1,94 +1,94 @@
 # Ambler
 
-Ambler is a Deno/TypeScript state machine framework designed to provide the building blocks for a coding agent to write programs represented as graphs. These programs, called **walks**, are composed of individual **nodes** and **edges**, enabling the creation of complex command-line applications and agentic workflows.
+[![Deno](https://img.shields.io/badge/deno-^1.40-blue.svg)](https://deno.land/)
+[![TypeScript](https://img.shields.io/badge/typescript-^5.0-blue.svg)](https://www.typescriptlang.org/)
 
-## Starting a New Project
+Ambler is a lightweight Deno/TypeScript state machine framework designed for building programs as executable graphs. It provides the architectural foundation for coding agents to autonomously construct, test, and wire complex workflows, known as **walks**.
 
-### Option 1 — via the skills CLI (recommended for agentic development)
+## 🚀 Key Features
 
-Install the Ambler skills locally using [`npx skills`](https://github.com/vercel-labs/skills):
+- **Lazy-Loading Engine**: Efficiently executes graphs by loading nodes only when needed.
+- **Factory-Based Architecture**: Decouples logic from wiring, enabling high reusability and testability.
+- **Spec-First Workflow**: Integrated Markdown specifications bridge the gap between design and implementation.
+- **Agent-Optimized**: Complemented by a suite of dedicated agent skills for automated scaffolding and testing.
+
+---
+
+## 🏁 Quick Start
+
+### For Agentic Development (Recommended)
+
+Install the Ambler skills locally using [`skills`](https://github.com/argenkiwi/skills):
 
 ```bash
 npx skills add argenkiwi/ambler-ts
 ```
 
-Then bootstrap a new project from your coding agent session:
+Bootstrap your project directly from your agent session:
 
 ```bash
 /ambler-init <target-dir>
 ```
 
-To keep your skills up to date:
+### For Manual Setup
+
+Run the initialization script directly with Deno:
 
 ```bash
-npx skills update
+deno run --allow-write --allow-read walks/init.ts <target-dir>
 ```
 
-### Option 2 — via Deno (no npm required, non-agentic setup, recommended for learning)
+> [!TIP]
+> Both methods scaffold a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copy the core `ambler.ts` engine.
 
-Run `init.ts` directly from this repo:
+---
+
+## 🏗️ Architecture
+
+Ambler programs are built using three core components:
+
+### 1. Nodes (`nodes/`)
+Atomic, functional blocks that perform specific tasks. Each node is a factory that accepts:
+- **Edges**: A mapping of logical exits to target node IDs.
+- **Utils**: Injected dependencies (e.g., CLI output, LLM clients).
+
+### 2. Walks (`walks/`)
+The graph definition. A walk wires factories into a concrete execution plan and initiates the runner.
+
+### 3. Specs (`specs/`)
+Markdown blueprints that describe the intended behavior and state transitions before a single line of code is written.
+
+---
+
+## 🛠️ Developer Workflow
+
+1.  **Specify**: Define the graph in `specs/`.
+2.  **Implement**: Build factory-based nodes in `nodes/`.
+3.  **Test**: Verify node logic in `nodes/tests/`.
+4.  **Compose**: Wire nodes together in `walks/`.
+5.  **Execute**: Run the program with `deno run walks/<name>.ts`.
 
 ```bash
-deno run --allow-write --allow-read init.ts <target-dir>
+# Run all tests
+deno test nodes/tests/
+
+# Execute the counter example
+deno run walks/counter.ts
 ```
 
-Both options create the folder structure (`nodes/`, `walks/`, `specs/`, `utils/`), copy `ambler.ts`, generate a minimal `deno.json`, and set up the project — ready to use with no sample code.
+---
 
-## Goals
+## 🤖 Agent Integration
 
-The core objective of Ambler is to enable an agent to programmatically construct executable graphs. By representing logic as a series of nodes, it becomes possible for an agent to:
-- Define individual atomic steps (nodes) with clear inputs and outputs.
-- Wire these steps together into complex, directed graphs (walks).
-- Create reusable, testable components for CLI tools and automated workflows.
+Ambler is designed to be augmented by agents using these specialized skills:
 
-## Architecture
+- `ambler-init`: Bootstraps new projects.
+- `ambler-node`: Scaffolds nodes with proper types and interfaces.
+- `ambler-test`: Generates comprehensive unit tests for nodes.
+- `ambler-walk`: Automatically wires nodes into executable walks based on specs.
+- `ambler-spec`: Generates or refines Markdown specifications.
+- `ambler-util`: Extracts reusable logic into utility modules.
 
-The framework follows a graph-based execution model:
+---
 
-- **Core Engine (`ambler.ts`)**: Implements the `ambler` function which creates a lazy-loading state machine runner. It manages the execution loop, transitioning from one node to the next until a node returns `null` as the next node ID.
-- **Nodes (`nodes/`)**: The fundamental building blocks. Each node is a function that performs a specific task (e.g., prompting the user, calling an LLM, processing data) and returns the next step to execute. Termination is expressed in the walk wiring by mapping a terminal edge to `null`. Nodes are designed for testability through dependency injection of utilities like `print`, `sleep`, and `random`. Tests live in `nodes/tests/`.
-- **Walks (`walks/`)**: The concrete implementation of a program. A walk wires nodes together into a specific graph structure and initiates the execution.
-- **Specs (`specs/`)**: Design documents written in Markdown that describe the intended behavior of a walk before implementation. This provides a blueprint for both humans and agents.
-- **Utilities (`utils/`)**: Reusable logic and helpers used across nodes and walks.
-
-## Developer Workflow
-
-### 1. Define a Specification
-Before implementing a new walk, create a specification in the `specs/` directory. This `.md` file should clearly outline the nodes involved and the transitions between them.
-
-### 2. Implement Nodes
-When a new node is needed, implement it in the `nodes/` directory. Follow the pattern of using a factory function that accepts injected dependencies.
-
-### 3. Compose a Walk
-Create a new walk in `walks/` by importing the necessary nodes and defining their connections.
-
-### 4. Test and Execute
-- **Testing Nodes**: Each node should have a corresponding test file in `nodes/tests/` (e.g., `nodes/tests/myNode.test.ts`). Run all node tests using:
-  ```bash
-  deno test nodes/tests/
-  ```
-  To run a specific node test:
-  ```bash
-  deno test nodes/tests/myNode.test.ts
-  ```
-- **Running Walks**: Execute a complete walk directly using `deno run`:
-  ```bash
-  deno run walks/counter.ts
-  ```
-- **Development Mode**: For certain walks, you can use the dev task to run with file watching:
-  ```bash
-  deno task dev
-  ```
-
-## Leveraging Skills
-
-Ambler is designed to be used with agents equipped with **skills**. These skills automate the entire development lifecycle:
-
-- `ambler-init`: Bootstraps a new project — creates the folder structure (`nodes/`, `walks/`, `specs/`, `utils/`), writes `ambler.ts` and `deno.json`.
-- `ambler-node`: Scaffolds a new node in `nodes/` with the correct `State`, `Edge`, `Utils`, and `factory` exports.
-- `ambler-test`: Generates a test file in `nodes/tests/` for an existing node, covering every edge branch.
-- `ambler-walk`: Creates a walk wiring file (`walks/<name>.ts`) and its Markdown spec (`specs/<name>.md`), ensuring all required nodes exist.
-- `ambler-spec`: Generates or updates a Markdown specification file in `specs/`.
-- `ambler-util`: Extracts or creates reusable utility modules in `utils/`.
-
-By using these skills, an augmented agent can efficiently expand the project's capabilities, turning high-level requirements (specs) into executable code (nodes and walks).
+Built with ❤️ by [argenkiwi](https://github.com/argenkiwi)
