@@ -1,4 +1,4 @@
-import { basename } from "node:path";
+import { basename, resolve } from "@std/path";
 import { NodeFactory } from "../ambler.ts";
 import { downloadFile } from "../utils/download_file.ts";
 
@@ -40,7 +40,7 @@ async (state) => {
   const newState = {
     ...state,
     m3uFilePath: `${outputFolder}/playlist.m3u`,
-    urls: localPaths.map((p) => `file://${p}`),
+    urls: localPaths.map((p) => `file://${resolve(p)}`),
   };
 
   return [edges.onSuccess, newState];
