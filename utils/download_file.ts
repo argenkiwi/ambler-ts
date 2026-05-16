@@ -12,7 +12,7 @@ export async function downloadFile(
   folder: string,
 ): Promise<string> {
   await Deno.mkdir(folder, { recursive: true });
-  const filename = basename(new URL(url).pathname);
+  const filename = decodeURIComponent(basename(new URL(url).pathname));
   const destPath = `${folder}/${filename}`;
   const response = await fetch(url);
   if (!response.ok) {
