@@ -13,32 +13,32 @@ export interface State {
 }
 
 type NodeId =
-  | "checkM3UFile"
-  | "readM3UFile"
-  | "promptResolve"
-  | "resolveUrls"
-  | "saveAfterResolve"
-  | "promptDownload"
-  | "downloadFiles"
-  | "saveAfterDownload";
+  | "CHECK_M3U_FILE"
+  | "READ_M3U_FILE"
+  | "PROMPT_RESOLVE"
+  | "RESOLVE_URLS"
+  | "SAVE_AFTER_RESOLVE"
+  | "PROMPT_DOWNLOAD"
+  | "DOWNLOAD_FILES"
+  | "SAVE_AFTER_DOWNLOAD";
 
 const amble = ambler<State, NodeId>({
-  checkM3UFile: () => checkM3UFileNode({ onSuccess: "readM3UFile" }),
-  readM3UFile: () =>
+  CHECK_M3U_FILE: () => checkM3UFileNode({ onSuccess: "READ_M3U_FILE" }),
+  READ_M3U_FILE: () =>
     readM3UFileNode({
-      onHasKhinsider: "promptResolve",
-      onNoKhinsider: "promptDownload",
+      onHasKhinsider: "PROMPT_RESOLVE",
+      onNoKhinsider: "PROMPT_DOWNLOAD",
     }),
-  promptResolve: () => promptResolveNode({ onYes: "resolveUrls" }),
-  resolveUrls: () => resolveUrlsNode({ onSuccess: "saveAfterResolve" }),
-  saveAfterResolve: () => saveM3UFileNode({ onSuccess: "promptDownload" }),
-  promptDownload: () => promptDownloadNode({ onYes: "downloadFiles" }),
-  downloadFiles: () => downloadFilesNode({ onSuccess: "saveAfterDownload" }),
-  saveAfterDownload: () => saveM3UFileNode<NodeId>({ onSuccess: null }),
+  PROMPT_RESOLVE: () => promptResolveNode({ onYes: "RESOLVE_URLS" }),
+  RESOLVE_URLS: () => resolveUrlsNode({ onSuccess: "SAVE_AFTER_RESOLVE" }),
+  SAVE_AFTER_RESOLVE: () => saveM3UFileNode({ onSuccess: "PROMPT_DOWNLOAD" }),
+  PROMPT_DOWNLOAD: () => promptDownloadNode({ onYes: "DOWNLOAD_FILES" }),
+  DOWNLOAD_FILES: () => downloadFilesNode({ onSuccess: "SAVE_AFTER_DOWNLOAD" }),
+  SAVE_AFTER_DOWNLOAD: () => saveM3UFileNode({ onSuccess: null }),
 });
 
 if (import.meta.main) {
-  let nodeId: NodeId | null = "checkM3UFile";
+  let nodeId: NodeId | null = "CHECK_M3U_FILE";
   let state: State = {
     m3uFilePath: "",
     urls: [],
