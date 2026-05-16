@@ -1,4 +1,4 @@
-import { basename, resolve } from "@std/path";
+import { basename, resolve } from "node:path";
 import { NodeFactory } from "../ambler.ts";
 import { downloadFile } from "../utils/download_file.ts";
 
