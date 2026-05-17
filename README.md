@@ -32,14 +32,18 @@ Bootstrap your project directly from your agent session:
 
 ### For Manual Setup
 
-Run the initialization script directly with Deno:
+Use the Deno tasks to initialize or clone a project:
 
 ```bash
-deno run --allow-write --allow-read walks/init.ts <target-dir>
+# Bootstrap a new project at <target-dir>
+deno task init <target-dir>
+
+# Clone an existing walk into another project
+deno task clone <source-walk> <target-dir>
 ```
 
 > [!TIP]
-> Both methods scaffold a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copy the core `ambler.ts` engine.
+> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` copies a walk and all its nodes into an existing (or new) project, initializing it first if needed.
 
 ---
 
@@ -66,7 +70,7 @@ Markdown blueprints that describe the intended behavior and state transitions be
 2.  **Implement**: Build factory-based nodes in `nodes/`.
 3.  **Test**: Verify node logic in `nodes/tests/`.
 4.  **Compose**: Wire nodes together in `walks/`.
-5.  **Execute**: Run the program with `deno run walks/<name>.ts`.
+5.  **Execute**: Run the program with `deno task <name>`.
 
 ```bash
 # Run all tests

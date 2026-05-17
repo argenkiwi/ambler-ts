@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.1"
+  version: "2.2"
 ---
 
 # Ambler Walk
@@ -83,12 +83,40 @@ if (import.meta.main) {
 
 ---
 
-## Step 5 — Verify
+## Step 5 — Add Deno Task
+
+Add (or update) an entry in `deno.json` under `tasks` for this walk:
+
+```json
+"<name>": "deno run [permissions] walks/<name>.ts"
+```
+
+Choose permissions based on the Deno APIs used by the walk's nodes:
+
+| API used by nodes | Permission flag |
+|---|---|
+| `Deno.readTextFile`, `Deno.copyFile`, `Deno.stat` | `--allow-read` |
+| `Deno.writeTextFile`, `Deno.mkdir`, `Deno.copyFile` (dst) | `--allow-write` |
+| `Deno.env` | `--allow-env` |
+| `fetch` / network calls | `--allow-net` |
+| None of the above (only stdin/stdout) | *(no flags needed)* |
+
+Example for a walk with file I/O:
+
+```json
+"my-walk": "deno run --allow-read --allow-write walks/my-walk.ts"
+```
+
+Users pass arguments after the task name: `deno task my-walk <arg1> <arg2>`
+
+---
+
+## Step 6 — Verify
 
 Run the walk to confirm it behaves as specified:
 
 ```
-deno run --allow-all walks/<name>.ts
+deno task <name>
 ```
 
 If the walk has new nodes, also run:
@@ -108,4 +136,5 @@ Before finishing, confirm:
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
 - [ ] Every new node has a `nodes/tests/<nodeName>.test.ts` with at least one test.
 - [ ] All tests pass.
+- [ ] `deno.json` has a task for `<name>` with the correct permission flags.
 - [ ] The walk runs end-to-end without errors.
