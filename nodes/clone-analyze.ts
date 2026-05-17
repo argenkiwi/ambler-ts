@@ -1,7 +1,8 @@
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {
-  sourceWalk: string;
+  sourceRoot: string;
+  walkName: string;
   filesToCopy?: string[];
   error?: string;
 }
@@ -30,19 +31,19 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const { sourceWalk } = state;
+    const { sourceRoot, walkName } = state;
     const filesToCopy: string[] = [];
 
-    const walkPath = `walks/${sourceWalk}.ts`;
-    const specPath = `specs/${sourceWalk}.md`;
+    const relWalkPath = `walks/${walkName}.ts`;
+    const relSpecPath = `specs/${walkName}.md`;
 
-    filesToCopy.push(walkPath);
-    if (await utils.exists(specPath)) {
-      filesToCopy.push(specPath);
+    filesToCopy.push(relWalkPath);
+    if (await utils.exists(`${sourceRoot}/${relSpecPath}`)) {
+      filesToCopy.push(relSpecPath);
     }
 
     try {
-      const content = await utils.readFile(walkPath);
+      const content = await utils.readFile(`${sourceRoot}/${relWalkPath}`);
 
       // Find nodes: import ... from "../nodes/name.ts"
       // Improved regex to handle leading whitespace, multi-line imports, and avoid comments
@@ -51,9 +52,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       let match;
       const nodes: string[] = [];
       while ((match = nodeRegex.exec(content)) !== null) {
-        const npath = `nodes/${match[1]}`;
-        if (await utils.exists(npath)) {
-          nodes.push(npath);
+        const relPath = `nodes/${match[1]}`;
+        if (await utils.exists(`${sourceRoot}/${relPath}`)) {
+          nodes.push(relPath);
         }
       }
 
@@ -62,9 +63,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/utils\/([^"']+\.ts)["']/gm;
       const utilsList: string[] = [];
       while ((match = utilRegex.exec(content)) !== null) {
-        const upath = `utils/${match[1]}`;
-        if (await utils.exists(upath)) {
-          utilsList.push(upath);
+        const relPath = `utils/${match[1]}`;
+        if (await utils.exists(`${sourceRoot}/${relPath}`)) {
+          utilsList.push(relPath);
         }
       }
 
@@ -72,13 +73,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       filesToCopy.push(...utilsList);
 
       // Recursive analysis for nodes to find their utils
-      for (const nodePath of nodes) {
-        const nodeContent = await utils.readFile(nodePath);
+      for (const relNodePath of nodes) {
+        const nodeContent = await utils.readFile(`${sourceRoot}/${relNodePath}`);
         let utilMatch;
         while ((utilMatch = utilRegex.exec(nodeContent)) !== null) {
-          const upath = `utils/${utilMatch[1]}`;
-          if (!filesToCopy.includes(upath) && await utils.exists(upath)) {
-            filesToCopy.push(upath);
+          const relPath = `utils/${utilMatch[1]}`;
+          if (!filesToCopy.includes(relPath) && await utils.exists(`${sourceRoot}/${relPath}`)) {
+            filesToCopy.push(relPath);
           }
         }
       }

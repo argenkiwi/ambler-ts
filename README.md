@@ -39,11 +39,11 @@ Use the Deno tasks to initialize or clone a project:
 deno task init <target-dir>
 
 # Clone an existing walk into another project
-deno task clone <source-walk> <target-dir>
+deno task clone <source-walk-path> <target-dir>
 ```
 
 > [!TIP]
-> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` copies a walk and all its nodes into an existing (or new) project, initializing it first if needed.
+> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to any walk file — in the current project or another — and copies it along with all its nodes and utils into the target project, initializing it first if needed.
 
 ---
 

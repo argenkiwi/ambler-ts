@@ -1,8 +1,10 @@
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {
-  sourceWalk: string;
+  sourceWalkPath: string;
   targetDir: string;
+  sourceRoot?: string;
+  walkName?: string;
   isNewProject?: boolean;
   error?: string;
 }
@@ -24,15 +26,26 @@ const defaultUtils: Utils = {
   },
 };
 
+function parseWalkPath(walkPath: string): { sourceRoot: string; walkName: string } {
+  const normalized = walkPath.replace(/\\/g, "/");
+  const lastSlash = normalized.lastIndexOf("/");
+  const fileName = lastSlash === -1 ? normalized : normalized.substring(lastSlash + 1);
+  const walksDir = lastSlash === -1 ? "." : normalized.substring(0, lastSlash);
+  const secondLastSlash = walksDir.lastIndexOf("/");
+  const sourceRoot = secondLastSlash === -1 ? "." : walksDir.substring(0, secondLastSlash);
+  const walkName = fileName.endsWith(".ts") ? fileName.slice(0, -3) : fileName;
+  return { sourceRoot, walkName };
+}
+
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const { sourceWalk, targetDir } = state;
+    const { sourceWalkPath, targetDir } = state;
 
-    if (!sourceWalk) {
-      return [edges.onError, { ...state, error: "No source walk provided." }];
+    if (!sourceWalkPath) {
+      return [edges.onError, { ...state, error: "No source walk path provided." }];
     }
 
     if (!targetDir) {
@@ -42,17 +55,17 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       }];
     }
 
-    // Check if source walk exists
-    const sourcePath = `walks/${sourceWalk}.ts`;
-    if (!(await utils.exists(sourcePath))) {
+    if (!(await utils.exists(sourceWalkPath))) {
       return [
         edges.onError,
         {
           ...state,
-          error: `Source walk "${sourceWalk}" not found at ${sourcePath}.`,
+          error: `Source walk not found at "${sourceWalkPath}".`,
         },
       ];
     }
+
+    const { sourceRoot, walkName } = parseWalkPath(sourceWalkPath);
 
     // Check if target directory is an Ambler project
     const isAmblerProject = await utils.exists(`${targetDir}/ambler.ts`);
@@ -62,6 +75,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     return [isNewProject ? edges.onNewProject : edges.onExisting, {
       ...state,
+      sourceRoot,
+      walkName,
       isNewProject,
     }];
   };

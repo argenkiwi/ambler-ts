@@ -3,7 +3,8 @@ import { factory, State, Utils } from "../clone-analyze.ts";
 
 Deno.test("cloneAnalyzeNode should identify dependencies in the walk file", async () => {
   const initialState: State = {
-    sourceWalk: "test-walk",
+    sourceRoot: "../other",
+    walkName: "test-walk",
   };
 
   const walkContent = `
@@ -18,17 +19,17 @@ import { otherUtil } from "../utils/other.ts";
 
   const utils: Utils = {
     readFile: async (path: string) => {
-      if (path === "walks/test-walk.ts") return walkContent;
-      if (path === "nodes/start.ts") return nodeContent;
-      if (path === "nodes/next.ts") return "";
+      if (path === "../other/walks/test-walk.ts") return walkContent;
+      if (path === "../other/nodes/start.ts") return nodeContent;
+      if (path === "../other/nodes/next.ts") return "";
       return "";
     },
     exists: async (path: string) => {
-      if (path === "specs/test-walk.md") return true;
-      if (path === "nodes/start.ts") return true;
-      if (path === "nodes/next.ts") return true;
-      if (path === "utils/helper.ts") return true;
-      if (path === "utils/other.ts") return true;
+      if (path === "../other/specs/test-walk.md") return true;
+      if (path === "../other/nodes/start.ts") return true;
+      if (path === "../other/nodes/next.ts") return true;
+      if (path === "../other/utils/helper.ts") return true;
+      if (path === "../other/utils/other.ts") return true;
       return false;
     },
   };

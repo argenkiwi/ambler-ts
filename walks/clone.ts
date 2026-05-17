@@ -8,8 +8,10 @@ import { factory as copyNode } from "../nodes/clone-copy.ts";
 import { factory as stopNode } from "../nodes/clone-stop.ts";
 
 export interface State {
-  sourceWalk: string;
+  sourceWalkPath: string;
   targetDir: string;
+  sourceRoot: string;
+  walkName: string;
   filesToCopy: string[];
   isNewProject: boolean;
   error?: string;
@@ -40,20 +42,22 @@ const amble = ambler<State, NodeId>({
 });
 
 if (import.meta.main) {
-  const sourceWalk = Deno.args[0];
+  const sourceWalkPath = Deno.args[0];
   const targetDir = Deno.args[1];
 
-  if (!sourceWalk || !targetDir) {
+  if (!sourceWalkPath || !targetDir) {
     console.error(
-      "Usage: deno run --allow-all walks/clone.ts <source-walk> <target-dir>",
+      "Usage: deno run --allow-all walks/clone.ts <source-walk-path> <target-dir>",
     );
     Deno.exit(1);
   }
 
   let nodeId: NodeId | null = "SETUP";
   let state: State = {
-    sourceWalk,
+    sourceWalkPath,
     targetDir,
+    sourceRoot: "",
+    walkName: "",
     filesToCopy: [],
     isNewProject: false,
   };

@@ -3,7 +3,7 @@ import { factory, State, Utils } from "../clone-stop.ts";
 
 Deno.test("cloneStopNode should print success message when no error is present", async () => {
   const initialState: State = {
-    sourceWalk: "counter",
+    walkName: "counter",
     targetDir: "/target",
     filesToCopy: ["file1"],
   };
@@ -27,7 +27,7 @@ Deno.test("cloneStopNode should print success message when no error is present",
 
 Deno.test("cloneStopNode should print error message when error is present", async () => {
   const initialState: State = {
-    sourceWalk: "counter",
+    walkName: "counter",
     targetDir: "/target",
     error: "Something went wrong",
   };

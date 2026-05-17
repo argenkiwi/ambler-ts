@@ -1,6 +1,7 @@
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {
+  sourceRoot: string;
   targetDir: string;
   filesToCopy: string[];
   error?: string;
@@ -23,18 +24,22 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const { targetDir, filesToCopy } = state;
+    const { sourceRoot, targetDir, filesToCopy } = state;
 
     if (!filesToCopy || filesToCopy.length === 0) {
       return [edges.onSuccess, state];
     }
 
     try {
+      const normalizedSourceRoot = sourceRoot.endsWith("/")
+        ? sourceRoot.slice(0, -1)
+        : sourceRoot;
       const normalizedTargetDir = targetDir.endsWith("/")
         ? targetDir.slice(0, -1)
         : targetDir;
 
       for (const file of filesToCopy) {
+        const src = `${normalizedSourceRoot}/${file}`;
         const dest = `${normalizedTargetDir}/${file}`;
 
         // Ensure parent directory exists
@@ -44,7 +49,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
           await utils.mkdir(parentDir, { recursive: true });
         }
 
-        await utils.copyFile(file, dest);
+        await utils.copyFile(src, dest);
       }
 
       return [edges.onSuccess, state];
