@@ -18,22 +18,20 @@ const amble = ambler<State, NodeId>({
   STOP: () => stopNode({ onDone: null }),
 });
 
-if (import.meta.main) {
-  const targetDir = Deno.args[0];
-  let nodeId: NodeId | null = "SETUP";
-  let state: State = {
-    targetDir,
-  };
-
+export async function run(args: string[]) {
+  const targetDir = args[0];
   if (!targetDir) {
-    console.error(
-      "Usage: deno run --allow-write --allow-read walks/init.ts <target-dir>",
-    );
+    console.error("Usage: ambler init <target-dir>");
     Deno.exit(1);
   }
-
+  let nodeId: NodeId | null = "SETUP";
+  let state: State = { targetDir };
   while (nodeId) {
     const next = amble(nodeId, state);
     [nodeId, state] = next instanceof Promise ? await next : next;
   }
+}
+
+if (import.meta.main) {
+  await run(Deno.args);
 }

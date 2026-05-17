@@ -39,17 +39,13 @@ const amble = ambler<State, NodeId>({
   STOP: () => stopNode({ onDone: null }),
 });
 
-if (import.meta.main) {
-  const sourceWalk = Deno.args[0];
-  const targetDir = Deno.args[1];
-
+export async function run(args: string[]) {
+  const sourceWalk = args[0];
+  const targetDir = args[1];
   if (!sourceWalk || !targetDir) {
-    console.error(
-      "Usage: deno run --allow-all walks/clone.ts <source-walk> <target-dir>",
-    );
+    console.error("Usage: ambler clone <source-walk> <target-dir>");
     Deno.exit(1);
   }
-
   let nodeId: NodeId | null = "SETUP";
   let state: State = {
     sourceWalk,
@@ -57,9 +53,12 @@ if (import.meta.main) {
     filesToCopy: [],
     isNewProject: false,
   };
-
   while (nodeId) {
     const next = amble(nodeId, state);
     [nodeId, state] = next instanceof Promise ? await next : next;
   }
+}
+
+if (import.meta.main) {
+  await run(Deno.args);
 }
