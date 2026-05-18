@@ -12,11 +12,13 @@ Deno.test("cloneCopyNode should copy all files in filesToCopy list", async () =>
   const dirsCreated: string[] = [];
 
   const utils: Utils = {
-    copyFile: async (src, dest) => {
+    copyFile: (src, dest) => {
       filesCopied.push(`${src}->${dest}`);
+      return Promise.resolve();
     },
-    mkdir: async (path) => {
+    mkdir: (path) => {
       dirsCreated.push(path);
+      return Promise.resolve();
     },
   };
 

@@ -18,19 +18,23 @@ import { otherUtil } from "../utils/other.ts";
   `;
 
   const utils: Utils = {
-    readFile: async (path: string) => {
-      if (path === "../other/walks/test-walk.ts") return walkContent;
-      if (path === "../other/nodes/start.ts") return nodeContent;
-      if (path === "../other/nodes/next.ts") return "";
-      return "";
+    readFile: (path: string) => {
+      if (path === "../other/walks/test-walk.ts") {
+        return Promise.resolve(walkContent);
+      }
+      if (path === "../other/nodes/start.ts") {
+        return Promise.resolve(nodeContent);
+      }
+      if (path === "../other/nodes/next.ts") return Promise.resolve("");
+      return Promise.resolve("");
     },
-    exists: async (path: string) => {
-      if (path === "../other/specs/test-walk.md") return true;
-      if (path === "../other/nodes/start.ts") return true;
-      if (path === "../other/nodes/next.ts") return true;
-      if (path === "../other/utils/helper.ts") return true;
-      if (path === "../other/utils/other.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/specs/test-walk.md") return Promise.resolve(true);
+      if (path === "../other/nodes/start.ts") return Promise.resolve(true);
+      if (path === "../other/nodes/next.ts") return Promise.resolve(true);
+      if (path === "../other/utils/helper.ts") return Promise.resolve(true);
+      if (path === "../other/utils/other.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
@@ -61,19 +65,25 @@ import { someUtil } from "../utils/helper.ts";
   `;
 
   const utils = {
-    readFile: async (path: string) => {
-      if (path === "../other/nodes/my-node.ts") return nodeContent;
-      if (path === "../other/deno.json") return JSON.stringify({});
-      return "";
+    readFile: (path: string) => {
+      if (path === "../other/nodes/my-node.ts") {
+        return Promise.resolve(nodeContent);
+      }
+      if (path === "../other/deno.json") {
+        return Promise.resolve(JSON.stringify({}));
+      }
+      return Promise.resolve("");
     },
-    exists: async (path: string) => {
-      if (path === "../other/nodes/my-node.ts") return true;
-      if (path === "../other/utils/helper.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/nodes/my-node.ts") return Promise.resolve(true);
+      if (path === "../other/utils/helper.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(initialState);
+  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
+    initialState,
+  );
 
   assertEquals(result[0], "DONE");
   const files = result[1].filesToCopy ?? [];
@@ -90,17 +100,21 @@ Deno.test("cloneAnalyzeNode should copy only the util file for artifactType util
   };
 
   const utils = {
-    readFile: async (path: string) => {
-      if (path === "../other/deno.json") return JSON.stringify({});
-      return "";
+    readFile: (path: string) => {
+      if (path === "../other/deno.json") {
+        return Promise.resolve(JSON.stringify({}));
+      }
+      return Promise.resolve("");
     },
-    exists: async (path: string) => {
-      if (path === "../other/utils/my-util.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/utils/my-util.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(initialState);
+  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
+    initialState,
+  );
 
   assertEquals(result[0], "DONE");
   const files = result[1].filesToCopy ?? [];
@@ -121,25 +135,29 @@ import { relative } from "./local.ts";
   `;
 
   const utils = {
-    readFile: async (path: string) => {
-      if (path === "../other/utils/my-util.ts") return utilContent;
+    readFile: (path: string) => {
+      if (path === "../other/utils/my-util.ts") {
+        return Promise.resolve(utilContent);
+      }
       if (path === "../other/deno.json") {
-        return JSON.stringify({
+        return Promise.resolve(JSON.stringify({
           imports: {
             "ollama": "npm:ollama@^0.6.3",
             "@std/assert": "jsr:@std/assert@^1.0.19",
           },
-        });
+        }));
       }
-      return "";
+      return Promise.resolve("");
     },
-    exists: async (path: string) => {
-      if (path === "../other/utils/my-util.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/utils/my-util.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(initialState);
+  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
+    initialState,
+  );
 
   assertEquals(result[0], "DONE");
   const deps = result[1].externalDeps ?? {};

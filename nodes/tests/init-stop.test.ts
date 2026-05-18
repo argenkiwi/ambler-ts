@@ -18,7 +18,7 @@ Deno.test("initStopNode should print error and exit 1 when error exists", async 
     },
   };
 
-  const [edge, state] = await factory(
+  const [edge, _state] = await factory(
     { onDone: "NONE" },
     utils,
   )(initialState);
@@ -42,7 +42,7 @@ Deno.test("initStopNode should print success messages when no error", async () =
     },
   };
 
-  const [edge, state] = await factory(
+  const [edge, _state] = await factory(
     { onDone: "NONE" },
     utils,
   )(initialState);

@@ -8,11 +8,11 @@ Deno.test("cloneSetupNode should return onExisting and isNewProject=false when s
   };
 
   const utils: Utils = {
-    exists: async (path: string) => {
-      if (path === "../other/walks/counter.ts") return true;
-      if (path === "/path/to/target/ambler.ts") return true;
-      if (path === "/path/to/target/deno.json") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/walks/counter.ts") return Promise.resolve(true);
+      if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
+      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
@@ -34,9 +34,9 @@ Deno.test("cloneSetupNode should return onNewProject and isNewProject=true when 
   };
 
   const utils: Utils = {
-    exists: async (path: string) => {
-      if (path === "../other/walks/counter.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/walks/counter.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
@@ -58,7 +58,7 @@ Deno.test("cloneSetupNode should return onError when source walk does not exist"
   };
 
   const utils: Utils = {
-    exists: async () => false,
+    exists: () => Promise.resolve(false),
   };
 
   const result = await factory(
@@ -80,9 +80,9 @@ Deno.test("cloneSetupNode should derive sourceRoot as '.' for a local walk path"
   };
 
   const utils: Utils = {
-    exists: async (path: string) => {
-      if (path === "walks/counter.ts") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "walks/counter.ts") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
@@ -102,11 +102,13 @@ Deno.test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", 
   };
 
   const utils: Utils = {
-    exists: async (path: string) => {
-      if (path === "../other/nodes/clone-setup.ts") return true;
-      if (path === "/path/to/target/ambler.ts") return true;
-      if (path === "/path/to/target/deno.json") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/nodes/clone-setup.ts") {
+        return Promise.resolve(true);
+      }
+      if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
+      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
@@ -128,11 +130,11 @@ Deno.test("cloneSetupNode should detect artifactType 'util' for a utils/ path", 
   };
 
   const utils: Utils = {
-    exists: async (path: string) => {
-      if (path === "../other/utils/my-util.ts") return true;
-      if (path === "/path/to/target/ambler.ts") return true;
-      if (path === "/path/to/target/deno.json") return true;
-      return false;
+    exists: (path: string) => {
+      if (path === "../other/utils/my-util.ts") return Promise.resolve(true);
+      if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
+      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      return Promise.resolve(false);
     },
   };
 
