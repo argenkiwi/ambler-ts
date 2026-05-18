@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.2"
+  version: "2.3"
 ---
 
 # Ambler Walk
@@ -23,7 +23,23 @@ This skill guides you in creating a complete Ambler walk. A walk is a state-mach
 
 ---
 
-## Step 2 — Ensure Nodes Exist
+## Step 2 — Consult the Node Registry
+
+Before creating any nodes, read `nodes/NODES.md`. This file has one entry per existing node — a single file read gives you the full picture.
+
+For each step the walk requires:
+
+1. Scan `nodes/NODES.md` for rows whose `category` or description matches the domain.
+2. For candidates, compare the `reads` and `writes` columns against the walk's evolving shared `State`. A node is reusable when the walk's `State` contains all the fields listed, with compatible types.
+3. **Prefer reuse.** Only invoke `/ambler-node` to create a new node if no existing node covers the required behaviour. Document reuse decisions with a comment above the import in the walk file:
+   `// Reused: init-setup.ts — creates directory structure`
+4. If an existing node almost matches but uses different field names, create a thin adapter node (see `/ambler-node` § Adapter Nodes) rather than duplicating logic.
+
+> If `nodes/NODES.md` does not exist yet, run `deno task index-nodes` to generate it, or create it manually before proceeding.
+
+---
+
+## Step 3 — Ensure Nodes Exist
 
 For each node the walk requires:
 
@@ -33,13 +49,13 @@ For each node the walk requires:
 
 ---
 
-## Step 3 — Create the Specification File (`specs/<name>.md`)
+## Step 4 — Create the Specification File (`specs/<name>.md`)
 
 Create the Markdown spec **before** the TypeScript file using the `/ambler-spec` skill, so it acts as a blueprint.
 
 ---
 
-## Step 4 — Create the Wiring File (`walks/<name>.ts`)
+## Step 5 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
 import { ambler } from "../ambler.ts";
@@ -83,7 +99,7 @@ if (import.meta.main) {
 
 ---
 
-## Step 5 — Add Deno Task
+## Step 6 — Add Deno Task
 
 Add (or update) an entry in `deno.json` under `tasks` for this walk:
 
@@ -111,7 +127,7 @@ Users pass arguments after the task name: `deno task my-walk <arg1> <arg2>`
 
 ---
 
-## Step 6 — Verify
+## Step 7 — Verify
 
 Run the walk to confirm it behaves as specified:
 
@@ -131,6 +147,9 @@ deno test nodes/tests/
 
 Before finishing, confirm:
 
+- [ ] `nodes/NODES.md` was consulted before creating any nodes.
+- [ ] All new nodes have their `nodes/NODES.md` entry added (or run `deno task index-nodes`).
+- [ ] No `TODO` placeholders remain in any node metadata blocks used by this walk.
 - [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
 - [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.

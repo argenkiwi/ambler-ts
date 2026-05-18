@@ -1,3 +1,15 @@
+/**
+ * Creates the standard Ambler folder structure at the target directory.
+ *
+ * @category init
+ * @reads    targetDir
+ * @writes   error
+ * @edges    onSuccess — directory structure created
+ *           onError — targetDir missing, not a directory, or mkdir failed
+ * @utils    mkdir(path, options?) — creates directories recursively
+ *           stat(path) — checks if path exists and its type
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

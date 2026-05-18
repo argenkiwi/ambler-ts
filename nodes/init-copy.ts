@@ -1,3 +1,15 @@
+/**
+ * Copies the ambler.ts engine file into the target project directory.
+ *
+ * @category init
+ * @reads    targetDir
+ * @writes   error
+ * @edges    onSuccess — ambler.ts copied successfully
+ *           onError — copy failed
+ * @utils    copyFile(from, to) — copies a file
+ *           getAmblerSrc() — resolves the path to the local ambler.ts
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

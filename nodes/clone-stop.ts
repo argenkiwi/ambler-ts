@@ -1,3 +1,13 @@
+/**
+ * Reports clone result: lists copied files on success, prints error message on failure.
+ *
+ * @category clone
+ * @reads    walkName, targetDir, filesToCopy, error
+ * @writes   —
+ * @edges    onDone — always
+ * @utils    print(msg) — writes a line to stdout
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

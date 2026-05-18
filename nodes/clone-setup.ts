@@ -1,3 +1,15 @@
+/**
+ * Validates source walk path and target directory, detects whether the target needs Ambler initialisation.
+ *
+ * @category clone
+ * @reads    sourceWalkPath, targetDir
+ * @writes   sourceRoot, walkName, isNewProject, error
+ * @edges    onNewProject — target lacks ambler.ts or deno.json
+ *           onExisting — target is a ready Ambler project
+ *           onError — args missing or source walk file not found
+ * @utils    exists(path) — checks whether a path exists
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

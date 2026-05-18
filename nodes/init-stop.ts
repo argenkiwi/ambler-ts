@@ -1,3 +1,14 @@
+/**
+ * Reports init result and exits with code 1 on failure.
+ *
+ * @category init
+ * @reads    targetDir, error
+ * @writes   —
+ * @edges    onDone — always
+ * @utils    print(msg) — writes a line to stdout
+ *           exit(code?) — terminates the process
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

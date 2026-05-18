@@ -1,3 +1,16 @@
+/**
+ * Increments a numeric counter by 1 and randomly transitions to continue or stop.
+ *
+ * @category counter
+ * @reads    count
+ * @writes   count
+ * @edges    onCount — random() > 0.5, keep counting
+ *           onStop — random() <= 0.5, stop the walk
+ * @utils    print(msg) — writes a line to stdout
+ *           sleep(ms) — async delay
+ *           random() — random number source
+ * @standalone yes
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

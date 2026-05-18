@@ -1,3 +1,15 @@
+/**
+ * Scans a walk file to identify all node and util files that must be copied.
+ *
+ * @category clone
+ * @reads    sourceRoot, walkName
+ * @writes   filesToCopy, error
+ * @edges    onSuccess — file list built
+ *           onError — walk file unreadable
+ * @utils    readFile(path) — reads a file as text
+ *           exists(path) — checks whether a path exists
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

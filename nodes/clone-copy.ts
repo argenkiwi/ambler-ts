@@ -1,3 +1,15 @@
+/**
+ * Copies all identified walk files from the source root to the target directory.
+ *
+ * @category clone
+ * @reads    sourceRoot, targetDir, filesToCopy
+ * @writes   error
+ * @edges    onSuccess — all files copied
+ *           onError — copy or mkdir failed
+ * @utils    copyFile(src, dest) — copies a file
+ *           mkdir(path, options?) — creates directories recursively
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

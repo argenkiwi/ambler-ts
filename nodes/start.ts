@@ -1,3 +1,15 @@
+/**
+ * Prompts the user for a starting number and parses it into an integer.
+ *
+ * @category counter
+ * @reads    count
+ * @writes   count
+ * @edges    onSuccess — blank or valid numeric input
+ *           onError — non-numeric input
+ * @utils    readLine(msg) — reads a line from stdin
+ *           print(msg) — writes a line to stdout
+ * @standalone yes
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {

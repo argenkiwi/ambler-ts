@@ -1,3 +1,14 @@
+/**
+ * Writes a default deno.json configuration file to the target directory.
+ *
+ * @category init
+ * @reads    targetDir
+ * @writes   error
+ * @edges    onSuccess — deno.json written successfully
+ *           onError — write failed
+ * @utils    writeTextFile(path, data) — writes a UTF-8 text file
+ * @standalone no
+ */
 import { NodeFactory } from "../ambler.ts";
 
 export interface State {
