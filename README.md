@@ -43,7 +43,7 @@ deno task clone <source-walk-path> <target-dir>
 ```
 
 > [!TIP]
-> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to any walk file — in the current project or another — and copies it along with all its nodes and utils into the target project, initializing it first if needed.
+> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to a walk file, a node file, or a utility file — in the current project or another — and copies it along with all its dependencies into the target project, initializing it first if needed. When cloning a walk it also registers a deno task in the target's `deno.json`; when cloning a utility it propagates any external npm/jsr dependencies.
 
 ---
 

@@ -5,6 +5,7 @@ import { factory as initSetupNode } from "../nodes/init-setup.ts";
 import { factory as initCopyNode } from "../nodes/init-copy.ts";
 import { factory as initConfigNode } from "../nodes/init-config.ts";
 import { factory as copyNode } from "../nodes/clone-copy.ts";
+import { factory as configNode } from "../nodes/clone-config.ts";
 import { factory as stopNode } from "../nodes/clone-stop.ts";
 
 export interface State {
@@ -12,7 +13,9 @@ export interface State {
   targetDir: string;
   sourceRoot: string;
   walkName: string;
+  artifactType: "walk" | "node" | "util";
   filesToCopy: string[];
+  externalDeps?: Record<string, string>;
   isNewProject: boolean;
   error?: string;
 }
@@ -24,6 +27,7 @@ type NodeId =
   | "INIT_COPY"
   | "INIT_CONFIG"
   | "COPY"
+  | "CONFIG"
   | "STOP";
 
 const amble = ambler<State, NodeId>({
@@ -37,7 +41,8 @@ const amble = ambler<State, NodeId>({
   INIT_SETUP: () => initSetupNode({ onSuccess: "INIT_COPY", onError: "STOP" }),
   INIT_COPY: () => initCopyNode({ onSuccess: "INIT_CONFIG", onError: "STOP" }),
   INIT_CONFIG: () => initConfigNode({ onSuccess: "ANALYZE", onError: "STOP" }),
-  COPY: () => copyNode({ onSuccess: "STOP", onError: "STOP" }),
+  COPY: () => copyNode({ onSuccess: "CONFIG", onError: "STOP" }),
+  CONFIG: () => configNode({ onSuccess: "STOP", onError: "STOP" }),
   STOP: () => stopNode({ onDone: null }),
 });
 
@@ -47,7 +52,7 @@ if (import.meta.main) {
 
   if (!sourceWalkPath || !targetDir) {
     console.error(
-      "Usage: deno run --allow-all walks/clone.ts <source-walk-path> <target-dir>",
+      "Usage: deno run --allow-read --allow-write walks/clone.ts <source-path> <target-dir>",
     );
     Deno.exit(1);
   }
@@ -58,6 +63,7 @@ if (import.meta.main) {
     targetDir,
     sourceRoot: "",
     walkName: "",
+    artifactType: "walk",
     filesToCopy: [],
     isNewProject: false,
   };

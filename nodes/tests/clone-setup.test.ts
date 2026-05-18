@@ -94,3 +94,55 @@ Deno.test("cloneSetupNode should derive sourceRoot as '.' for a local walk path"
   assertEquals(result[1].sourceRoot, ".");
   assertEquals(result[1].walkName, "counter");
 });
+
+Deno.test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", async () => {
+  const initialState: State = {
+    sourceWalkPath: "../other/nodes/clone-setup.ts",
+    targetDir: "/path/to/target",
+  };
+
+  const utils: Utils = {
+    exists: async (path: string) => {
+      if (path === "../other/nodes/clone-setup.ts") return true;
+      if (path === "/path/to/target/ambler.ts") return true;
+      if (path === "/path/to/target/deno.json") return true;
+      return false;
+    },
+  };
+
+  const result = await factory(
+    { onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" },
+    utils,
+  )(initialState);
+
+  assertEquals(result[0], "ANALYZE");
+  assertEquals(result[1].artifactType, "node");
+  assertEquals(result[1].sourceRoot, "../other");
+  assertEquals(result[1].walkName, "clone-setup");
+});
+
+Deno.test("cloneSetupNode should detect artifactType 'util' for a utils/ path", async () => {
+  const initialState: State = {
+    sourceWalkPath: "../other/utils/my-util.ts",
+    targetDir: "/path/to/target",
+  };
+
+  const utils: Utils = {
+    exists: async (path: string) => {
+      if (path === "../other/utils/my-util.ts") return true;
+      if (path === "/path/to/target/ambler.ts") return true;
+      if (path === "/path/to/target/deno.json") return true;
+      return false;
+    },
+  };
+
+  const result = await factory(
+    { onNewProject: "INIT_SETUP", onExisting: "ANALYZE", onError: "STOP" },
+    utils,
+  )(initialState);
+
+  assertEquals(result[0], "ANALYZE");
+  assertEquals(result[1].artifactType, "util");
+  assertEquals(result[1].sourceRoot, "../other");
+  assertEquals(result[1].walkName, "my-util");
+});

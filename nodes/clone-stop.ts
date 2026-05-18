@@ -3,6 +3,7 @@ import { NodeFactory } from "../ambler.ts";
 export interface State {
   walkName: string;
   targetDir: string;
+  artifactType?: "walk" | "node" | "util";
   filesToCopy?: string[];
   error?: string;
 }
@@ -25,8 +26,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     if (state.error) {
       utils.print(`Error: ${state.error}`);
     } else {
+      const type = state.artifactType ?? "walk";
       utils.print(
-        `Successfully cloned walk "${state.walkName}" to "${state.targetDir}".`,
+        `Successfully cloned ${type} "${state.walkName}" to "${state.targetDir}".`,
       );
       if (state.filesToCopy) {
         utils.print("Files copied:");

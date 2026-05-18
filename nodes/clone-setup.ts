@@ -5,6 +5,7 @@ export interface State {
   targetDir: string;
   sourceRoot?: string;
   walkName?: string;
+  artifactType?: "walk" | "node" | "util";
   isNewProject?: boolean;
   error?: string;
 }
@@ -26,15 +27,33 @@ const defaultUtils: Utils = {
   },
 };
 
-function parseWalkPath(walkPath: string): { sourceRoot: string; walkName: string } {
-  const normalized = walkPath.replace(/\\/g, "/");
+function parseSourcePath(
+  srcPath: string,
+): {
+  sourceRoot: string;
+  walkName: string;
+  artifactType: "walk" | "node" | "util";
+} {
+  const normalized = srcPath.replace(/\\/g, "/");
   const lastSlash = normalized.lastIndexOf("/");
-  const fileName = lastSlash === -1 ? normalized : normalized.substring(lastSlash + 1);
-  const walksDir = lastSlash === -1 ? "." : normalized.substring(0, lastSlash);
-  const secondLastSlash = walksDir.lastIndexOf("/");
-  const sourceRoot = secondLastSlash === -1 ? "." : walksDir.substring(0, secondLastSlash);
+  const fileName = lastSlash === -1
+    ? normalized
+    : normalized.substring(lastSlash + 1);
+  const parentDir = lastSlash === -1 ? "." : normalized.substring(0, lastSlash);
+  const lastParentSlash = parentDir.lastIndexOf("/");
+  const dirName = lastParentSlash === -1
+    ? parentDir
+    : parentDir.substring(lastParentSlash + 1);
+  const sourceRoot = lastParentSlash === -1
+    ? "."
+    : parentDir.substring(0, lastParentSlash);
   const walkName = fileName.endsWith(".ts") ? fileName.slice(0, -3) : fileName;
-  return { sourceRoot, walkName };
+  const artifactType: "walk" | "node" | "util" = dirName === "nodes"
+    ? "node"
+    : dirName === "utils"
+    ? "util"
+    : "walk";
+  return { sourceRoot, walkName, artifactType };
 }
 
 export const factory: NodeFactory<State, Edge, Utils> = (
@@ -45,7 +64,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const { sourceWalkPath, targetDir } = state;
 
     if (!sourceWalkPath) {
-      return [edges.onError, { ...state, error: "No source walk path provided." }];
+      return [edges.onError, {
+        ...state,
+        error: "No source walk path provided.",
+      }];
     }
 
     if (!targetDir) {
@@ -65,7 +87,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       ];
     }
 
-    const { sourceRoot, walkName } = parseWalkPath(sourceWalkPath);
+    const { sourceRoot, walkName, artifactType } = parseSourcePath(
+      sourceWalkPath,
+    );
 
     // Check if target directory is an Ambler project
     const isAmblerProject = await utils.exists(`${targetDir}/ambler.ts`);
@@ -77,6 +101,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       ...state,
       sourceRoot,
       walkName,
+      artifactType,
       isNewProject,
     }];
   };
