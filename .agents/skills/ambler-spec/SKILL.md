@@ -3,7 +3,7 @@ name: ambler-spec
 description: Creates or updates a Markdown specification file for an Ambler walk in the specs/ directory. Use this whenever a user wants to document, plan, or describe a walk — including "write a spec", "document this walk", or "plan out the nodes" — even before any code exists.
 metadata:
   author: leandro
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Ambler Specification
@@ -70,9 +70,10 @@ Use the Write tool to create `specs/<name>.md`.
 
 ## Guidelines
 
+- **Consistency**: Browse `specs/*.md` before starting to identify reusable nodes and ensure the new specification follows the established style and formatting.
 - **Node name casing**: Use Title Case for headings (`### Count`) and backtick-quoted ALL_CAPS for references in edge descriptions (`` `COUNT` ``).
 - **Clarity**: Describe *what* the program does, not *how* the code implements it.
-- **Consistency**: If `walks/<name>.ts` already exists, ensure the spec reflects the implementation. If it doesn't, treat the spec as a blueprint.
+- **Implementation Alignment**: If `walks/<name>.ts` already exists, ensure the spec reflects the implementation. If it doesn't, treat the spec as a blueprint.
 - **No extra sections**: Stick to `# Program Specifications`, `## Nodes`, and `## Shared State` — no additional top-level sections unless the walk clearly requires them.
 - **Pragmatic State**: Don't guess the state first; look at what each node needs to know or change, and then define the state.
 

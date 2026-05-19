@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node in the nodes/ directory. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node".
 metadata:
   author: leandro
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Ambler Node
@@ -14,6 +14,7 @@ Follow these steps to create a new node in the `nodes/` directory.
 
 Before writing any code, determine:
 
+- **Research Existing Nodes:** Check `specs/*.md` and `nodes/` to see if a node with similar behavior already exists. It is always better to reuse or adapt an existing node than to create a duplicate.
 - **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>.ts`.
 - **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches.
 - **Edges**: What named transitions can this node take? Define an `Edge` type (union of strings) for these names.

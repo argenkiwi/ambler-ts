@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.2"
+  version: "2.3"
 ---
 
 # Ambler Walk
@@ -23,23 +23,32 @@ This skill guides you in creating a complete Ambler walk. A walk is a state-mach
 
 ---
 
-## Step 2 — Ensure Nodes Exist
+## Step 2 — Research and Reuse
 
-For each node the walk requires:
+Before creating new nodes, research existing ones to promote reuse and consistency:
 
-- Check if a file `nodes/<nodeName>.ts` already exists (use Glob).
-- If it does **not** exist, create it using the `/ambler-node` skill **before** writing the walk.
-- Also ensure `nodes/tests/<nodeName>.test.ts` exists for every new node using the `/ambler-test` skill, then verify with `deno test nodes/tests/<nodeName>.test.ts`.
+- **Review Existing Specs:** Browse `specs/*.md` to identify nodes that already implement the required logic (e.g., "Ollama Check", "Model Select"). This is more efficient than reading source code and helps maintain architectural alignment.
+- **Check Node Implementation:** For each node identified, verify its existence in `nodes/<nodeName>.ts`.
 
 ---
 
 ## Step 3 — Create the Specification File (`specs/<name>.md`)
 
-Create the Markdown spec **before** the TypeScript file using the `/ambler-spec` skill, so it acts as a blueprint.
+Create the Markdown spec using the `/ambler-spec` skill. This acts as the **blueprint** for the entire walk, defining the shared state and the logic for every node.
 
 ---
 
-## Step 4 — Create the Wiring File (`walks/<name>.ts`)
+## Step 4 — Ensure Nodes Exist
+
+For each node defined in the specification:
+
+- If it does **not** exist in `nodes/<nodeName>.ts`, create it using the `/ambler-node` skill.
+- Ensure `nodes/tests/<nodeName>.test.ts` exists for every new or modified node using the `/ambler-test` skill.
+- Verify node behavior with `deno test nodes/tests/<nodeName>.test.ts`.
+
+---
+
+## Step 5 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
 import { ambler } from "../ambler.ts";
