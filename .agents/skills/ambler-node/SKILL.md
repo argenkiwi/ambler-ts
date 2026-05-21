@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node in the nodes/ directory. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node".
 metadata:
   author: leandro
-  version: "2.1"
+  version: "2.2"
 ---
 
 # Ambler Node
@@ -23,12 +23,12 @@ Before writing any code, determine:
 
 ---
 
-## 2. Create `nodes/<name>.ts`
+## 2. Create the skeleton `nodes/<name>.ts`
 
-Use the following structure exactly. Adhere to naming conventions.
+Use the following structure exactly. Adhere to naming conventions. Under TDD, this initial implementation is a **skeleton/stub** to define types and compile.
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import { SyncNodeFactory, AsyncNodeFactory } from "../ambler.ts";
 // Import any shared utils if needed:
 // import { someUtil } from "../utils/some_util.ts";
 
@@ -49,41 +49,65 @@ const defaultUtils: Utils = {
   // readLine: (msg) => prompt(msg),
 };
 
-export const factory: NodeFactory<State, Edge, Utils> = (
+// Use SyncNodeFactory for synchronous nodes, AsyncNodeFactory for asynchronous ones.
+export const factory: SyncNodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) => {
   return (state) => {
-    // Node logic here.
-    // Use 'async' on the returned function if using await.
-    
-    // Always spread state when updating: { ...state, field: newValue }
-    const nextState = { ...state, count: state.count + 1 };
-    
-    // Return [edges.onSuccess, nextState] to transition.
-    return [edges.onSuccess, nextState];
+    // TDD skeleton: return a stub that transitions to initial edge without changing state.
+    // Replace this implementation in Step 4 after writing tests.
+    return [edges.onSuccess, state];
   };
 };
 ```
 
 ### Key rules
 
-- **Imports**: Always import `NodeFactory` from `"../ambler.ts"`.
+- **Imports**: Always import `SyncNodeFactory` and/or `AsyncNodeFactory` from `"../ambler.ts"`.
 - **Exports**: Use `export const factory` for the node factory.
 - **Named Exports**: Export `State` (if specific), `Edge`, and `Utils` at the module level.
-- **NodeFactory Type**: Use `NodeFactory<State, Edge, Utils>` to ensure types are correctly enforced.
+- **Factory Type**: Use `SyncNodeFactory<State, Edge, Utils>` or `AsyncNodeFactory<State, Edge, Utils>` to ensure types are correctly enforced and to signal whether the node is async.
 - **Utils**: `defaultUtils` contains production implementations. Complex or reusable logic (e.g., LLM calls, file I/O) should be moved to `utils/` and imported.
 - **Immutability**: Never mutate `state` directly; always return a new object: `{ ...state, ...updates }`.
-- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their `create` signature via `NodeFactory`. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `stopNode({ onDone: null })`).
+- **Termination**: Nodes that terminate the walk still use `Record<Edge, K | null>` in their factory signature. In the `walks/*.ts` file, they are initialized with an edge mapped to `null` (e.g., `stopNode({ onDone: null })`).
 
 ---
 
-## 3. Adapter Nodes (Optional)
+## 3. Create the test file `nodes/tests/<name>.test.ts` (TDD Red Phase)
+
+Use the `/ambler-test` skill to write a complete set of tests before implementing the node's business logic.
+Run the tests using Deno:
+```bash
+deno test nodes/tests/<name>.test.ts
+```
+Ensure they fail as expected (since the node is currently just a skeleton stub).
+
+---
+
+## 4. Implement the Node Logic in `nodes/<name>.ts` (TDD Green Phase)
+
+Replace the stub implementation in `nodes/<name>.ts` with the actual business logic to satisfy all of your test assertions.
+Run the tests again:
+```bash
+deno test nodes/tests/<name>.test.ts
+```
+Ensure they all pass.
+
+---
+
+## 5. Refactor (TDD Refactor Phase)
+
+Improve the code quality, remove duplication, and extract complex logic into the `utils/` folder using `/ambler-util` as needed. Run the tests continuously to ensure they remain green.
+
+---
+
+## 6. Adapter Nodes (Optional)
 
 If you need to use an existing node but the walk's state has different property names, create an adapter node.
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import { AsyncNodeFactory } from "../ambler.ts";
 import { factory as originalFactory, Edge, Utils } from "./originalNode.ts";
 
 export interface State {
@@ -94,7 +118,7 @@ export interface State {
 /**
  * Adapter that maps 'newPropertyName' state property to 'originalPropertyName'.
  */
-export const factory: NodeFactory<State, Edge, Utils> = (edges, utils) => {
+export const factory: AsyncNodeFactory<State, Edge, Utils> = (edges, utils) => {
   const node = originalFactory(edges, utils);
 
   return async (state) => {
@@ -111,18 +135,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (edges, utils) => {
 
 ---
 
-## 4. Create `nodes/tests/<name>Node.test.ts`
-
-Use the `/ambler-test` skill to generate the test file.
-
----
-
-## 4. Checklist before finishing
+## 7. Checklist before finishing
 
 - [ ] `nodes/<name>.ts` uses the `Edge` naming convention for edge keys.
-- [ ] Factory uses `NodeFactory<State, Edge, Utils>` and is exported as `factory`.
+- [ ] Factory uses `SyncNodeFactory<State, Edge, Utils>` or `AsyncNodeFactory<State, Edge, Utils>` and is exported as `factory`.
 - [ ] `State` interface is minimal.
 - [ ] `defaultUtils` provides real implementations.
 - [ ] No direct state mutation.
 - [ ] Shared logic is in `utils/`.
-- [ ] Tests exist in `nodes/tests/<name>Node.test.ts`.
+- [ ] Tests exist in `nodes/tests/<name>.test.ts` (developed via TDD Red-Green-Refactor).
+- [ ] All tests pass when running `deno test nodes/tests/<name>.test.ts`.

@@ -38,13 +38,15 @@ Create the Markdown spec using the `/ambler-spec` skill. This acts as the **blue
 
 ---
 
-## Step 4 — Ensure Nodes Exist
+## Step 4 — Ensure Nodes Exist (using TDD)
 
-For each node defined in the specification:
+For each node defined in the specification, if it does not already exist, follow a Test-Driven Development (TDD) cycle to create it:
 
-- If it does **not** exist in `nodes/<nodeName>.ts`, create it using the `/ambler-node` skill.
-- Ensure `nodes/tests/<nodeName>.test.ts` exists for every new or modified node using the `/ambler-test` skill.
-- Verify node behavior with `deno test nodes/tests/<nodeName>.test.ts`.
+1. **Create the Node Skeleton:** Use the `/ambler-node` skill to create the base file `nodes/<nodeName>.ts` containing only the type definitions (`State`, `Edge`, `Utils`), imports, and a stubbed `factory` function.
+2. **Write the Tests First:** Use the `/ambler-test` skill to write test cases in `nodes/tests/<nodeName>.test.ts` describing the expected behavior for each branch or condition.
+3. **Verify Failure (Red):** Run `deno test nodes/tests/<nodeName>.test.ts` and confirm the tests fail (or fail to build if types aren't matched yet).
+4. **Implement the Logic (Green):** Write the actual node behavior in `nodes/<nodeName>.ts` until all the test cases pass.
+5. **Refactor:** Clean up the node code (e.g. extracting helper functions into the `utils/` directory using `/ambler-util`) while keeping the tests passing.
 
 ---
 
