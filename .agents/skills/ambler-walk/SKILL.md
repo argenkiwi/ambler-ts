@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.3"
+  version: "2.4"
 ---
 
 # Ambler Walk
@@ -42,9 +42,8 @@ Create the Markdown spec using the `/ambler-spec` skill. This acts as the **blue
 
 For each node defined in the specification:
 
-- If it does **not** exist in `nodes/<nodeName>.ts`, create it using the `/ambler-node` skill.
-- Ensure `nodes/tests/<nodeName>.test.ts` exists for every new or modified node using the `/ambler-test` skill.
-- Verify node behavior with `deno test nodes/tests/<nodeName>.test.ts`.
+- If it does **not** exist in `nodes/<nodeName>.ts`, create it using the `/ambler-node` skill. This runs a full TDD pass — skeleton, tests (red), implementation, tests (green) — before completing. No separate test step is needed.
+- If the node already exists but has no tests, use the `/ambler-test` skill to retrofit coverage.
 
 ---
 
@@ -142,8 +141,7 @@ Before finishing, confirm:
 
 - [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
 - [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
-- [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts`.
-- [ ] Every new node has a `nodes/tests/<nodeName>.test.ts` with at least one test.
-- [ ] All tests pass.
+- [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts` and passing tests (enforced by `/ambler-node`).
+- [ ] All tests pass (`deno test nodes/tests/`).
 - [ ] `deno.json` has a task for `<name>` with the correct permission flags.
 - [ ] The walk runs end-to-end without errors.

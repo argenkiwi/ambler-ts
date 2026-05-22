@@ -1,39 +1,41 @@
 ---
 name: ambler-test
-description: Creates a test file for an Ambler node in the nodes/ directory. Use this whenever the user wants tests for a node — including "test this node", "add tests", "write tests for X", or any time a node is created without a corresponding test file.
+description: Adds or updates tests for an existing Ambler node that already has an implementation. Use this when a node exists in nodes/<name>.ts but has no test file, when tests need extending after new branches were added, or when retrofitting TDD onto existing code. For creating a brand-new node with tests, use `/ambler-node` instead.
 metadata:
   author: leandro
-  version: "2.0"
+  version: "3.0"
 ---
 
 # Ambler Test
 
-Follow these steps to create a test file for a node in the `nodes/` directory.
+Follow these steps to add or update tests for an existing node in `nodes/`.
 
-## 1. Gather requirements
-
-Before writing any code, determine:
-
-- **Node name**: The camelCase name (e.g., `retry`, `prompt`, `validate`) — the test file will be `nodes/tests/<name>.test.ts`.
-- **Node's State, Edges, and Utils**: Read `nodes/<name>.ts` to understand what the node does, which edges it has, and what utils it uses.
-- **Branches to cover**: Every `return [edges.onEdgeName, ...]` line is one branch; terminal nodes return `[edges.onDone, state]` where `onDone` will be `null` in the walk. List them all before writing any test.
-
-If any of the above is unclear, read the node file first.
+> For brand-new nodes, use `/ambler-node` — it creates both the implementation and tests via a TDD cycle. This skill is for retrofitting tests onto nodes that already exist.
 
 ---
 
-## 2. Determine sync vs async
+## 1. Read the existing node
 
-Look at the node's `factory` return type:
+Read `nodes/<name>.ts` in full. Identify:
 
-- `return (state: S): Next<S, K> => { ... }` — **synchronous**: tests call the node directly, no `await`.
-- `return async (state: S): Promise<Next<S, K>> => { ... }` — **asynchronous**: tests use `async () =>` and `await`.
+- **State**, **Edge**, and **Utils** types.
+- **Sync vs async**: Does the factory return `(state) => ...` or `async (state) => ...`?
+- **All branches**: Every `return [edges.onEdgeName, ...]` line is one branch. List them all — each becomes a test.
 
 ---
 
-## 3. Create `nodes/tests/<name>.test.ts`
+## 2. Check for existing tests
 
-Write one `Deno.test` per meaningful branch of logic (one per edge + one per error/edge case).
+Check whether `nodes/tests/<name>.test.ts` exists.
+
+- If it **does not exist**: write a complete new test file covering every branch.
+- If it **does exist**: read it, identify which branches already have coverage, and list the gaps. Only add tests for uncovered branches — do not overwrite passing tests unless the node's interface changed.
+
+---
+
+## 3. Write or update `nodes/tests/<name>.test.ts`
+
+Write one `Deno.test` per uncovered branch. All utils must be mocked.
 
 **Synchronous node:**
 
@@ -54,8 +56,8 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");           // next node key
-  assertEquals(result[1].someField, value);  // updated state
+  assertEquals(result[0], "next");
+  assertEquals(result[1].someField, expectedValue);
 });
 ```
 
@@ -69,7 +71,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: State = { /* ... */ };
 
   const utils: Utils = {
-    print: (_msg: string) => {},
+    readLine: async (_prompt) => "mock input",
     // Override each util to be deterministic and side-effect-free.
   };
 
@@ -78,27 +80,35 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");           // next node key
-  assertEquals(result[1].someField, value);  // updated state
+  assertEquals(result[0], "next");
+  assertEquals(result[1].someField, expectedValue);
 });
 ```
 
 ### Test rules
 
-- **Import `assertEquals` from `@std/assert`** — same as the rest of the project.
-- **Import with named imports**: `import { factory, State, Utils } from "../<name>.ts"`.
-- **Mock all `Utils`** — no real I/O, no real sleeps, no real randomness. Make them deterministic closures.
-- **One test per edge/branch** — cover every `[edges.onEdgeName, ...]` return.
+- **One test per branch** — cover every `[edges.onEdgeName, ...]` return.
+- **Mock all `Utils`** — no real I/O, network, or timing.
 - **Assert `result[0]`** for the next node key and **`result[1]`** for the updated state.
-- **Test names follow the pattern**: `"<name>Node should <expected behavior> when <condition>"`.
-- **Do not use `async`/`await` for synchronous nodes** — sync nodes return `Next` directly; wrapping them in `async` masks type errors.
+- **Test names**: `"<name>Node should <expected behavior> when <condition>"`.
+- **Do not use `async`/`await` for synchronous nodes** — masks type errors.
 
 ---
 
-## 4. Checklist before finishing
+## 4. Run tests — must pass
 
-- [ ] `nodes/tests/<name>.test.ts` exists with one test per branch.
+```bash
+deno test nodes/tests/<name>.test.ts
+```
+
+All tests must pass. If any fail, fix the implementation (not the tests).
+
+---
+
+## 5. Checklist before finishing
+
+- [ ] `nodes/tests/<name>.test.ts` has one test per branch.
 - [ ] All `Utils` are mocked — no real I/O, network, or timing.
-- [ ] Every edge path (`[edges.onEdgeName, ...]`) has a dedicated test.
+- [ ] Every edge path has a dedicated test.
 - [ ] Test names follow `"<name>Node should <behavior> when <condition>"`.
-- [ ] Run `deno test nodes/tests/<name>.test.ts` to verify all tests pass.
+- [ ] All tests pass.
