@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.4"
+  version: "2.5"
 ---
 
 # Ambler Walk
@@ -51,9 +51,9 @@ For each node defined in the specification:
 
 ```typescript
 import { ambler } from "../ambler.ts";
-import { factory as startNode } from "../nodes/start.ts";
-import { factory as nextNode } from "../nodes/next.ts";
-import { factory as stopNode } from "../nodes/stop.ts";
+import defer * as startNode from "../nodes/start.ts";
+import defer * as nextNode from "../nodes/next.ts";
+import defer * as stopNode from "../nodes/stop.ts";
 
 export interface State {
   field: string;
@@ -62,9 +62,9 @@ export interface State {
 type NodeId = "start" | "next" | "stop";
 
 const amble = ambler<State, NodeId>({
-  start: () => startNode({ onSuccess: "next", onError: "start" }),
-  next:  () => nextNode({ onComplete: "stop" }),
-  stop:  () => stopNode({ onDone: null }),
+  start: () => startNode.factory({ onSuccess: "next", onError: "start" }),
+  next:  () => nextNode.factory({ onComplete: "stop" }),
+  stop:  () => stopNode.factory({ onDone: null }),
 });
 
 if (import.meta.main) {
@@ -82,11 +82,11 @@ if (import.meta.main) {
 
 **Key rules:**
 - Import `ambler` from `../ambler.ts`.
-- Import each node's `factory` as a named import and alias it for clarity.
+- Use `import defer * as <alias>` for every node to support lazy loading (Deno 2.8+).
 - Define `State` interface at the top of the file.
 - Define `NodeId` union type for node identifiers.
 - Provide a map of node IDs to **functions that return nodes** to `ambler<State, NodeId>({ ... })`.
-- Use arrow functions to defer node creation: `start: () => startNode({ ... })`.
+- Use arrow functions to defer node creation: `start: () => startNode.factory({ ... })`.
 - Call `ambler` outside the `if` guard and use `instanceof Promise` in the loop.
 
 ---

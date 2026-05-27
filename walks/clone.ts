@@ -1,12 +1,12 @@
 import { ambler } from "../ambler.ts";
-import { factory as setupNode } from "../nodes/clone-setup.ts";
-import { factory as analyzeNode } from "../nodes/clone-analyze.ts";
-import { factory as initSetupNode } from "../nodes/init-setup.ts";
-import { factory as initCopyNode } from "../nodes/init-copy.ts";
-import { factory as initConfigNode } from "../nodes/init-config.ts";
-import { factory as copyNode } from "../nodes/clone-copy.ts";
-import { factory as configNode } from "../nodes/clone-config.ts";
-import { factory as stopNode } from "../nodes/clone-stop.ts";
+import defer * as setupNode from "../nodes/clone-setup.ts";
+import defer * as analyzeNode from "../nodes/clone-analyze.ts";
+import defer * as initSetupNode from "../nodes/init-setup.ts";
+import defer * as initCopyNode from "../nodes/init-copy.ts";
+import defer * as initConfigNode from "../nodes/init-config.ts";
+import defer * as copyNode from "../nodes/clone-copy.ts";
+import defer * as configNode from "../nodes/clone-config.ts";
+import defer * as stopNode from "../nodes/clone-stop.ts";
 
 export interface State {
   sourceWalkPath: string;
@@ -32,18 +32,18 @@ type NodeId =
 
 const amble = ambler<State, NodeId>({
   SETUP: () =>
-    setupNode({
+    setupNode.factory({
       onNewProject: "INIT_SETUP",
       onExisting: "ANALYZE",
       onError: "STOP",
     }),
-  ANALYZE: () => analyzeNode({ onSuccess: "COPY", onError: "STOP" }),
-  INIT_SETUP: () => initSetupNode({ onSuccess: "INIT_COPY", onError: "STOP" }),
-  INIT_COPY: () => initCopyNode({ onSuccess: "INIT_CONFIG", onError: "STOP" }),
-  INIT_CONFIG: () => initConfigNode({ onSuccess: "ANALYZE", onError: "STOP" }),
-  COPY: () => copyNode({ onSuccess: "CONFIG", onError: "STOP" }),
-  CONFIG: () => configNode({ onSuccess: "STOP", onError: "STOP" }),
-  STOP: () => stopNode({ onDone: null }),
+  ANALYZE: () => analyzeNode.factory({ onSuccess: "COPY", onError: "STOP" }),
+  INIT_SETUP: () => initSetupNode.factory({ onSuccess: "INIT_COPY", onError: "STOP" }),
+  INIT_COPY: () => initCopyNode.factory({ onSuccess: "INIT_CONFIG", onError: "STOP" }),
+  INIT_CONFIG: () => initConfigNode.factory({ onSuccess: "ANALYZE", onError: "STOP" }),
+  COPY: () => copyNode.factory({ onSuccess: "CONFIG", onError: "STOP" }),
+  CONFIG: () => configNode.factory({ onSuccess: "STOP", onError: "STOP" }),
+  STOP: () => stopNode.factory({ onDone: null }),
 });
 
 if (import.meta.main) {

@@ -1,8 +1,8 @@
 import { ambler } from "../ambler.ts";
-import { factory as setupNode } from "../nodes/init-setup.ts";
-import { factory as copyNode } from "../nodes/init-copy.ts";
-import { factory as configNode } from "../nodes/init-config.ts";
-import { factory as stopNode } from "../nodes/init-stop.ts";
+import defer * as setupNode from "../nodes/init-setup.ts";
+import defer * as copyNode from "../nodes/init-copy.ts";
+import defer * as configNode from "../nodes/init-config.ts";
+import defer * as stopNode from "../nodes/init-stop.ts";
 
 export interface State {
   targetDir: string;
@@ -12,10 +12,10 @@ export interface State {
 type NodeId = "SETUP" | "COPY" | "CONFIG" | "STOP";
 
 const amble = ambler<State, NodeId>({
-  SETUP: () => setupNode({ onSuccess: "COPY", onError: "STOP" }),
-  COPY: () => copyNode({ onSuccess: "CONFIG", onError: "STOP" }),
-  CONFIG: () => configNode({ onSuccess: "STOP", onError: "STOP" }),
-  STOP: () => stopNode({ onDone: null }),
+  SETUP: () => setupNode.factory({ onSuccess: "COPY", onError: "STOP" }),
+  COPY: () => copyNode.factory({ onSuccess: "CONFIG", onError: "STOP" }),
+  CONFIG: () => configNode.factory({ onSuccess: "STOP", onError: "STOP" }),
+  STOP: () => stopNode.factory({ onDone: null }),
 });
 
 if (import.meta.main) {
