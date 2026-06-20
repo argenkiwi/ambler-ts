@@ -1,5 +1,5 @@
 import { NodeFactory } from "../ambler.ts";
-import { ollamaChat } from "../utils/ollama_chat.ts";
+import { llmChat } from "../utils/llm_chat.ts";
 import { Message } from "./prompt.ts";
 
 export interface State {
@@ -16,8 +16,8 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  chat: (messages, model, host) => ollamaChat(messages, model, host),
-  print: (msg: string) => console.log(msg),
+  chat: (messages, model, host) => llmChat(messages, model, host),
+  print: (msg) => console.log(msg),
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (

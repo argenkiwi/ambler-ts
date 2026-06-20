@@ -1,5 +1,5 @@
 import { NodeFactory } from "../ambler.ts";
-import { listModels } from "../utils/ollama_chat.ts";
+import { listModels } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
 
 export interface State {
@@ -30,7 +30,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     if (models.length === 0) {
       utils.print(
-        "No models found in Ollama. Please pull a model first (e.g. 'ollama pull llama3').",
+        "No models found. Please check the LLM host or enter a model name manually.",
       );
       const manualModel = utils.getPrompt("Enter model name manually: ");
       return [edges.onSuccess, { ...state, model: manualModel || "" }];

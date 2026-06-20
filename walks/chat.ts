@@ -1,5 +1,5 @@
 import { ambler } from "../ambler.ts";
-import { factory as ollamaCheck } from "../nodes/ollama-check.ts";
+import { factory as llmCheck } from "../nodes/llm-check.ts";
 import { factory as modelSelect } from "../nodes/model-select.ts";
 import { factory as chatPrompt, Message } from "../nodes/prompt.ts";
 import { factory as chatResponse } from "../nodes/response.ts";
@@ -12,15 +12,15 @@ export interface State {
 }
 
 type NodeId =
-  | "OLLAMA_CHECK"
+  | "LLM_CHECK"
   | "MODEL_SELECT"
   | "CHAT_PROMPT"
   | "CHAT_RESPONSE"
   | "CHAT_BYE";
 
 const amble = ambler<State, NodeId>({
-  OLLAMA_CHECK: () =>
-    ollamaCheck({ onSuccess: "MODEL_SELECT", onError: "OLLAMA_CHECK" }),
+  LLM_CHECK: () =>
+    llmCheck({ onSuccess: "MODEL_SELECT", onError: "LLM_CHECK" }),
   MODEL_SELECT: () => modelSelect({ onSuccess: "CHAT_PROMPT" }),
   CHAT_PROMPT: () =>
     chatPrompt({ onMessage: "CHAT_RESPONSE", onQuit: "CHAT_BYE" }),
@@ -29,7 +29,7 @@ const amble = ambler<State, NodeId>({
 });
 
 if (import.meta.main) {
-  let nodeId: NodeId | null = "OLLAMA_CHECK";
+  let nodeId: NodeId | null = "LLM_CHECK";
   let state: State = {
     messages: [],
     host: "",

@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../ollama-check.ts";
+import { factory, State, Utils } from "../llm-check.ts";
 
-Deno.test("ollamaCheckNode should transition to onSuccess when host is reachable", async () => {
+Deno.test("llmCheckNode should transition to onSuccess when host is reachable", async () => {
   const initialState: State = { host: "http://localhost:11434" };
 
   const utils: Utils = {
@@ -18,7 +18,7 @@ Deno.test("ollamaCheckNode should transition to onSuccess when host is reachable
   assertEquals(result[1].host, "http://localhost:11434");
 });
 
-Deno.test("ollamaCheckNode should transition to onError with new host when host is unreachable and user provides new one", async () => {
+Deno.test("llmCheckNode should transition to onError with new host when host is unreachable and user provides new one", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {
@@ -35,7 +35,7 @@ Deno.test("ollamaCheckNode should transition to onError with new host when host 
   assertEquals(result[1].host, "http://right:11434");
 });
 
-Deno.test("ollamaCheckNode should transition to onError when host is unreachable and user cancels", async () => {
+Deno.test("llmCheckNode should transition to onError when host is unreachable and user cancels", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {

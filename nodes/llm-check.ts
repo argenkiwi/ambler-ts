@@ -1,5 +1,5 @@
 import { NodeFactory } from "../ambler.ts";
-import { checkHost, DEFAULT_HOST } from "../utils/ollama_chat.ts";
+import { checkHost } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
 
 export interface State {
@@ -25,17 +25,17 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const host = state.host || DEFAULT_HOST;
-    utils.print(`Checking Ollama at ${host}...`);
+    const host = state.host || "http://localhost:11434/v1";
+    utils.print(`Checking LLM at ${host}...`);
 
     const isReachable = await utils.checkHost(host);
     if (isReachable) {
       return [edges.onSuccess, { ...state, host }];
     }
 
-    utils.print(`Ollama not found at ${host}.`);
+    utils.print(`LLM not found at ${host}.`);
     const newHost = utils.getPrompt(
-      "Enter Ollama host URL (e.g. http://localhost:11434): ",
+      "Enter LLM host URL (e.g. http://localhost:11434/v1): ",
     );
 
     if (!newHost) {
