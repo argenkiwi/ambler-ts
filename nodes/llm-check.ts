@@ -25,17 +25,23 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const host = state.host || "http://localhost:11434/v1";
-    utils.print(`Checking LLM at ${host}...`);
+    const defaultHosts = ["http://localhost:11434/v1", "http://localhost:1234/v1"];
+    const hostsToTry = state.host ? [state.host] : defaultHosts;
 
-    const isReachable = await utils.checkHost(host);
-    if (isReachable) {
-      return [edges.onSuccess, { ...state, host }];
+    for (const host of hostsToTry) {
+      utils.print(`Checking LLM at ${host}...`);
+      if (await utils.checkHost(host)) {
+        return [edges.onSuccess, { ...state, host }];
+      }
     }
 
-    utils.print(`LLM not found at ${host}.`);
+    const errorMsg = state.host
+      ? `LLM not found at ${state.host}.`
+      : "No LLM found at default ports (11434 or 1234).";
+
+    utils.print(errorMsg);
     const newHost = utils.getPrompt(
-      "Enter LLM host URL (e.g. http://localhost:11434/v1): ",
+      "Enter LLM host URL (e.g. http://localhost:11434/v1 or http://localhost:1234/v1): ",
     );
 
     if (!newHost) {

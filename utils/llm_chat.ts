@@ -33,10 +33,11 @@ export async function llmChat(
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
     console.error(`Error sending request to LLM:
       URL: ${url}
       Body: ${body}
-      Error: ${e.message}`);
+      Error: ${errorMessage}`);
     throw e;
   }
 }
