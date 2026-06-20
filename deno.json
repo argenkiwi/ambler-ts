@@ -1,9 +1,10 @@
 {
   "tasks": {
-    "dev":     "deno run --watch walks/counter.ts",
+    "dev": "deno run --watch walks/counter.ts",
     "counter": "deno run walks/counter.ts",
-    "init":    "deno run --allow-read --allow-write walks/init.ts",
-    "clone":   "deno run --allow-read --allow-write walks/clone.ts"
+    "init": "deno run --allow-read --allow-write walks/init.ts",
+    "clone": "deno run --allow-read --allow-write walks/clone.ts",
+    "chat": "deno run --allow-net walks/chat.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19",
