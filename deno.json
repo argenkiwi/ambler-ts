@@ -5,12 +5,7 @@
     "init": "deno run --allow-read --allow-write walks/init.ts",
     "clone": "deno run --allow-read --allow-write walks/clone.ts",
     "chat": "deno run --allow-net walks/chat.ts",
-    "zettel-create": "deno run --allow-read --allow-write --allow-net walks/zettel-create.ts",
-    "zettel-get": "deno run --allow-read --allow-write walks/zettel-get.ts",
-    "zettel-update": "deno run --allow-read --allow-write --allow-net walks/zettel-update.ts",
-    "zettel-delete": "deno run --allow-read --allow-write walks/zettel-delete.ts",
-    "zettel-search": "deno run --allow-read --allow-write --allow-net walks/zettel-search.ts",
-    "zettel-link": "deno run --allow-read --allow-write walks/zettel-link.ts"
+    "zettel": "deno run --allow-read --allow-write --allow-net walks/zettel.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19",

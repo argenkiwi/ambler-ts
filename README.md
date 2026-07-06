@@ -63,7 +63,7 @@ The graph definition. A walk wires factories into a concrete execution plan and 
 Markdown blueprints that describe the intended behavior and state transitions before a single line of code is written.
 
 ### 4. Zettelkasten-RAG (`.zettelkasten/`)
-An optional, SQLite-backed knowledge store any Ambler project can add via `/ambler-zettel-init`. It gives a coding agent six CRUD tasks (`zettel-create`, `zettel-get`, `zettel-update`, `zettel-delete`, `zettel-search`, `zettel-link`) to retrieve prior design decisions before implementing a prompt and record new learnings after — atomic, explicitly-linked notes, searched via full-text keyword match blended with optional semantic embeddings. An `AGENTS.md` in the target project enforces the retrieve-before/store-after protocol on every prompt.
+An optional, SQLite-backed knowledge store any Ambler project can add via `/ambler-zettel-init`. It gives a coding agent a unified `zettel` task with six subcommands (`zettel search`, `zettel create`, `zettel get`, `zettel update`, `zettel delete`, `zettel link`) to retrieve prior design decisions before implementing a prompt and record new learnings after — atomic, explicitly-linked notes, searched via full-text keyword match blended with optional semantic embeddings. An `AGENTS.md` in the target project enforces the retrieve-before/store-after protocol on every prompt.
 
 ---
 
@@ -95,8 +95,8 @@ Ambler is designed to be augmented by agents using these specialized skills:
 - `ambler-walk`: Automatically wires nodes into executable walks based on specs.
 - `ambler-spec`: Generates or refines Markdown specifications.
 - `ambler-util`: Extracts reusable logic into utility modules.
-- `ambler-zettel-init`: Installs the Zettelkasten-RAG knowledge store (SQLite + six CRUD walks + `AGENTS.md`) into a project.
-- `ambler-zettel`: Reference for the six `zettel-*` CRUD tasks — search, create, get, update, delete, link.
+- `ambler-zettel-init`: Installs the Zettelkasten-RAG knowledge store (SQLite + unified `zettel` walk + `AGENTS.md`) into a project.
+- `ambler-zettel`: Reference for the unified `zettel` task and its subcommands — search, create, get, update, delete, link.
 
 ---
 
