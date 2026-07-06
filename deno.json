@@ -4,7 +4,8 @@
     "counter": "deno run walks/counter.ts",
     "init": "deno run --allow-read --allow-write walks/init.ts",
     "clone": "deno run --allow-read --allow-write walks/clone.ts",
-    "chat": "deno run --allow-net walks/chat.ts"
+    "chat": "deno run --allow-net walks/chat.ts",
+    "zettel": "deno run --allow-read --allow-write --allow-net walks/zettel.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19",
