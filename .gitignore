@@ -54,3 +54,7 @@ Thumbs.db
 .pi/
 .agents/settings.local.json
 .claude/
+
+# --- Zettelkasten ---
+# Binary SQLite file: not diffable/mergeable, so it's local-only per workstation.
+.zettelkasten/
