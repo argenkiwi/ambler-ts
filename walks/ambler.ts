@@ -103,7 +103,7 @@ if (import.meta.main) {
     case "init": {
       const targetDir = Deno.args[1];
       if (!targetDir) {
-        console.error("Usage: deno task ambler init <target-dir>");
+        console.error("Usage: ambler init <target-dir>");
         Deno.exit(1);
       }
       state = { ...state, targetDir };
@@ -114,7 +114,7 @@ if (import.meta.main) {
       const targetDir = Deno.args[2];
       if (!sourceWalkPath || !targetDir) {
         console.error(
-          "Usage: deno task ambler clone <source-path> <target-dir>",
+          "Usage: ambler clone <source-path> <target-dir>",
         );
         Deno.exit(1);
       }
@@ -123,7 +123,7 @@ if (import.meta.main) {
     }
     default:
       console.error(
-        "Usage: deno task ambler <action> [args]\n\n" +
+        "Usage: ambler <action> [args]\n\n" +
           "Actions:\n" +
           "  init <target-dir>\n" +
           "  clone <source-path> <target-dir>",

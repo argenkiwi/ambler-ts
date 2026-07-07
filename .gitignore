@@ -25,6 +25,9 @@ coverage/
 # Vendor directory (if using 'deno vendor')
 vendor/
 
+# Compiled standalone binaries (deno task build / install)
+dist/
+
 # --- Dependencies ---
 node_modules/
 jspm_packages/

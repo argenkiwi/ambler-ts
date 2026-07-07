@@ -3,6 +3,8 @@
     "dev": "deno run --watch walks/counter.ts",
     "counter": "deno run walks/counter.ts",
     "ambler": "deno run --allow-read --allow-write walks/ambler.ts",
+    "build": "sh scripts/build.sh",
+    "install": "sh scripts/install.sh",
     "chat": "deno run --allow-net walks/chat.ts",
     "zettel": "deno run --allow-read --allow-write --allow-net walks/zettel.ts"
   },

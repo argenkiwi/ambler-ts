@@ -45,6 +45,26 @@ deno task ambler clone <source-walk-path> <target-dir>
 > [!TIP]
 > `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to a walk file, a node file, or a utility file — in the current project or another — and copies it along with all its dependencies into the target project, initializing it first if needed. When cloning a walk it also registers a deno task in the target's `deno.json`; when cloning a utility it propagates any external npm/jsr dependencies.
 
+### Install as a Command
+
+The `ambler` walk (`init`/`clone`) can also be compiled into a standalone binary with `deno compile`, so it runs as a regular `ambler` command — no Deno installation required on the machine that runs it.
+
+```bash
+# Compile for this machine and install it onto your PATH (~/.local/bin or /usr/local/bin)
+deno task install
+
+ambler init <target-dir>
+ambler clone <source-walk-path> <target-dir>
+```
+
+To build binaries for other platforms (e.g. for distribution), run:
+
+```bash
+deno task build
+```
+
+This cross-compiles `walks/ambler.ts` for macOS (arm64/x64), Linux (arm64/x64), and Windows (x64) into `dist/`. Copy the binary matching the target platform onto that machine's `PATH`.
+
 ---
 
 ## 🏗️ Architecture
