@@ -1,21 +1,22 @@
 import { assertEquals } from "@std/assert";
 import { factory, State, Utils } from "../zettel-get.ts";
-import { ZettelRecord } from "../../utils/zettel_db.ts";
+import { Note } from "../../utils/zettel_fs.ts";
 
-const sample: ZettelRecord = {
+const sample: Note = {
   id: "20260706120000",
   title: "Test",
-  body: "Body",
   tags: ["a"],
   created: "2026-07-06T12:00:00.000Z",
-  hasEmbedding: false,
+  updated: "2026-07-06T12:00:00.000Z",
+  links: [],
+  body: "Body",
 };
 
 Deno.test("zettelGetNode should return the zettel and its links when found", async () => {
   const initialState: State = { id: sample.id };
 
   const utils: Utils = {
-    getZettel: (id) => (id === sample.id ? sample : null),
+    readNote: (id) => Promise.resolve(id === sample.id ? sample : null),
     getLinks: () => [{ fromId: sample.id, toId: "other", relation: "relates to" }],
     print: () => {},
   };
@@ -33,7 +34,7 @@ Deno.test("zettelGetNode should transition to onNotFound when the id does not ex
   const initialState: State = { id: "missing-id" };
 
   const utils: Utils = {
-    getZettel: () => null,
+    readNote: () => Promise.resolve(null),
     getLinks: () => [],
     print: () => {},
   };

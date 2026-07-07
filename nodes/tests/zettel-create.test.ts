@@ -3,12 +3,16 @@ import { factory, State, Utils } from "../zettel-create.ts";
 
 Deno.test("zettelCreateNode should create a zettel and return its id when given valid input", async () => {
   const initialState: State = { title: "Test", body: "Body text", tags: ["a"] };
-  const created: unknown[] = [];
+  const written: unknown[] = [];
+  const upserted: unknown[] = [];
 
   const utils: Utils = {
     generateId: () => "20260706120000",
     embed: async () => [0.1, 0.2],
-    createZettel: (zettel, embedding) => created.push({ zettel, embedding }),
+    writeNote: async (note) => {
+      written.push(note);
+    },
+    upsertZettel: (zettel, embedding) => upserted.push({ zettel, embedding }),
     createLink: () => {},
     print: () => {},
   };
@@ -19,7 +23,8 @@ Deno.test("zettelCreateNode should create a zettel and return its id when given 
 
   assertEquals(result[0], "next");
   assertEquals(result[1].result?.id, "20260706120000");
-  assertEquals(created.length, 1);
+  assertEquals(written.length, 1);
+  assertEquals(upserted.length, 1);
 });
 
 Deno.test("zettelCreateNode should create links when links are provided", async () => {
@@ -34,7 +39,8 @@ Deno.test("zettelCreateNode should create links when links are provided", async 
   const utils: Utils = {
     generateId: () => "20260706120000",
     embed: async () => null,
-    createZettel: () => {},
+    writeNote: async () => {},
+    upsertZettel: () => {},
     createLink: (fromId, toId, relation) => linked.push({ fromId, toId, relation }),
     print: () => {},
   };
@@ -50,15 +56,16 @@ Deno.test("zettelCreateNode should create links when links are provided", async 
   assertEquals(result[1].result?.links, initialState.links);
 });
 
-Deno.test("zettelCreateNode should transition to onError when createZettel throws", async () => {
+Deno.test("zettelCreateNode should transition to onError when writeNote throws", async () => {
   const initialState: State = { title: "Test", body: "Body", tags: [] };
 
   const utils: Utils = {
     generateId: () => "20260706120000",
     embed: async () => null,
-    createZettel: () => {
+    writeNote: async () => {
       throw new Error("disk full");
     },
+    upsertZettel: () => {},
     createLink: () => {},
     print: () => {},
   };

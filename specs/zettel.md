@@ -1,6 +1,6 @@
 # Program Specifications
 
-This program is the unified entry point for the Zettelkasten knowledge store, handling all CRUD and search sub-operations.
+This program is the unified entry point for the Zettelkasten knowledge store, handling all CRUD, search, and index-maintenance sub-operations. Notes persist as Markdown files with YAML frontmatter under `notes/<id>.md` (the source of truth); `.zettelkasten/zettel.db` is a derived SQLite index (FTS5 + optional embeddings + link graph) kept in sync by the Create/Update/Delete/Link nodes and fully rebuildable via Reindex.
 
 ## Nodes
 
@@ -14,6 +14,7 @@ This program is the unified entry point for the Zettelkasten knowledge store, ha
   - If action is "update", transitions to `UPDATE`.
   - If action is "delete", transitions to `DELETE`.
   - If action is "link", transitions to `LINK`.
+  - If action is "reindex", transitions to `REINDEX`.
   - If action is invalid or missing, sets an error and transitions to `ERROR` (null).
 
 ### Search
@@ -43,8 +44,13 @@ This program is the unified entry point for the Zettelkasten knowledge store, ha
 
 ### Link
 - Role — Linking node.
-- Logic — Creates a link between two existing zettels (`fromId` and `toId`) with a short `relation` phrase.
+- Logic — Creates a link between two existing zettels (`fromId` and `toId`) with a short `relation` phrase, appending it to the source note's frontmatter and mirroring it into the index.
 - Termination — Prints the linkage result or returns `onError` and terminates.
+
+### Reindex
+- Role — Index-maintenance node.
+- Logic — Walks every `notes/*.md` file, upserts changed notes into the SQLite index (re-embedding only when a note's body hash changed), rebuilds the link graph from each note's frontmatter, and removes index entries whose file no longer exists.
+- Termination — Prints `{ indexed, updated, removed, total }` and terminates.
 
 ## Shared State
 

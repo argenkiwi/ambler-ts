@@ -1,15 +1,15 @@
 import { NodeFactory } from "../ambler.ts";
 import {
   createLink as dbCreateLink,
-  createZettel as dbCreateZettel,
+  upsertZettel as dbUpsertZettel,
 } from "../utils/zettel_db.ts";
+import { hashContent, Note, writeNote as fsWriteNote } from "../utils/zettel_fs.ts";
 import {
   DEFAULT_EMBEDDING_HOST,
   DEFAULT_EMBEDDING_MODEL,
   embed as embedText,
 } from "../utils/embeddings.ts";
-
-const DB_PATH = ".zettelkasten/zettel.db";
+import { DB_PATH } from "../utils/zettel_config.ts";
 
 export interface ZettelLinkInput {
   toId: string;
@@ -30,8 +30,17 @@ export type Edge = "onCreated" | "onError";
 export type Utils = {
   generateId: () => string;
   embed: (text: string) => Promise<number[] | null>;
-  createZettel: (
-    zettel: { id: string; title: string; body: string; tags: string[]; created: string },
+  writeNote: (note: Note) => Promise<void>;
+  upsertZettel: (
+    zettel: {
+      id: string;
+      title: string;
+      body: string;
+      tags: string[];
+      created: string;
+      updated: string;
+      bodyHash: string;
+    },
     embedding?: number[],
   ) => void;
   createLink: (fromId: string, toId: string, relation: string) => void;
@@ -45,7 +54,8 @@ function generateTimestampId(): string {
 const defaultUtils: Utils = {
   generateId: generateTimestampId,
   embed: (text) => embedText(text, DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_HOST),
-  createZettel: (zettel, embedding) => dbCreateZettel(DB_PATH, zettel, embedding),
+  writeNote: (note) => fsWriteNote(note),
+  upsertZettel: (zettel, embedding) => dbUpsertZettel(DB_PATH, zettel, embedding),
   createLink: (fromId, toId, relation) => dbCreateLink(DB_PATH, fromId, toId, relation),
   print: (msg) => console.log(msg),
 };
@@ -58,11 +68,17 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const { title, body, tags, links = [] } = state;
     const id = utils.generateId();
     const created = new Date().toISOString();
+    const updated = created;
 
     try {
       const embedding = await utils.embed(body);
-      utils.createZettel(
-        { id, title, body, tags, created },
+      const noteLinks = links.map((link) => ({ to: link.toId, relation: link.relation }));
+
+      await utils.writeNote({ id, title, tags, created, updated, links: noteLinks, body });
+
+      const bodyHash = await hashContent(body);
+      utils.upsertZettel(
+        { id, title, body, tags, created, updated, bodyHash },
         embedding ?? undefined,
       );
 

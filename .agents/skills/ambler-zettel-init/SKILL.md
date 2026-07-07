@@ -1,14 +1,14 @@
 ---
 name: ambler-zettel-init
-description: Initializes a Zettelkasten-RAG knowledge store in an Ambler project — the SQLite-backed note store plus the unified zettel walk and an AGENTS.md enforcing retrieve-before/store-after on every prompt. Use this whenever a user wants to add a knowledge base, notes, memory, or "second brain" to an Ambler project — even if they say "set up zettelkasten", "add RAG", "let the agent remember things", or "add AGENTS.md".
+description: Initializes a Zettelkasten-RAG knowledge store in an Ambler project — version-controlled Markdown notes in `notes/`, a derived SQLite search index, the unified zettel walk, and an AGENTS.md enforcing retrieve-before/store-after on every prompt. Use this whenever a user wants to add a knowledge base, notes, memory, or "second brain" to an Ambler project — even if they say "set up zettelkasten", "add RAG", "let the agent remember things", or "add AGENTS.md".
 metadata:
   author: leandro
-  version: "2.0"
+  version: "3.0"
 ---
 
 # Ambler Zettel Init
 
-This skill installs a Zettelkasten (an atomic, explicitly-linked note store) into an Ambler project, so a coding agent can retrieve relevant prior decisions before implementing a prompt and record new learnings after. It reuses `deno task clone` to bring in the walk/nodes/utils rather than duplicating that copy logic.
+This skill installs a Zettelkasten (an atomic, explicitly-linked note store) into an Ambler project, so a coding agent can retrieve relevant prior decisions before implementing a prompt and record new learnings after. Notes are Markdown files with YAML frontmatter under `notes/` — the version-controlled source of truth — indexed by a derived, gitignored SQLite cache at `.zettelkasten/zettel.db` for fast full-text and semantic search. It reuses `deno task clone` to bring in the walk/nodes/utils rather than duplicating that copy logic.
 
 ---
 
@@ -22,7 +22,7 @@ This skill installs a Zettelkasten (an atomic, explicitly-linked note store) int
 
 ## Step 2 — Clone the unified zettel walk
 
-From the **ambler-ts** repo root (the source of these artifacts), run `deno task clone` to copy the unified walk plus its router node, all six operation nodes, and any utils (transitively resolved, including `utils/zettel_db.ts` and `utils/embeddings.ts`) into the target, and register a matching task in the target's `deno.json`:
+From the **ambler-ts** repo root (the source of these artifacts), run `deno task clone` to copy the unified walk plus its router node, all seven operation nodes (including `zettel-reindex.ts`), and any utils (transitively resolved, including `utils/zettel_db.ts`, `utils/zettel_fs.ts`, `utils/zettel_config.ts`, and `utils/embeddings.ts`) into the target, and register a matching task in the target's `deno.json`:
 
 ```bash
 deno task clone walks/zettel.ts "<target>"
@@ -32,13 +32,15 @@ If the target is not the current project, run this from wherever `ambler-ts`'s o
 
 ---
 
-## Step 3 — Create the Zettelkasten directory
+## Step 3 — Create the notes directory
 
 ```bash
-mkdir -p "<target>/.zettelkasten"
+mkdir -p "<target>/notes"
 ```
 
-The SQLite database file (`zettel.db`) and its schema are created lazily on first use — no seed file is required. Do **not** create `.zettelkasten/zettel.db` directly; let the first `zettel create` (or any CRUD) call do it.
+`notes/*.md` (Markdown + YAML frontmatter) is the version-controlled source of truth — commit it like any other project file. The SQLite index at `.zettelkasten/zettel.db` is a derived, gitignored cache created lazily on first use; do **not** create it directly, and do **not** read or write it directly — it always rebuilds from `notes/` via `zettel reindex`.
+
+If `<target>/.gitignore` doesn't already ignore `.zettelkasten/`, append a `.zettelkasten/` entry to it (binary, undiffable, and fully disposable — unlike `notes/`, which must stay tracked).
 
 ---
 
@@ -64,7 +66,7 @@ Then smoke-test end to end from `<target>`:
 echo '{"title":"test","body":"hello","tags":["test"]}' | deno task zettel create
 ```
 
-Confirm it prints a JSON object with an `id`, and that `<target>/.zettelkasten/zettel.db` now exists.
+Confirm it prints a JSON object with an `id`, that `<target>/notes/<id>.md` now exists with frontmatter + body, and that `<target>/.zettelkasten/zettel.db` was created as the derived index.
 
 ---
 
@@ -72,11 +74,14 @@ Confirm it prints a JSON object with an `id`, and that `<target>/.zettelkasten/z
 
 ```
 Initialized Zettelkasten-RAG in "<target>":
-  .zettelkasten/           — SQLite note store (created lazily)
-  walks/zettel.ts          — unified walk (search, create, get, update, delete, link)
+  notes/                   — Markdown notes with YAML frontmatter (source of truth, version-controlled)
+  .zettelkasten/           — derived SQLite search index (gitignored, created lazily)
+  walks/zettel.ts          — unified walk (search, create, get, update, delete, link, reindex)
   nodes/zettel-router.ts   — subcommand dispatcher
-  nodes/zettel-*.ts        — one operation node per CRUD verb
-  utils/zettel_db.ts       — SQLite + FTS5 access
+  nodes/zettel-*.ts        — one operation node per CRUD verb, plus reindex
+  utils/zettel_fs.ts       — Markdown/frontmatter read-write
+  utils/zettel_config.ts   — shared notes/db path config
+  utils/zettel_db.ts       — SQLite index: FTS5 + link graph + embedding cache
   utils/embeddings.ts      — optional semantic re-rank
   AGENTS.md                — retrieve-before/store-after protocol
 
@@ -90,7 +95,8 @@ Next steps:
 ## Checklist before finishing
 
 - [ ] The `zettel` task is registered in `<target>/deno.json`.
-- [ ] `<target>/.zettelkasten/` exists (directory only — the db file appears on first use).
+- [ ] `<target>/notes/` exists and is tracked by git (not ignored).
+- [ ] `<target>/.zettelkasten/` is ignored in `<target>/.gitignore`.
 - [ ] `<target>/AGENTS.md` exists and contains the "Zettelkasten RAG Protocol" section, without clobbering any pre-existing content.
 - [ ] `deno check` passes on the copied walk; `deno test` passes on the copied node tests.
-- [ ] A smoke-test `zettel create` call succeeds end to end.
+- [ ] A smoke-test `zettel create` call succeeds end to end and writes a file under `notes/`.

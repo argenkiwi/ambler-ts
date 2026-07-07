@@ -1,6 +1,6 @@
 ---
 name: ambler-zettel
-description: Reference for the unified zettel task and its subcommands (search, create, get, update, delete, link) that back an Ambler project's Zettelkasten-RAG knowledge store. Use this whenever you need to manually search, create, update, delete, or link a note — even if the user says "look up past notes", "save this learning", "what did we decide about X", or "connect these two notes". For installing the Zettelkasten into a project in the first place, use `/ambler-zettel-init` instead.
+description: Reference for the unified zettel task and its subcommands (search, create, get, update, delete, link, reindex) that back an Ambler project's Zettelkasten-RAG knowledge store — Markdown notes in `notes/`, indexed by a derived SQLite cache. Use this whenever you need to manually search, create, update, delete, or link a note — even if the user says "look up past notes", "save this learning", "what did we decide about X", or "connect these two notes". For installing the Zettelkasten into a project in the first place, use `/ambler-zettel-init` instead.
 metadata:
   author: leandro
   version: "2.0"
@@ -8,7 +8,7 @@ metadata:
 
 # Ambler Zettel
 
-A single `zettel` deno task with six subcommands forms the CRUD surface of a project's Zettelkasten (`.zettelkasten/zettel.db`). Every subcommand prints one JSON object or array to stdout — parse it directly, don't expect human-oriented prose. If a project doesn't have this task yet, run `/ambler-zettel-init` first.
+A single `zettel` deno task with seven subcommands forms the CRUD surface of a project's Zettelkasten. Notes live as Markdown files with YAML frontmatter under `notes/<id>.md` — the version-controlled source of truth, editable in Obsidian/HelixNotes or by hand. `.zettelkasten/zettel.db` is a derived, gitignored SQLite index (full-text search, optional embeddings, and the link graph) rebuildable from `notes/` at any time via `reindex`. Every subcommand prints one JSON object or array to stdout — parse it directly, don't expect human-oriented prose. If a project doesn't have this task yet, run `/ambler-zettel-init` first.
 
 ## Search — find relevant notes before acting
 
@@ -48,7 +48,7 @@ Any of `title`, `body`, `tags` may be provided (partial update). Only re-embeds 
 deno task zettel delete <id>
 ```
 
-Removes the note, its search index entry, and any links referencing it. Use when a note turns out wrong rather than leaving it to contradict newer notes.
+Removes the note's Markdown file, its search index entry, and any links referencing it. Use when a note turns out wrong rather than leaving it to contradict newer notes.
 
 ## Link — connect two existing notes explicitly
 
@@ -57,6 +57,14 @@ deno task zettel link <fromId> <toId> "<relation phrase>"
 ```
 
 The deliberate-linking step of the Zettelkasten method: a short phrase explaining *why* two notes connect (e.g. "contradicts", "builds on", "same root cause as") is what carries the intellectual value — not the folder or tag they happen to share. Run this after `zettel search` turns up something related that `zettel create`'s `links` didn't already capture.
+
+## Reindex — rebuild the search index from `notes/`
+
+```bash
+deno task zettel reindex
+```
+
+Walks every `notes/*.md` file and rebuilds `.zettelkasten/zettel.db` from scratch: re-embeds only notes whose body actually changed, rebuilds the link graph from each note's frontmatter, and drops index entries for notes whose file no longer exists. Run this after cloning a repo (the index is gitignored, so a fresh checkout has none) or after hand-editing a note outside the `zettel` task. Returns `{ indexed, updated, removed, total }`.
 
 ## Guidelines
 

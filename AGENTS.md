@@ -4,7 +4,7 @@ Ambler is a Deno/TypeScript state-machine framework: programs are executable gra
 
 ## Zettelkasten RAG Protocol
 
-This project has a Zettelkasten — an atomic, explicitly-linked note store — at `.zettelkasten/zettel.db` (SQLite, with full-text search built in and optional semantic embeddings). It exists so design decisions and gotchas compound across sessions instead of being re-discovered every time. Use it via the `zettel` deno task below; do not read or write `.zettelkasten/zettel.db` directly.
+This project has a Zettelkasten — an atomic, explicitly-linked note store. Notes are Markdown files with YAML frontmatter under `notes/` (the version-controlled source of truth, editable in Obsidian/HelixNotes or by hand); `.zettelkasten/zettel.db` is a derived, gitignored SQLite index (full-text search, optional semantic embeddings, and the link graph) rebuildable from `notes/` at any time. It exists so design decisions and gotchas compound across sessions instead of being re-discovered every time. Use it via the `zettel` deno task below; do not read or write `.zettelkasten/zettel.db` directly. If you ever hand-edit a file under `notes/`, run `deno task zettel reindex` afterward so the index reflects it.
 
 **Before implementing any non-trivial prompt:**
 
@@ -43,4 +43,12 @@ deno task zettel link <fromId> <toId> "<relation phrase>"
 deno task zettel get <id>
 ```
 
-All six subcommands print a single JSON object/array to stdout — parse it directly. Search blends keyword (FTS5) and, when a local OpenAI-compatible embeddings host is reachable (default `http://localhost:11434/v1`, model `nomic-embed-text`), semantic similarity — it degrades gracefully to keyword-only if no such host is running.
+**After a fresh clone, or if the index ever drifts from the Markdown files:**
+
+```bash
+deno task zettel reindex
+```
+
+The index is gitignored, so a fresh checkout starts with none — run this once before the first `search`. It's always safe to delete `.zettelkasten/` and rebuild it this way.
+
+All seven subcommands print a single JSON object/array to stdout — parse it directly. Search blends keyword (FTS5) and, when a local OpenAI-compatible embeddings host is reachable (default `http://localhost:11434/v1`, model `nomic-embed-text`), semantic similarity — it degrades gracefully to keyword-only if no such host is running.

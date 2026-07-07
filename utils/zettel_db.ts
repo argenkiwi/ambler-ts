@@ -1,11 +1,18 @@
 import { DatabaseSync } from "node:sqlite";
 
-export interface ZettelRecord {
+/**
+ * A zettel's indexed metadata. This is a derived cache — the Markdown file
+ * under `notes/<id>.md` is the source of truth for `title`/`tags`/body; this
+ * table exists purely to make full-text search, semantic re-ranking, and the
+ * link graph fast without re-reading every file.
+ */
+export interface ZettelMeta {
   id: string;
   title: string;
-  body: string;
   tags: string[];
   created: string;
+  updated: string;
+  bodyHash: string;
   hasEmbedding: boolean;
 }
 
@@ -20,14 +27,17 @@ const connections = new Map<string, DatabaseSync>();
 function open(dbPath: string): DatabaseSync {
   let db = connections.get(dbPath);
   if (!db) {
+    const dir = dbPath.slice(0, dbPath.lastIndexOf("/"));
+    if (dir) Deno.mkdirSync(dir, { recursive: true });
     db = new DatabaseSync(dbPath);
     db.exec(`
       CREATE TABLE IF NOT EXISTS zettels (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        body TEXT NOT NULL,
         tags TEXT NOT NULL,
         created TEXT NOT NULL,
+        updated TEXT NOT NULL,
+        body_hash TEXT NOT NULL,
         embedding BLOB
       );
       CREATE VIRTUAL TABLE IF NOT EXISTS zettels_fts USING fts5(
@@ -45,13 +55,14 @@ function open(dbPath: string): DatabaseSync {
   return db;
 }
 
-function toRecord(row: Record<string, unknown>): ZettelRecord {
+function toMeta(row: Record<string, unknown>): ZettelMeta {
   return {
     id: row.id as string,
     title: row.title as string,
-    body: row.body as string,
     tags: JSON.parse(row.tags as string),
     created: row.created as string,
+    updated: row.updated as string,
+    bodyHash: row.body_hash as string,
     hasEmbedding: row.embedding !== null,
   };
 }
@@ -67,94 +78,84 @@ function deserializeEmbedding(blob: Uint8Array): number[] {
 }
 
 /**
- * Creates a new zettel row and its mirrored FTS5 entry.
+ * Fetches a single zettel's indexed metadata by id.
  *
  * @param dbPath - Path to the SQLite database file.
- * @param zettel - The note's id, title, body, tags, and creation timestamp.
- * @param embedding - Optional embedding vector; omitted when no embeddings host was reachable.
+ * @param id - The zettel's unique id.
+ * @returns The metadata, or `null` if the id isn't indexed.
  */
-export function createZettel(
+export function getZettelMeta(dbPath: string, id: string): ZettelMeta | null {
+  const db = open(dbPath);
+  const row = db.prepare(`SELECT * FROM zettels WHERE id = ?`).get(id) as
+    | Record<string, unknown>
+    | undefined;
+  return row ? toMeta(row) : null;
+}
+
+/**
+ * Inserts or replaces a zettel's indexed metadata and mirrored FTS5 entry.
+ * Used both by the create/update nodes (single note) and by reindex (bulk).
+ *
+ * If `embedding` is omitted, any previously stored embedding for this id is
+ * preserved — callers only pass a fresh embedding when the body actually
+ * changed and re-embedding succeeded.
+ *
+ * @param dbPath - Path to the SQLite database file.
+ * @param zettel - The note's id, title, body (for the FTS mirror only — not
+ *   persisted in the metadata table), tags, timestamps, and content hash.
+ * @param embedding - A freshly computed embedding vector, if any.
+ */
+export function upsertZettel(
   dbPath: string,
-  zettel: { id: string; title: string; body: string; tags: string[]; created: string },
+  zettel: {
+    id: string;
+    title: string;
+    body: string;
+    tags: string[];
+    created: string;
+    updated: string;
+    bodyHash: string;
+  },
   embedding?: number[],
 ): void {
   const db = open(dbPath);
   const tags = JSON.stringify(zettel.tags);
+
+  const existing = db
+    .prepare(`SELECT embedding FROM zettels WHERE id = ?`)
+    .get(zettel.id) as { embedding: Uint8Array | null } | undefined;
+  const embeddingBlob = embedding
+    ? serializeEmbedding(embedding)
+    : existing?.embedding ?? null;
+
   db.prepare(
-    `INSERT INTO zettels (id, title, body, tags, created, embedding) VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO zettels (id, title, tags, created, updated, body_hash, embedding)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       title = excluded.title, tags = excluded.tags, created = excluded.created,
+       updated = excluded.updated, body_hash = excluded.body_hash, embedding = excluded.embedding`,
   ).run(
     zettel.id,
     zettel.title,
-    zettel.body,
     tags,
     zettel.created,
-    embedding ? serializeEmbedding(embedding) : null,
+    zettel.updated,
+    zettel.bodyHash,
+    embeddingBlob,
   );
+
+  db.prepare(`DELETE FROM zettels_fts WHERE id = ?`).run(zettel.id);
   db.prepare(
     `INSERT INTO zettels_fts (id, title, body, tags) VALUES (?, ?, ?, ?)`,
   ).run(zettel.id, zettel.title, zettel.body, tags);
 }
 
 /**
- * Fetches a single zettel by id.
+ * Removes a zettel's indexed metadata, FTS entry, and any links referencing it.
  *
  * @param dbPath - Path to the SQLite database file.
  * @param id - The zettel's unique id.
- * @returns The record, or `null` if no zettel with that id exists.
- */
-export function getZettel(dbPath: string, id: string): ZettelRecord | null {
-  const db = open(dbPath);
-  const row = db.prepare(`SELECT * FROM zettels WHERE id = ?`).get(id) as
-    | Record<string, unknown>
-    | undefined;
-  return row ? toRecord(row) : null;
-}
-
-/**
- * Updates the title, body, and/or tags of an existing zettel, keeping the FTS index in sync.
- *
- * @param dbPath - Path to the SQLite database file.
- * @param id - The zettel's unique id.
- * @param fields - Partial fields to update.
- * @param embedding - New embedding to store; only pass when `body` changed and re-embedding succeeded.
- * @returns `true` if a row was updated, `false` if no zettel with that id exists.
- */
-export function updateZettel(
-  dbPath: string,
-  id: string,
-  fields: { title?: string; body?: string; tags?: string[] },
-  embedding?: number[],
-): boolean {
-  const db = open(dbPath);
-  const existing = getZettel(dbPath, id);
-  if (!existing) return false;
-
-  const title = fields.title ?? existing.title;
-  const body = fields.body ?? existing.body;
-  const tags = fields.tags ?? existing.tags;
-  const tagsJson = JSON.stringify(tags);
-
-  if (embedding) {
-    db.prepare(
-      `UPDATE zettels SET title = ?, body = ?, tags = ?, embedding = ? WHERE id = ?`,
-    ).run(title, body, tagsJson, serializeEmbedding(embedding), id);
-  } else {
-    db.prepare(
-      `UPDATE zettels SET title = ?, body = ?, tags = ? WHERE id = ?`,
-    ).run(title, body, tagsJson, id);
-  }
-  db.prepare(
-    `UPDATE zettels_fts SET title = ?, body = ?, tags = ? WHERE id = ?`,
-  ).run(title, body, tagsJson, id);
-  return true;
-}
-
-/**
- * Deletes a zettel, its FTS entry, and any links referencing it.
- *
- * @param dbPath - Path to the SQLite database file.
- * @param id - The zettel's unique id.
- * @returns `true` if a row was deleted, `false` if no zettel with that id exists.
+ * @returns `true` if a row was deleted, `false` if the id wasn't indexed.
  */
 export function deleteZettel(dbPath: string, id: string): boolean {
   const db = open(dbPath);
@@ -162,6 +163,38 @@ export function deleteZettel(dbPath: string, id: string): boolean {
   db.prepare(`DELETE FROM zettels_fts WHERE id = ?`).run(id);
   db.prepare(`DELETE FROM links WHERE from_id = ? OR to_id = ?`).run(id, id);
   return result.changes > 0;
+}
+
+/**
+ * Removes every indexed zettel (and its FTS entry and links) whose id isn't
+ * in `liveIds` — i.e. its Markdown file no longer exists. Used by reindex to
+ * clean up drift after a note file was deleted or moved outside the CLI.
+ *
+ * @param dbPath - Path to the SQLite database file.
+ * @param liveIds - The full set of ids that currently have a note file.
+ * @returns The ids that were removed.
+ */
+export function deleteOrphans(dbPath: string, liveIds: string[]): string[] {
+  const live = new Set(liveIds);
+  const removed: string[] = [];
+  for (const id of listIndexedIds(dbPath)) {
+    if (!live.has(id)) {
+      deleteZettel(dbPath, id);
+      removed.push(id);
+    }
+  }
+  return removed;
+}
+
+/**
+ * Lists every id currently present in the index.
+ *
+ * @param dbPath - Path to the SQLite database file.
+ */
+export function listIndexedIds(dbPath: string): string[] {
+  const db = open(dbPath);
+  const rows = db.prepare(`SELECT id FROM zettels`).all() as { id: string }[];
+  return rows.map((row) => row.id);
 }
 
 function toMatchQuery(query: string): string {
@@ -177,13 +210,13 @@ function toMatchQuery(query: string): string {
  * @param dbPath - Path to the SQLite database file.
  * @param query - The search query (matched against title, body, and tags).
  * @param limit - Maximum number of results to return.
- * @returns Matching records ordered by FTS5 relevance (best match first).
+ * @returns Matching metadata ordered by FTS5 relevance (best match first).
  */
 export function searchZettels(
   dbPath: string,
   query: string,
   limit: number,
-): ZettelRecord[] {
+): ZettelMeta[] {
   const db = open(dbPath);
   const matchQuery = toMatchQuery(query);
   if (!matchQuery) return [];
@@ -192,27 +225,12 @@ export function searchZettels(
       `SELECT id FROM zettels_fts WHERE zettels_fts MATCH ? ORDER BY rank LIMIT ?`,
     )
     .all(matchQuery, limit) as { id: string }[];
-  const records: ZettelRecord[] = [];
+  const records: ZettelMeta[] = [];
   for (const { id } of matches) {
-    const record = getZettel(dbPath, id);
+    const record = getZettelMeta(dbPath, id);
     if (record) records.push(record);
   }
   return records;
-}
-
-/**
- * Stores or replaces the embedding vector for a zettel.
- *
- * @param dbPath - Path to the SQLite database file.
- * @param id - The zettel's unique id.
- * @param vector - The embedding vector to store.
- */
-export function setEmbedding(dbPath: string, id: string, vector: number[]): void {
-  const db = open(dbPath);
-  db.prepare(`UPDATE zettels SET embedding = ? WHERE id = ?`).run(
-    serializeEmbedding(vector),
-    id,
-  );
 }
 
 /**
@@ -252,6 +270,30 @@ export function createLink(
   db.prepare(
     `INSERT INTO links (from_id, to_id, relation, created) VALUES (?, ?, ?, ?)`,
   ).run(fromId, toId, relation, new Date().toISOString());
+}
+
+/**
+ * Replaces every outgoing link recorded for a note with the set from its
+ * frontmatter. Used by reindex, where a note's `links` field is authoritative
+ * and the index's `links` table must match it exactly (not just append).
+ *
+ * @param dbPath - Path to the SQLite database file.
+ * @param fromId - The source zettel's id.
+ * @param links - The note's current outgoing links.
+ */
+export function replaceLinksForNote(
+  dbPath: string,
+  fromId: string,
+  links: { to: string; relation: string }[],
+): void {
+  const db = open(dbPath);
+  db.prepare(`DELETE FROM links WHERE from_id = ?`).run(fromId);
+  const created = new Date().toISOString();
+  for (const link of links) {
+    db.prepare(
+      `INSERT INTO links (from_id, to_id, relation, created) VALUES (?, ?, ?, ?)`,
+    ).run(fromId, link.to, link.relation, created);
+  }
 }
 
 /**
