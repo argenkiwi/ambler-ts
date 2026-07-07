@@ -47,11 +47,12 @@ deno task ambler clone <source-walk-path> <target-dir>
 
 ### Install as a Command
 
-The `ambler` walk (`init`/`clone`) can also be compiled into a standalone binary with `deno compile`, so it runs as a regular `ambler` command — no Deno installation required on the machine that runs it.
+Any walk can be compiled into a standalone binary with `deno compile`, so it runs as a regular command — no Deno installation required on the machine that runs it.
 
 ```bash
 # Compile for this machine and install it onto your PATH (~/.local/bin or /usr/local/bin)
-deno task install
+deno task install          # installs `ambler` (the default)
+deno task install zettel   # installs `zettel`, or any other walk by name
 
 ambler init <target-dir>
 ambler clone <source-walk-path> <target-dir>
@@ -60,10 +61,14 @@ ambler clone <source-walk-path> <target-dir>
 To build binaries for other platforms (e.g. for distribution), run:
 
 ```bash
-deno task build
+deno task build            # cross-compiles walks/ambler.ts
+deno task build zettel     # cross-compiles walks/zettel.ts
 ```
 
-This cross-compiles `walks/ambler.ts` for macOS (arm64/x64), Linux (arm64/x64), and Windows (x64) into `dist/`. Copy the binary matching the target platform onto that machine's `PATH`.
+This cross-compiles the chosen walk for macOS (arm64/x64), Linux (arm64/x64), and Windows (x64) into `dist/`. Copy the binary matching the target platform onto that machine's `PATH`.
+
+> [!TIP]
+> Both tasks look up the walk's required permissions from the same-named entry in `deno.json`'s `tasks` map (e.g. `"zettel": "deno run --allow-read --allow-write --allow-net walks/zettel.ts"`) and pass those same `--allow-*` flags to `deno compile`. A walk with no matching task entry compiles with no extra permissions and may prompt at runtime.
 
 ---
 
