@@ -1,9 +1,9 @@
 import { NodeFactory } from "../ambler.ts";
 import {
   getAllEmbeddings,
-  getZettel,
+  getZettelMeta,
   searchZettels,
-  ZettelRecord,
+  ZettelMeta,
 } from "../utils/zettel_db.ts";
 import {
   cosineSimilarity,
@@ -11,8 +11,8 @@ import {
   DEFAULT_EMBEDDING_MODEL,
   embed as embedText,
 } from "../utils/embeddings.ts";
+import { DB_PATH } from "../utils/zettel_config.ts";
 
-const DB_PATH = ".zettelkasten/zettel.db";
 const DEFAULT_LIMIT = 5;
 
 export interface RankedZettel {
@@ -33,10 +33,10 @@ export interface State {
 export type Edge = "onFound" | "onEmpty";
 
 export type Utils = {
-  searchZettels: (query: string, limit: number) => ZettelRecord[];
+  searchZettels: (query: string, limit: number) => ZettelMeta[];
   embed: (text: string) => Promise<number[] | null>;
   getAllEmbeddings: () => { id: string; vector: number[] }[];
-  getZettel: (id: string) => ZettelRecord | null;
+  getZettelMeta: (id: string) => ZettelMeta | null;
   print: (msg: string) => void;
 };
 
@@ -44,7 +44,7 @@ const defaultUtils: Utils = {
   searchZettels: (query, limit) => searchZettels(DB_PATH, query, limit),
   embed: (text) => embedText(text, DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_HOST),
   getAllEmbeddings: () => getAllEmbeddings(DB_PATH),
-  getZettel: (id) => getZettel(DB_PATH, id),
+  getZettelMeta: (id) => getZettelMeta(DB_PATH, id),
   print: (msg) => console.log(msg),
 };
 
@@ -84,7 +84,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         if (existing) {
           existing.score += similarity;
         } else {
-          const zettel = utils.getZettel(id);
+          const zettel = utils.getZettelMeta(id);
           if (zettel) {
             ranked.set(id, {
               id: zettel.id,

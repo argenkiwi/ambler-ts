@@ -12,6 +12,7 @@ export type Edge =
   | "onUpdate"
   | "onDelete"
   | "onLink"
+  | "onReindex"
   | "onError";
 
 export type Utils = {
@@ -47,6 +48,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       return [edges.onDelete, state];
     case "link":
       return [edges.onLink, state];
+    case "reindex":
+      return [edges.onReindex, state];
     default: {
       const error = `Unknown action: ${action}`;
       utils.print(JSON.stringify({ error }));

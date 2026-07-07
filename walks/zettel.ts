@@ -6,6 +6,7 @@ import defer * as getNode from "../nodes/zettel-get.ts";
 import defer * as updateNode from "../nodes/zettel-update.ts";
 import defer * as deleteNode from "../nodes/zettel-delete.ts";
 import defer * as linkNode from "../nodes/zettel-link.ts";
+import defer * as reindexNode from "../nodes/zettel-reindex.ts";
 import { readStdinJson } from "../utils/stdin.ts";
 
 export interface State {
@@ -32,7 +33,8 @@ type NodeId =
   | "GET"
   | "UPDATE"
   | "DELETE"
-  | "LINK";
+  | "LINK"
+  | "REINDEX";
 
 const amble = ambler<State, NodeId>({
   ROUTE: () =>
@@ -43,6 +45,7 @@ const amble = ambler<State, NodeId>({
       onUpdate: "UPDATE",
       onDelete: "DELETE",
       onLink: "LINK",
+      onReindex: "REINDEX",
       onError: null,
     }) as unknown as Node<State, NodeId>,
   SEARCH: () =>
@@ -57,6 +60,8 @@ const amble = ambler<State, NodeId>({
     deleteNode.factory({ onDeleted: null, onNotFound: null }) as unknown as Node<State, NodeId>,
   LINK: () =>
     linkNode.factory({ onLinked: null, onError: null }) as unknown as Node<State, NodeId>,
+  REINDEX: () =>
+    reindexNode.factory({ onIndexed: null }) as unknown as Node<State, NodeId>,
 });
 
 if (import.meta.main) {
@@ -71,7 +76,8 @@ if (import.meta.main) {
         "  get <id>\n" +
         "  update <id> (reads JSON from stdin)\n" +
         "  delete <id>\n" +
-        "  link <fromId> <toId> <relation>",
+        "  link <fromId> <toId> <relation>\n" +
+        "  reindex",
     );
     Deno.exit(1);
   }
@@ -154,6 +160,8 @@ if (import.meta.main) {
       state = { ...state, fromId, toId, relation };
       break;
     }
+    case "reindex":
+      break;
     default:
       console.error(`Unknown action: ${action}`);
       Deno.exit(1);

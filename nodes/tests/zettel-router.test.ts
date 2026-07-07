@@ -8,6 +8,7 @@ const edges = {
   onUpdate: "update",
   onDelete: "delete",
   onLink: "link",
+  onReindex: "reindex",
   onError: "error",
 };
 
@@ -56,6 +57,14 @@ Deno.test("zettelRouterNode should transition to onLink for link action", async 
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
   assertEquals(result[0], "link");
+  assertEquals(result[1], state);
+});
+
+Deno.test("zettelRouterNode should transition to onReindex for reindex action", async () => {
+  const state: State = { action: "reindex" };
+  const utils: Utils = { print: () => {} };
+  const result = await factory(edges, utils)(state);
+  assertEquals(result[0], "reindex");
   assertEquals(result[1], state);
 });
 
