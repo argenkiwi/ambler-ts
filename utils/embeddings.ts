@@ -1,8 +1,16 @@
-/** Default OpenAI-compatible host for a local embeddings-capable server (e.g. Ollama). */
-export const DEFAULT_EMBEDDING_HOST = "http://localhost:11434/v1";
+/**
+ * OpenAI-compatible host for a local embeddings-capable server (e.g. Ollama).
+ * Overridable via the `EMBEDDING_HOST` environment variable (e.g. in a `.env` file).
+ */
+export const DEFAULT_EMBEDDING_HOST = Deno.env.get("EMBEDDING_HOST") ??
+  "http://localhost:11434/v1";
 
-/** Default embedding model name, assumed pulled on the default host. */
-export const DEFAULT_EMBEDDING_MODEL = "nomic-embed-text";
+/**
+ * Embedding model name, assumed pulled on the configured host.
+ * Overridable via the `EMBEDDING_MODEL` environment variable (e.g. in a `.env` file).
+ */
+export const DEFAULT_EMBEDDING_MODEL = Deno.env.get("EMBEDDING_MODEL") ??
+  "embeddinggemma:latest";
 
 /**
  * Embeds text using an OpenAI-compatible embeddings endpoint (e.g. Ollama/LM Studio).
