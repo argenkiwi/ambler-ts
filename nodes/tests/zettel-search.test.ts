@@ -1,9 +1,17 @@
 import { assertEquals } from "@std/assert";
 import { factory, State, Utils } from "../zettel-search.ts";
-import { ZettelRecord } from "../../utils/zettel_db.ts";
+import { ZettelMeta } from "../../utils/zettel_db.ts";
 
-function record(id: string, title: string): ZettelRecord {
-  return { id, title, body: "", tags: [], created: "2026-07-06T00:00:00.000Z", hasEmbedding: false };
+function record(id: string, title: string): ZettelMeta {
+  return {
+    id,
+    title,
+    tags: [],
+    created: "2026-07-06T00:00:00.000Z",
+    updated: "2026-07-06T00:00:00.000Z",
+    bodyHash: "hash",
+    hasEmbedding: false,
+  };
 }
 
 Deno.test("zettelSearchNode should rank keyword matches when no embeddings host is reachable", async () => {
@@ -13,7 +21,7 @@ Deno.test("zettelSearchNode should rank keyword matches when no embeddings host 
     searchZettels: () => [record("a", "SQLite notes"), record("b", "Other note")],
     embed: async () => null,
     getAllEmbeddings: () => [],
-    getZettel: () => null,
+    getZettelMeta: () => null,
     print: () => {},
   };
 
@@ -32,7 +40,7 @@ Deno.test("zettelSearchNode should surface a semantically similar note with no k
     searchZettels: () => [],
     embed: async () => [1, 0],
     getAllEmbeddings: () => [{ id: "c", vector: [1, 0] }],
-    getZettel: (id) => (id === "c" ? record("c", "Zettelkasten") : null),
+    getZettelMeta: (id) => (id === "c" ? record("c", "Zettelkasten") : null),
     print: () => {},
   };
 
@@ -51,7 +59,7 @@ Deno.test("zettelSearchNode should transition to onEmpty when nothing matches", 
     searchZettels: () => [],
     embed: async () => null,
     getAllEmbeddings: () => [],
-    getZettel: () => null,
+    getZettelMeta: () => null,
     print: () => {},
   };
 
