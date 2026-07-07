@@ -2,8 +2,7 @@
   "tasks": {
     "dev": "deno run --watch walks/counter.ts",
     "counter": "deno run walks/counter.ts",
-    "init": "deno run --allow-read --allow-write walks/init.ts",
-    "clone": "deno run --allow-read --allow-write walks/clone.ts",
+    "ambler": "deno run --allow-read --allow-write walks/ambler.ts",
     "chat": "deno run --allow-net walks/chat.ts",
     "zettel": "deno run --allow-read --allow-write --allow-net walks/zettel.ts"
   },

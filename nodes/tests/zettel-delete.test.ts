@@ -18,7 +18,8 @@ Deno.test("zettelDeleteNode should delete and return the id when it exists", asy
   const deletedFromIndex: string[] = [];
 
   const utils: Utils = {
-    readNote: (id) => Promise.resolve(id === existingNote.id ? existingNote : null),
+    readNote: (id) =>
+      Promise.resolve(id === existingNote.id ? existingNote : null),
     deleteNoteFile: (id) => {
       deletedFiles.push(id);
       return Promise.resolve();
@@ -30,7 +31,10 @@ Deno.test("zettelDeleteNode should delete and return the id when it exists", asy
     print: () => {},
   };
 
-  const result = await factory({ onDeleted: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onDeleted: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 
@@ -50,7 +54,10 @@ Deno.test("zettelDeleteNode should transition to onNotFound when the id does not
     print: () => {},
   };
 
-  const result = await factory({ onDeleted: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onDeleted: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 

@@ -17,11 +17,15 @@ Deno.test("zettelGetNode should return the zettel and its links when found", asy
 
   const utils: Utils = {
     readNote: (id) => Promise.resolve(id === sample.id ? sample : null),
-    getLinks: () => [{ fromId: sample.id, toId: "other", relation: "relates to" }],
+    getLinks:
+      () => [{ fromId: sample.id, toId: "other", relation: "relates to" }],
     print: () => {},
   };
 
-  const result = await factory({ onFound: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onFound: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 
@@ -39,7 +43,10 @@ Deno.test("zettelGetNode should transition to onNotFound when the id does not ex
     print: () => {},
   };
 
-  const result = await factory({ onFound: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onFound: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 

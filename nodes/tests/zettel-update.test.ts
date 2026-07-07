@@ -28,7 +28,10 @@ Deno.test("zettelUpdateNode should re-embed and update when body changes", async
     print: () => {},
   };
 
-  const result = await factory({ onUpdated: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onUpdated: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 
@@ -55,7 +58,9 @@ Deno.test("zettelUpdateNode should not re-embed when body is unchanged", async (
     print: () => {},
   };
 
-  await factory({ onUpdated: "next", onNotFound: "missing" }, utils)(initialState);
+  await factory({ onUpdated: "next", onNotFound: "missing" }, utils)(
+    initialState,
+  );
 
   assertEquals(embedCalled, false);
 });
@@ -71,7 +76,10 @@ Deno.test("zettelUpdateNode should transition to onNotFound when the id does not
     print: () => {},
   };
 
-  const result = await factory({ onUpdated: "next", onNotFound: "missing" }, utils)(
+  const result = await factory(
+    { onUpdated: "next", onNotFound: "missing" },
+    utils,
+  )(
     initialState,
   );
 

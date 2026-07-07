@@ -28,7 +28,8 @@ Deno.test("zettelReindexNode should index new notes and rebuild their links", as
     getZettelMeta: () => null,
     embed: () => Promise.resolve(null),
     upsertZettel: (zettel, embedding) => upserted.push({ zettel, embedding }),
-    replaceLinksForNote: (fromId, links) => linksReplaced.push({ fromId, links }),
+    replaceLinksForNote: (fromId, links) =>
+      linksReplaced.push({ fromId, links }),
     deleteOrphans: () => [],
     print: () => {},
   };
@@ -37,7 +38,12 @@ Deno.test("zettelReindexNode should index new notes and rebuild their links", as
   const result = await factory({ onIndexed: "next" }, utils)(initialState);
 
   assertEquals(result[0], "next");
-  assertEquals(result[1].result, { indexed: 2, updated: 0, removed: 0, total: 2 });
+  assertEquals(result[1].result, {
+    indexed: 2,
+    updated: 0,
+    removed: 0,
+    total: 2,
+  });
   assertEquals(upserted.length, 2);
   assertEquals(linksReplaced, [
     { fromId: "a", links: [{ to: "b", relation: "relates to" }] },
@@ -67,7 +73,12 @@ Deno.test("zettelReindexNode should skip re-embedding unchanged notes", async ()
   const result = await factory({ onIndexed: "next" }, utils)({});
 
   assertEquals(embedCalled, false);
-  assertEquals(result[1].result, { indexed: 0, updated: 0, removed: 0, total: 1 });
+  assertEquals(result[1].result, {
+    indexed: 0,
+    updated: 0,
+    removed: 0,
+    total: 1,
+  });
 });
 
 Deno.test("zettelReindexNode should re-embed and count as updated when the body hash changed", async () => {
@@ -86,7 +97,12 @@ Deno.test("zettelReindexNode should re-embed and count as updated when the body 
 
   const result = await factory({ onIndexed: "next" }, utils)({});
 
-  assertEquals(result[1].result, { indexed: 0, updated: 1, removed: 0, total: 1 });
+  assertEquals(result[1].result, {
+    indexed: 0,
+    updated: 1,
+    removed: 0,
+    total: 1,
+  });
 });
 
 Deno.test("zettelReindexNode should remove orphaned index entries with no matching file", async () => {
@@ -106,5 +122,10 @@ Deno.test("zettelReindexNode should remove orphaned index entries with no matchi
 
   const result = await factory({ onIndexed: "next" }, utils)({});
 
-  assertEquals(result[1].result, { indexed: 0, updated: 0, removed: 1, total: 0 });
+  assertEquals(result[1].result, {
+    indexed: 0,
+    updated: 0,
+    removed: 1,
+    total: 0,
+  });
 });

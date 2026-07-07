@@ -1,6 +1,6 @@
 import { extract as extractFrontMatter } from "@std/front-matter/yaml";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { NOTES_DIR, notePath } from "./zettel_config.ts";
+import { notePath, NOTES_DIR } from "./zettel_config.ts";
 
 export interface NoteLink {
   to: string;

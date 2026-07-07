@@ -93,5 +93,7 @@ Deno.test("zettelRouterNode should transition to onError if unknown action speci
   const result = await factory(edges, utils)(state);
   assertEquals(result[0], "error");
   assertEquals(result[1].error, "Unknown action: invalid-action");
-  assertEquals(JSON.parse(printedMsg), { error: "Unknown action: invalid-action" });
+  assertEquals(JSON.parse(printedMsg), {
+    error: "Unknown action: invalid-action",
+  });
 });

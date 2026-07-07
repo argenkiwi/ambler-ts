@@ -52,8 +52,8 @@ export async function checkHost(host: string): Promise<boolean> {
     const url = host.endsWith("/v1") ? host : `${host}/v1`;
     const response = await fetch(`${url}/models`, {
       method: "GET",
-  });
-  return response.ok;
+    });
+    return response.ok;
   } catch (_e) {
     return false;
   }
@@ -68,7 +68,9 @@ export async function listModels(host: string): Promise<string[]> {
   const url = host.endsWith("/v1") ? host : `${host}/v1`;
   const response = await fetch(`${url}/models`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch models from LLM API: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch models from LLM API: ${response.statusText}`,
+    );
   }
   const data = await response.json();
   // OpenAI API returns data.data.id for models.

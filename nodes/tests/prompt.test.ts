@@ -6,12 +6,12 @@ Deno.test("promptNode should transition to onMessage when user enters a message"
   const utils: Utils = {
     prompt: (_msg: string) => "hello",
     print: (_msg: string) => {},
-   };
+  };
 
   const result = await factory(
-     { onMessage: "transpose", onQuit: "bye" },
+    { onMessage: "transpose", onQuit: "bye" },
     utils,
-   )(initialState);
+  )(initialState);
 
   assertEquals(result[0], "transpose");
   assertEquals(result[1].messages.length, 1);
@@ -23,12 +23,12 @@ Deno.test("promptNode should transition to onQuit when user enters a quit word",
   const utils: Utils = {
     prompt: (_msg: string) => "exit",
     print: (_msg: string) => {},
-   };
+  };
 
   const result = await factory(
-     { onMessage: "transpose", onQuit: "bye" },
+    { onMessage: "transpose", onQuit: "bye" },
     utils,
-   )(initialState);
+  )(initialState);
 
   assertEquals(result[0], "bye");
   assertEquals(result[1].messages.length, 0);
@@ -39,12 +39,12 @@ Deno.test("promptNode should transition to onQuit when user cancels input", asyn
   const utils: Utils = {
     prompt: (_msg: string) => null,
     print: (_msg: string) => {},
-   };
+  };
 
   const result = await factory(
-     { onMessage: "transpose", onQuit: "bye" },
+    { onMessage: "transpose", onQuit: "bye" },
     utils,
-   )(initialState);
+  )(initialState);
 
   assertEquals(result[0], "bye");
   assertEquals(result[1].messages.length, 0);

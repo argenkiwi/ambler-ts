@@ -27,16 +27,16 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) =>
-  async (state) => {
-    const note = await utils.readNote(state.id);
+async (state) => {
+  const note = await utils.readNote(state.id);
 
-    if (!note) {
-      const error = `Zettel not found: ${state.id}`;
-      utils.print(JSON.stringify({ error }));
-      return [edges.onNotFound, { ...state, error }];
-    }
+  if (!note) {
+    const error = `Zettel not found: ${state.id}`;
+    utils.print(JSON.stringify({ error }));
+    return [edges.onNotFound, { ...state, error }];
+  }
 
-    const result = { ...note, links: utils.getLinks(state.id) };
-    utils.print(JSON.stringify(result));
-    return [edges.onFound, { ...state, result }];
-  };
+  const result = { ...note, links: utils.getLinks(state.id) };
+  utils.print(JSON.stringify(result));
+  return [edges.onFound, { ...state, result }];
+};

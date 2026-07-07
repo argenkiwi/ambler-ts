@@ -41,7 +41,8 @@ Deno.test("zettelCreateNode should create links when links are provided", async 
     embed: async () => null,
     writeNote: async () => {},
     upsertZettel: () => {},
-    createLink: (fromId, toId, relation) => linked.push({ fromId, toId, relation }),
+    createLink: (fromId, toId, relation) =>
+      linked.push({ fromId, toId, relation }),
     print: () => {},
   };
 

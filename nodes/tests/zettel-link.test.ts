@@ -25,7 +25,8 @@ Deno.test("zettelLinkNode should link two existing zettels", async () => {
       written.push(n);
       return Promise.resolve();
     },
-    createLink: (fromId, toId, relation) => linked.push({ fromId, toId, relation }),
+    createLink: (fromId, toId, relation) =>
+      linked.push({ fromId, toId, relation }),
     print: () => {},
   };
 
@@ -40,7 +41,11 @@ Deno.test("zettelLinkNode should link two existing zettels", async () => {
 });
 
 Deno.test("zettelLinkNode should transition to onError when either zettel is missing", async () => {
-  const initialState: State = { fromId: "a", toId: "missing", relation: "relates to" };
+  const initialState: State = {
+    fromId: "a",
+    toId: "missing",
+    relation: "relates to",
+  };
 
   const utils: Utils = {
     readNote: (id) => Promise.resolve(id === "a" ? note(id) : null),
@@ -58,5 +63,8 @@ Deno.test("zettelLinkNode should transition to onError when either zettel is mis
   );
 
   assertEquals(result[0], "error");
-  assertEquals(result[1].error, "Cannot link: one or both zettels not found (a, missing)");
+  assertEquals(
+    result[1].error,
+    "Cannot link: one or both zettels not found (a, missing)",
+  );
 });

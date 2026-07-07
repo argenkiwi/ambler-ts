@@ -49,17 +49,35 @@ const amble = ambler<State, NodeId>({
       onError: null,
     }) as unknown as Node<State, NodeId>,
   SEARCH: () =>
-    searchNode.factory({ onFound: null, onEmpty: null }) as unknown as Node<State, NodeId>,
+    searchNode.factory({ onFound: null, onEmpty: null }) as unknown as Node<
+      State,
+      NodeId
+    >,
   CREATE: () =>
-    createNode.factory({ onCreated: null, onError: null }) as unknown as Node<State, NodeId>,
+    createNode.factory({ onCreated: null, onError: null }) as unknown as Node<
+      State,
+      NodeId
+    >,
   GET: () =>
-    getNode.factory({ onFound: null, onNotFound: null }) as unknown as Node<State, NodeId>,
+    getNode.factory({ onFound: null, onNotFound: null }) as unknown as Node<
+      State,
+      NodeId
+    >,
   UPDATE: () =>
-    updateNode.factory({ onUpdated: null, onNotFound: null }) as unknown as Node<State, NodeId>,
+    updateNode.factory({
+      onUpdated: null,
+      onNotFound: null,
+    }) as unknown as Node<State, NodeId>,
   DELETE: () =>
-    deleteNode.factory({ onDeleted: null, onNotFound: null }) as unknown as Node<State, NodeId>,
+    deleteNode.factory({
+      onDeleted: null,
+      onNotFound: null,
+    }) as unknown as Node<State, NodeId>,
   LINK: () =>
-    linkNode.factory({ onLinked: null, onError: null }) as unknown as Node<State, NodeId>,
+    linkNode.factory({ onLinked: null, onError: null }) as unknown as Node<
+      State,
+      NodeId
+    >,
   REINDEX: () =>
     reindexNode.factory({ onIndexed: null }) as unknown as Node<State, NodeId>,
 });
@@ -128,7 +146,7 @@ if (import.meta.main) {
       const id = Deno.args[1];
       if (!id) {
         console.error(
-          "Usage: echo '{\"title\":\"...\"}' | deno task zettel update <id>",
+          'Usage: echo \'{"title":"..."}\' | deno task zettel update <id>',
         );
         Deno.exit(1);
       }

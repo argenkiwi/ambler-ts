@@ -36,10 +36,10 @@ Use the Deno tasks to initialize or clone a project:
 
 ```bash
 # Bootstrap a new project at <target-dir>
-deno task init <target-dir>
+deno task ambler init <target-dir>
 
 # Clone an existing walk into another project
-deno task clone <source-walk-path> <target-dir>
+deno task ambler clone <source-walk-path> <target-dir>
 ```
 
 > [!TIP]

@@ -8,7 +8,7 @@ metadata:
 
 # Ambler Zettel Init
 
-This skill installs a Zettelkasten (an atomic, explicitly-linked note store) into an Ambler project, so a coding agent can retrieve relevant prior decisions before implementing a prompt and record new learnings after. Notes are Markdown files with YAML frontmatter under `notes/` — the version-controlled source of truth — indexed by a derived, gitignored SQLite cache at `.zettelkasten/zettel.db` for fast full-text and semantic search. It reuses `deno task clone` to bring in the walk/nodes/utils rather than duplicating that copy logic.
+This skill installs a Zettelkasten (an atomic, explicitly-linked note store) into an Ambler project, so a coding agent can retrieve relevant prior decisions before implementing a prompt and record new learnings after. Notes are Markdown files with YAML frontmatter under `notes/` — the version-controlled source of truth — indexed by a derived, gitignored SQLite cache at `.zettelkasten/zettel.db` for fast full-text and semantic search. It reuses `deno task ambler clone` to bring in the walk/nodes/utils rather than duplicating that copy logic.
 
 ---
 
@@ -22,13 +22,13 @@ This skill installs a Zettelkasten (an atomic, explicitly-linked note store) int
 
 ## Step 2 — Clone the unified zettel walk
 
-From the **ambler-ts** repo root (the source of these artifacts), run `deno task clone` to copy the unified walk plus its router node, all seven operation nodes (including `zettel-reindex.ts`), and any utils (transitively resolved, including `utils/zettel_db.ts`, `utils/zettel_fs.ts`, `utils/zettel_config.ts`, and `utils/embeddings.ts`) into the target, and register a matching task in the target's `deno.json`:
+From the **ambler-ts** repo root (the source of these artifacts), run `deno task ambler clone` to copy the unified walk plus its router node, all seven operation nodes (including `zettel-reindex.ts`), and any utils (transitively resolved, including `utils/zettel_db.ts`, `utils/zettel_fs.ts`, `utils/zettel_config.ts`, and `utils/embeddings.ts`) into the target, and register a matching task in the target's `deno.json`:
 
 ```bash
-deno task clone walks/zettel.ts "<target>"
+deno task ambler clone walks/zettel.ts "<target>"
 ```
 
-If the target is not the current project, run this from wherever `ambler-ts`'s own `deno.json` lives (its `clone` task resolves source paths relative to that root).
+If the target is not the current project, run this from wherever `ambler-ts`'s own `deno.json` lives (its `ambler` task's `clone` action resolves source paths relative to that root).
 
 ---
 

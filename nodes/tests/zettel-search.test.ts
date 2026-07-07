@@ -18,7 +18,8 @@ Deno.test("zettelSearchNode should rank keyword matches when no embeddings host 
   const initialState: State = { query: "sqlite" };
 
   const utils: Utils = {
-    searchZettels: () => [record("a", "SQLite notes"), record("b", "Other note")],
+    searchZettels:
+      () => [record("a", "SQLite notes"), record("b", "Other note")],
     embed: async () => null,
     getAllEmbeddings: () => [],
     getZettelMeta: () => null,

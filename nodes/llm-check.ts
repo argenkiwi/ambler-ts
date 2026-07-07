@@ -25,7 +25,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const defaultHosts = ["http://localhost:11434/v1", "http://localhost:1234/v1"];
+    const defaultHosts = [
+      "http://localhost:11434/v1",
+      "http://localhost:1234/v1",
+    ];
     const hostsToTry = state.host ? [state.host] : defaultHosts;
 
     for (const host of hostsToTry) {
