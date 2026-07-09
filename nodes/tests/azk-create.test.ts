@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-create.ts";
+import { factory, State, Utils } from "../azk-create.ts";
 
-Deno.test("zettelCreateNode should create a zettel and return its id when given valid input", async () => {
+Deno.test("azkCreateNode should create a note and return its id when given valid input", async () => {
   const initialState: State = { title: "Test", body: "Body text", tags: ["a"] };
   const written: unknown[] = [];
   const upserted: unknown[] = [];
@@ -12,7 +12,7 @@ Deno.test("zettelCreateNode should create a zettel and return its id when given 
     writeNote: async (note) => {
       written.push(note);
     },
-    upsertZettel: (zettel, embedding) => upserted.push({ zettel, embedding }),
+    upsertAzk: (note, embedding) => upserted.push({ note, embedding }),
     createLink: () => {},
     print: () => {},
   };
@@ -27,7 +27,7 @@ Deno.test("zettelCreateNode should create a zettel and return its id when given 
   assertEquals(upserted.length, 1);
 });
 
-Deno.test("zettelCreateNode should create links when links are provided", async () => {
+Deno.test("azkCreateNode should create links when links are provided", async () => {
   const initialState: State = {
     title: "Test",
     body: "Body text",
@@ -40,7 +40,7 @@ Deno.test("zettelCreateNode should create links when links are provided", async 
     generateId: () => "20260706120000",
     embed: async () => null,
     writeNote: async () => {},
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     createLink: (fromId, toId, relation) => linked.push({ fromId, toId, relation }),
     print: () => {},
   };
@@ -56,7 +56,7 @@ Deno.test("zettelCreateNode should create links when links are provided", async 
   assertEquals(result[1].result?.links, initialState.links);
 });
 
-Deno.test("zettelCreateNode should transition to onError when writeNote throws", async () => {
+Deno.test("azkCreateNode should transition to onError when writeNote throws", async () => {
   const initialState: State = { title: "Test", body: "Body", tags: [] };
 
   const utils: Utils = {
@@ -65,7 +65,7 @@ Deno.test("zettelCreateNode should transition to onError when writeNote throws",
     writeNote: async () => {
       throw new Error("disk full");
     },
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     createLink: () => {},
     print: () => {},
   };

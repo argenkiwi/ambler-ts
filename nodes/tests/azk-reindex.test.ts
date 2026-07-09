@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-reindex.ts";
-import { hashContent, Note } from "../../utils/zettel_fs.ts";
+import { factory, State, Utils } from "../azk-reindex.ts";
+import { hashContent, Note } from "../../utils/azk_fs.ts";
 
 function note(id: string, body: string, links: Note["links"] = []): Note {
   return {
@@ -14,7 +14,7 @@ function note(id: string, body: string, links: Note["links"] = []): Note {
   };
 }
 
-Deno.test("zettelReindexNode should index new notes and rebuild their links", async () => {
+Deno.test("azkReindexNode should index new notes and rebuild their links", async () => {
   const notes = [
     note("a", "body a", [{ to: "b", relation: "relates to" }]),
     note("b", "body b"),
@@ -25,9 +25,9 @@ Deno.test("zettelReindexNode should index new notes and rebuild their links", as
   const utils: Utils = {
     listNoteIds: () => Promise.resolve(["a", "b"]),
     readNote: (id) => Promise.resolve(notes.find((n) => n.id === id) ?? null),
-    getZettelMeta: () => null,
+    getAzkMeta: () => null,
     embed: () => Promise.resolve(null),
-    upsertZettel: (zettel, embedding) => upserted.push({ zettel, embedding }),
+    upsertAzk: (note, embedding) => upserted.push({ note, embedding }),
     replaceLinksForNote: (fromId, links) => linksReplaced.push({ fromId, links }),
     deleteOrphans: () => [],
     print: () => {},
@@ -45,7 +45,7 @@ Deno.test("zettelReindexNode should index new notes and rebuild their links", as
   ]);
 });
 
-Deno.test("zettelReindexNode should skip re-embedding unchanged notes", async () => {
+Deno.test("azkReindexNode should skip re-embedding unchanged notes", async () => {
   const n = note("a", "unchanged body");
   const bodyHash = await hashContent(n.body);
   let embedCalled = false;
@@ -53,12 +53,12 @@ Deno.test("zettelReindexNode should skip re-embedding unchanged notes", async ()
   const utils: Utils = {
     listNoteIds: () => Promise.resolve(["a"]),
     readNote: () => Promise.resolve(n),
-    getZettelMeta: () => ({ bodyHash }),
+    getAzkMeta: () => ({ bodyHash }),
     embed: () => {
       embedCalled = true;
       return Promise.resolve([1]);
     },
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     replaceLinksForNote: () => {},
     deleteOrphans: () => [],
     print: () => {},
@@ -70,15 +70,15 @@ Deno.test("zettelReindexNode should skip re-embedding unchanged notes", async ()
   assertEquals(result[1].result, { indexed: 0, updated: 0, removed: 0, total: 1 });
 });
 
-Deno.test("zettelReindexNode should re-embed and count as updated when the body hash changed", async () => {
+Deno.test("azkReindexNode should re-embed and count as updated when the body hash changed", async () => {
   const n = note("a", "new body");
 
   const utils: Utils = {
     listNoteIds: () => Promise.resolve(["a"]),
     readNote: () => Promise.resolve(n),
-    getZettelMeta: () => ({ bodyHash: "stale-hash" }),
+    getAzkMeta: () => ({ bodyHash: "stale-hash" }),
     embed: () => Promise.resolve([1, 2]),
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     replaceLinksForNote: () => {},
     deleteOrphans: () => [],
     print: () => {},
@@ -89,13 +89,13 @@ Deno.test("zettelReindexNode should re-embed and count as updated when the body 
   assertEquals(result[1].result, { indexed: 0, updated: 1, removed: 0, total: 1 });
 });
 
-Deno.test("zettelReindexNode should remove orphaned index entries with no matching file", async () => {
+Deno.test("azkReindexNode should remove orphaned index entries with no matching file", async () => {
   const utils: Utils = {
     listNoteIds: () => Promise.resolve([]),
     readNote: () => Promise.resolve(null),
-    getZettelMeta: () => null,
+    getAzkMeta: () => null,
     embed: () => Promise.resolve(null),
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     replaceLinksForNote: () => {},
     deleteOrphans: (liveIds) => {
       assertEquals(liveIds, []);

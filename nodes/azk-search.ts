@@ -1,21 +1,21 @@
 import { NodeFactory } from "../ambler.ts";
 import {
   getAllEmbeddings,
-  getZettelMeta,
-  searchZettels,
-  ZettelMeta,
-} from "../utils/zettel_db.ts";
+  getAzkMeta,
+  searchAzk,
+  AzkMeta,
+} from "../utils/azk_db.ts";
 import {
   cosineSimilarity,
   DEFAULT_EMBEDDING_HOST,
   DEFAULT_EMBEDDING_MODEL,
   embed as embedText,
 } from "../utils/embeddings.ts";
-import { DB_PATH } from "../utils/zettel_config.ts";
+import { DB_PATH } from "../utils/azk_config.ts";
 
 const DEFAULT_LIMIT = 5;
 
-export interface RankedZettel {
+export interface RankedAzk {
   id: string;
   title: string;
   tags: string[];
@@ -26,25 +26,25 @@ export interface RankedZettel {
 export interface State {
   query: string;
   limit?: number;
-  results?: RankedZettel[];
+  results?: RankedAzk[];
   error?: string;
 }
 
 export type Edge = "onFound" | "onEmpty";
 
 export type Utils = {
-  searchZettels: (query: string, limit: number) => ZettelMeta[];
+  searchAzk: (query: string, limit: number) => AzkMeta[];
   embed: (text: string) => Promise<number[] | null>;
   getAllEmbeddings: () => { id: string; vector: number[] }[];
-  getZettelMeta: (id: string) => ZettelMeta | null;
+  getAzkMeta: (id: string) => AzkMeta | null;
   print: (msg: string) => void;
 };
 
 const defaultUtils: Utils = {
-  searchZettels: (query, limit) => searchZettels(DB_PATH, query, limit),
+  searchAzk: (query, limit) => searchAzk(DB_PATH, query, limit),
   embed: (text) => embedText(text, DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_HOST),
   getAllEmbeddings: () => getAllEmbeddings(DB_PATH),
-  getZettelMeta: (id) => getZettelMeta(DB_PATH, id),
+  getAzkMeta: (id) => getAzkMeta(DB_PATH, id),
   print: (msg) => console.log(msg),
 };
 
@@ -54,16 +54,16 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 ) =>
   async (state) => {
     const limit = state.limit ?? DEFAULT_LIMIT;
-    const keywordMatches = utils.searchZettels(state.query, limit);
+    const keywordMatches = utils.searchAzk(state.query, limit);
 
-    const ranked = new Map<string, RankedZettel>(
-      keywordMatches.map((zettel, index) => [
-        zettel.id,
+    const ranked = new Map<string, RankedAzk>(
+      keywordMatches.map((note, index) => [
+        note.id,
         {
-          id: zettel.id,
-          title: zettel.title,
-          tags: zettel.tags,
-          created: zettel.created,
+          id: note.id,
+          title: note.title,
+          tags: note.tags,
+          created: note.created,
           score: keywordMatches.length - index,
         },
       ]),
@@ -84,13 +84,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         if (existing) {
           existing.score += similarity;
         } else {
-          const zettel = utils.getZettelMeta(id);
-          if (zettel) {
+          const note = utils.getAzkMeta(id);
+          if (note) {
             ranked.set(id, {
-              id: zettel.id,
-              title: zettel.title,
-              tags: zettel.tags,
-              created: zettel.created,
+              id: note.id,
+              title: note.title,
+              tags: note.tags,
+              created: note.created,
               score: similarity,
             });
           }

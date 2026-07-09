@@ -10,11 +10,11 @@
  * Afterwards, delete the old index and rebuild it from the new files:
  *
  *   rm -rf .zettelkasten
- *   deno task zettel reindex
+ *   deno task azk reindex
  */
 import { DatabaseSync } from "node:sqlite";
-import { writeNote } from "../utils/zettel_fs.ts";
-import { DB_PATH } from "../utils/zettel_config.ts";
+import { writeNote } from "../utils/azk_fs.ts";
+import { DB_PATH } from "../utils/azk_config.ts";
 
 interface OldZettelRow {
   id: string;
@@ -33,15 +33,15 @@ interface OldLinkRow {
 if (import.meta.main) {
   const db = new DatabaseSync(DB_PATH);
 
-  const zettels = db
-    .prepare(`SELECT id, title, body, tags, created FROM zettels`)
+  const azk = db
+    .prepare(`SELECT id, title, body, tags, created FROM azk`)
     .all() as unknown as OldZettelRow[];
   const links = db
     .prepare(`SELECT from_id, to_id, relation FROM links`)
     .all() as unknown as OldLinkRow[];
 
   let migrated = 0;
-  for (const row of zettels) {
+  for (const row of azk) {
     const outgoingLinks = links
       .filter((link) => link.from_id === row.id)
       .map((link) => ({ to: link.to_id, relation: link.relation }));
@@ -62,7 +62,7 @@ if (import.meta.main) {
   console.log(
     "Next steps:\n" +
       `  1. rm -rf ${DB_PATH.slice(0, DB_PATH.lastIndexOf("/"))}\n` +
-      "  2. deno task zettel reindex\n" +
-      "  3. Spot-check a few notes with: deno task zettel get <id>",
+      "  2. deno task azk reindex\n" +
+      "  3. Spot-check a few notes with: deno task azk get <id>",
   );
 }

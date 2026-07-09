@@ -1,6 +1,6 @@
 import { extract as extractFrontMatter } from "@std/front-matter/yaml";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { NOTES_DIR, notePath } from "./zettel_config.ts";
+import { NOTES_DIR, notePath } from "./azk_config.ts";
 
 export interface NoteLink {
   to: string;
@@ -67,7 +67,7 @@ export function serializeNote(note: Note): string {
 /**
  * Reads and parses a note's Markdown file by id.
  *
- * @param id - The zettel's unique id.
+ * @param id - The note's unique id.
  * @returns The parsed note, or `null` if no file exists for that id.
  */
 export async function readNote(id: string): Promise<Note | null> {
@@ -94,7 +94,7 @@ export async function writeNote(note: Note): Promise<void> {
 /**
  * Deletes a note's Markdown file. A no-op if the file doesn't exist.
  *
- * @param id - The zettel's unique id.
+ * @param id - The note's unique id.
  */
 export async function deleteNoteFile(id: string): Promise<void> {
   try {

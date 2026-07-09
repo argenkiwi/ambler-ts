@@ -1,12 +1,12 @@
 import { ambler, Node } from "../ambler.ts";
-import defer * as routerNode from "../nodes/zettel-router.ts";
-import defer * as searchNode from "../nodes/zettel-search.ts";
-import defer * as createNode from "../nodes/zettel-create.ts";
-import defer * as getNode from "../nodes/zettel-get.ts";
-import defer * as updateNode from "../nodes/zettel-update.ts";
-import defer * as deleteNode from "../nodes/zettel-delete.ts";
-import defer * as linkNode from "../nodes/zettel-link.ts";
-import defer * as reindexNode from "../nodes/zettel-reindex.ts";
+import defer * as routerNode from "../nodes/azk-router.ts";
+import defer * as searchNode from "../nodes/azk-search.ts";
+import defer * as createNode from "../nodes/azk-create.ts";
+import defer * as getNode from "../nodes/azk-get.ts";
+import defer * as updateNode from "../nodes/azk-update.ts";
+import defer * as deleteNode from "../nodes/azk-delete.ts";
+import defer * as linkNode from "../nodes/azk-link.ts";
+import defer * as reindexNode from "../nodes/azk-reindex.ts";
 import { readStdinJson } from "../utils/stdin.ts";
 
 export interface State {
@@ -69,7 +69,7 @@ if (import.meta.main) {
 
   if (!action) {
     console.error(
-      "Usage: deno task zettel <action> [args]\n\n" +
+      "Usage: deno task azk <action> [args]\n\n" +
         "Actions:\n" +
         "  search <query> [limit]\n" +
         "  create (reads JSON from stdin)\n" +
@@ -89,7 +89,7 @@ if (import.meta.main) {
       const query = Deno.args[1];
       const limit = Deno.args[2] ? Number(Deno.args[2]) : undefined;
       if (!query) {
-        console.error('Usage: deno task zettel search "<query>" [limit]');
+        console.error('Usage: deno task azk search "<query>" [limit]');
         Deno.exit(1);
       }
       state = { ...state, query, limit };
@@ -118,7 +118,7 @@ if (import.meta.main) {
     case "get": {
       const id = Deno.args[1];
       if (!id) {
-        console.error("Usage: deno task zettel get <id>");
+        console.error("Usage: deno task azk get <id>");
         Deno.exit(1);
       }
       state = { ...state, id };
@@ -128,7 +128,7 @@ if (import.meta.main) {
       const id = Deno.args[1];
       if (!id) {
         console.error(
-          "Usage: echo '{\"title\":\"...\"}' | deno task zettel update <id>",
+          "Usage: echo '{\"title\":\"...\"}' | deno task azk update <id>",
         );
         Deno.exit(1);
       }
@@ -143,7 +143,7 @@ if (import.meta.main) {
     case "delete": {
       const id = Deno.args[1];
       if (!id) {
-        console.error("Usage: deno task zettel delete <id>");
+        console.error("Usage: deno task azk delete <id>");
         Deno.exit(1);
       }
       state = { ...state, id };
@@ -153,7 +153,7 @@ if (import.meta.main) {
       const [_, fromId, toId, relation] = Deno.args;
       if (!fromId || !toId || !relation) {
         console.error(
-          'Usage: deno task zettel link <fromId> <toId> "<relation>"',
+          'Usage: deno task azk link <fromId> <toId> "<relation>"',
         );
         Deno.exit(1);
       }

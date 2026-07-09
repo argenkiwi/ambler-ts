@@ -62,8 +62,8 @@ The graph definition. A walk wires factories into a concrete execution plan and 
 ### 3. Specs (`specs/`)
 Markdown blueprints that describe the intended behavior and state transitions before a single line of code is written.
 
-### 4. Zettelkasten-RAG (`notes/` + `.zettelkasten/`)
-An optional knowledge store any Ambler project can add via `/ambler-zettel-init`. Notes are version-controlled Markdown files with YAML frontmatter under `notes/` (Obsidian/HelixNotes-compatible); `.zettelkasten/` is a derived, gitignored SQLite index rebuildable at any time. It gives a coding agent a unified `zettel` task with seven subcommands (`zettel search`, `zettel create`, `zettel get`, `zettel update`, `zettel delete`, `zettel link`, `zettel reindex`) to retrieve prior design decisions before implementing a prompt and record new learnings after — atomic, explicitly-linked notes, searched via full-text keyword match blended with optional semantic embeddings. An `AGENTS.md` in the target project enforces the retrieve-before/store-after protocol on every prompt.
+### 4. Zettelkasten-RAG (`notes/` + `.azk/`)
+An optional knowledge store any Ambler project can add via `/azk-init`. Notes are version-controlled Markdown files with YAML frontmatter under `notes/` (Obsidian/HelixNotes-compatible); `.azk/` is a derived, gitignored SQLite index rebuildable at any time. It gives a coding agent a unified `azk` task with seven subcommands (`azk search`, `azk create`, `azk get`, `azk update`, `azk delete`, `azk link`, `azk reindex`) to retrieve prior design decisions before implementing a prompt and record new learnings after — atomic, explicitly-linked notes, searched via full-text keyword match blended with optional semantic embeddings. An `AGENTS.md` in the target project enforces the retrieve-before/store-after protocol on every prompt. A separate `/azk-install` skill installs `azk` as a global, project-independent command for workspaces that don't want the walk's code vendored in.
 
 ---
 
@@ -95,8 +95,8 @@ Ambler is designed to be augmented by agents using these specialized skills:
 - `ambler-walk`: Automatically wires nodes into executable walks based on specs.
 - `ambler-spec`: Generates or refines Markdown specifications.
 - `ambler-util`: Extracts reusable logic into utility modules.
-- `ambler-zettel-init`: Installs the Zettelkasten-RAG knowledge store (Markdown notes + derived SQLite index + unified `zettel` walk + `AGENTS.md`) into a project.
-- `ambler-zettel`: Reference for the unified `zettel` task and its subcommands — search, create, get, update, delete, link, reindex.
+- `azk-init`: Installs the Zettelkasten-RAG knowledge store (Markdown notes + derived SQLite index + unified `azk` walk + `AGENTS.md`) into a project; self-contained, includes its own CRUD reference.
+- `azk-install`: Installs `azk` as a global, project-independent command for the current user, for workspaces that don't want the walk's code vendored in.
 
 ---
 

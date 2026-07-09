@@ -1,17 +1,17 @@
 import { NodeFactory } from "../ambler.ts";
 import {
   createLink as dbCreateLink,
-  upsertZettel as dbUpsertZettel,
-} from "../utils/zettel_db.ts";
-import { hashContent, Note, writeNote as fsWriteNote } from "../utils/zettel_fs.ts";
+  upsertAzk as dbUpsertAzk,
+} from "../utils/azk_db.ts";
+import { hashContent, Note, writeNote as fsWriteNote } from "../utils/azk_fs.ts";
 import {
   DEFAULT_EMBEDDING_HOST,
   DEFAULT_EMBEDDING_MODEL,
   embed as embedText,
 } from "../utils/embeddings.ts";
-import { DB_PATH } from "../utils/zettel_config.ts";
+import { DB_PATH } from "../utils/azk_config.ts";
 
-export interface ZettelLinkInput {
+export interface AzkLinkInput {
   toId: string;
   relation: string;
 }
@@ -20,8 +20,8 @@ export interface State {
   title: string;
   body: string;
   tags: string[];
-  links?: ZettelLinkInput[];
-  result?: { id: string; title: string; tags: string[]; created: string; links: ZettelLinkInput[] };
+  links?: AzkLinkInput[];
+  result?: { id: string; title: string; tags: string[]; created: string; links: AzkLinkInput[] };
   error?: string;
 }
 
@@ -31,8 +31,8 @@ export type Utils = {
   generateId: () => string;
   embed: (text: string) => Promise<number[] | null>;
   writeNote: (note: Note) => Promise<void>;
-  upsertZettel: (
-    zettel: {
+  upsertAzk: (
+    note: {
       id: string;
       title: string;
       body: string;
@@ -55,7 +55,7 @@ const defaultUtils: Utils = {
   generateId: generateTimestampId,
   embed: (text) => embedText(text, DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_HOST),
   writeNote: (note) => fsWriteNote(note),
-  upsertZettel: (zettel, embedding) => dbUpsertZettel(DB_PATH, zettel, embedding),
+  upsertAzk: (note, embedding) => dbUpsertAzk(DB_PATH, note, embedding),
   createLink: (fromId, toId, relation) => dbCreateLink(DB_PATH, fromId, toId, relation),
   print: (msg) => console.log(msg),
 };
@@ -77,7 +77,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       await utils.writeNote({ id, title, tags, created, updated, links: noteLinks, body });
 
       const bodyHash = await hashContent(body);
-      utils.upsertZettel(
+      utils.upsertAzk(
         { id, title, body, tags, created, updated, bodyHash },
         embedding ?? undefined,
       );

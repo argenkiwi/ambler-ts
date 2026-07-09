@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-router.ts";
+import { factory, State, Utils } from "../azk-router.ts";
 
 const edges = {
   onSearch: "search",
@@ -12,7 +12,7 @@ const edges = {
   onError: "error",
 };
 
-Deno.test("zettelRouterNode should transition to onSearch for search action", async () => {
+Deno.test("azkRouterNode should transition to onSearch for search action", async () => {
   const state: State = { action: "search" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -20,7 +20,7 @@ Deno.test("zettelRouterNode should transition to onSearch for search action", as
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onCreate for create action", async () => {
+Deno.test("azkRouterNode should transition to onCreate for create action", async () => {
   const state: State = { action: "CREATE" }; // Test case insensitivity
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -28,7 +28,7 @@ Deno.test("zettelRouterNode should transition to onCreate for create action", as
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onGet for get action", async () => {
+Deno.test("azkRouterNode should transition to onGet for get action", async () => {
   const state: State = { action: "get" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -36,7 +36,7 @@ Deno.test("zettelRouterNode should transition to onGet for get action", async ()
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onUpdate for update action", async () => {
+Deno.test("azkRouterNode should transition to onUpdate for update action", async () => {
   const state: State = { action: "update" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -44,7 +44,7 @@ Deno.test("zettelRouterNode should transition to onUpdate for update action", as
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onDelete for delete action", async () => {
+Deno.test("azkRouterNode should transition to onDelete for delete action", async () => {
   const state: State = { action: "delete" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -52,7 +52,7 @@ Deno.test("zettelRouterNode should transition to onDelete for delete action", as
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onLink for link action", async () => {
+Deno.test("azkRouterNode should transition to onLink for link action", async () => {
   const state: State = { action: "link" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -60,7 +60,7 @@ Deno.test("zettelRouterNode should transition to onLink for link action", async 
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onReindex for reindex action", async () => {
+Deno.test("azkRouterNode should transition to onReindex for reindex action", async () => {
   const state: State = { action: "reindex" };
   const utils: Utils = { print: () => {} };
   const result = await factory(edges, utils)(state);
@@ -68,7 +68,7 @@ Deno.test("zettelRouterNode should transition to onReindex for reindex action", 
   assertEquals(result[1], state);
 });
 
-Deno.test("zettelRouterNode should transition to onError if no action specified", async () => {
+Deno.test("azkRouterNode should transition to onError if no action specified", async () => {
   const state: State = {};
   let printedMsg = "";
   const utils: Utils = {
@@ -82,7 +82,7 @@ Deno.test("zettelRouterNode should transition to onError if no action specified"
   assertEquals(JSON.parse(printedMsg), { error: "No action specified" });
 });
 
-Deno.test("zettelRouterNode should transition to onError if unknown action specified", async () => {
+Deno.test("azkRouterNode should transition to onError if unknown action specified", async () => {
   const state: State = { action: "invalid-action" };
   let printedMsg = "";
   const utils: Utils = {

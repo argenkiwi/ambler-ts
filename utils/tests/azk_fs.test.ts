@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { Note, parseNote, serializeNote } from "../zettel_fs.ts";
+import { Note, parseNote, serializeNote } from "../azk_fs.ts";
 
 const note: Note = {
   id: "20260706120000",

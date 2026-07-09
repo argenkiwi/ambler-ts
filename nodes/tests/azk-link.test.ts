@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-link.ts";
-import { Note } from "../../utils/zettel_fs.ts";
+import { factory, State, Utils } from "../azk-link.ts";
+import { Note } from "../../utils/azk_fs.ts";
 
 function note(id: string, links: Note["links"] = []): Note {
   return {
@@ -14,7 +14,7 @@ function note(id: string, links: Note["links"] = []): Note {
   };
 }
 
-Deno.test("zettelLinkNode should link two existing zettels", async () => {
+Deno.test("azkLinkNode should link two existing azk", async () => {
   const initialState: State = { fromId: "a", toId: "b", relation: "builds on" };
   const linked: unknown[] = [];
   const written: Note[] = [];
@@ -39,7 +39,7 @@ Deno.test("zettelLinkNode should link two existing zettels", async () => {
   assertEquals(written[0].links, [{ to: "b", relation: "builds on" }]);
 });
 
-Deno.test("zettelLinkNode should transition to onError when either zettel is missing", async () => {
+Deno.test("azkLinkNode should transition to onError when either note is missing", async () => {
   const initialState: State = { fromId: "a", toId: "missing", relation: "relates to" };
 
   const utils: Utils = {
@@ -58,5 +58,5 @@ Deno.test("zettelLinkNode should transition to onError when either zettel is mis
   );
 
   assertEquals(result[0], "error");
-  assertEquals(result[1].error, "Cannot link: one or both zettels not found (a, missing)");
+  assertEquals(result[1].error, "Cannot link: one or both azk entries not found (a, missing)");
 });

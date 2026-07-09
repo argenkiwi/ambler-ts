@@ -1,11 +1,11 @@
 import { NodeFactory } from "../ambler.ts";
-import { getLinks, ZettelLink } from "../utils/zettel_db.ts";
-import { Note, readNote as fsReadNote } from "../utils/zettel_fs.ts";
-import { DB_PATH } from "../utils/zettel_config.ts";
+import { getLinks, AzkLink } from "../utils/azk_db.ts";
+import { Note, readNote as fsReadNote } from "../utils/azk_fs.ts";
+import { DB_PATH } from "../utils/azk_config.ts";
 
 export interface State {
   id: string;
-  result?: Note & { links: ZettelLink[] };
+  result?: Note & { links: AzkLink[] };
   error?: string;
 }
 
@@ -13,7 +13,7 @@ export type Edge = "onFound" | "onNotFound";
 
 export type Utils = {
   readNote: (id: string) => Promise<Note | null>;
-  getLinks: (id: string) => ZettelLink[];
+  getLinks: (id: string) => AzkLink[];
   print: (msg: string) => void;
 };
 
@@ -31,7 +31,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const note = await utils.readNote(state.id);
 
     if (!note) {
-      const error = `Zettel not found: ${state.id}`;
+      const error = `Azk not found: ${state.id}`;
       utils.print(JSON.stringify({ error }));
       return [edges.onNotFound, { ...state, error }];
     }
