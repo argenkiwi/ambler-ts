@@ -47,4 +47,4 @@ azk reindex
 
 The index is gitignored, so a fresh checkout starts with none — run this once before the first `search`. It's always safe to delete `.azk/` and rebuild it this way.
 
-All seven subcommands print a single JSON object/array to stdout — parse it directly. Search blends keyword (FTS5) and, when a local OpenAI-compatible embeddings host is reachable (default `http://localhost:11434/v1`, model `nomic-embed-text`), semantic similarity — it degrades gracefully to keyword-only if no such host is running.
+All seven subcommands print a single JSON object/array to stdout — parse it directly. Search blends keyword (FTS5) and, when a local OpenAI-compatible embeddings host is reachable (default `http://localhost:11434/v1`, model `embeddinggemma:latest` — override either via the `EMBEDDING_HOST`/`EMBEDDING_MODEL` env vars, e.g. in a `.env` file), semantic similarity — it degrades gracefully to keyword-only if no such host is running.

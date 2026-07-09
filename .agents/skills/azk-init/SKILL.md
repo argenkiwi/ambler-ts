@@ -47,7 +47,7 @@ If `<target>/.gitignore` doesn't already ignore `.azk/`, append a `.azk/` entry 
 Read this skill's `assets/AGENTS.md` — it contains the "Zettelkasten RAG Protocol" section that instructs any agent working in the project to retrieve before implementing and store after, using the `deno task azk` subcommands.
 
 - If `<target>/AGENTS.md` does **not** exist, write the asset's content as the full file.
-- If it **does** exist, append the asset's content to the end, separated by a blank line — never overwrite existing instructions. If a "## Zettelkasten RAG Protocol" section is already present, replace just that section instead of duplicating it.
+- If it **does** exist, append the asset's content to the end, separated by a blank line — never overwrite existing instructions. If a "Zettelkasten RAG Protocol" section is already present, replace just that section instead of duplicating it — match on the heading text, not the exact heading level, in case it was hand-nested under a different level.
 
 ### Step 5 — Install this skill locally
 

@@ -28,9 +28,11 @@ All commands below use `<repo>` for this path.
 ## Step 2 — Install the binary globally
 
 ```bash
-deno install --global --allow-read --allow-write --allow-net --allow-env --env-file \
+deno install --global --force --allow-read --allow-write --allow-net --allow-env --env-file \
   --config "<repo>/deno.json" -n azk "<repo>/walks/azk.ts"
 ```
+
+`--force` is required, not optional — this skill is meant to be re-run whenever `ambler-ts` changes, and `deno install --global` refuses to overwrite an existing `azk` install without it (it'll fail with "Existing installation found" otherwise).
 
 Confirm the Deno installation bin directory (typically `~/.deno/bin` on macOS/Linux) is on the shell's `PATH`. If `azk` isn't found after installing, that's almost always why — tell the user to add it to their shell profile (`~/.zshrc`, `~/.bashrc`, etc.) and re-open their shell.
 
@@ -43,19 +45,20 @@ Read this skill's `assets/AGENTS.md` — the bare-`azk`-command variant of the "
 Merge it into **your own** global instructions file — whichever one you already know applies to every project you work in (e.g. `~/.claude/CLAUDE.md` for Claude Code, `~/.gemini/config/AGENTS.md` for Gemini CLI). Don't guess a path for a different agent; use the one you actually read your own global instructions from.
 
 - If that file doesn't contain a "Zettelkasten RAG Protocol" section yet, append the asset's content to the end, separated by a blank line — never overwrite existing instructions.
-- If a "## Zettelkasten RAG Protocol" section is already present (e.g. from a previous install), replace just that section instead of duplicating it.
+- If a "# Zettelkasten RAG Protocol" section is already present (e.g. from a previous install), replace just that section instead of duplicating it — match on the heading text, not the exact heading level, since some global instruction files may nest it under a parent section.
 
 ---
 
 ## Step 4 — Verify
 
-From a directory *outside* this repo (any scratch/temp directory works), confirm the global install actually resolves and runs standalone:
+From a directory *outside* this repo, confirm the global install actually resolves and runs standalone. Use whatever scratch/temp directory is appropriate for the current agent's environment (e.g. a dedicated scratchpad directory if one applies) rather than defaulting to `/tmp`:
 
 ```bash
-cd /tmp && azk reindex && azk search "test"
+cd "<scratch-dir>" && azk reindex && azk search "test" && \
+  echo '{"title":"smoke test","body":"verifying the global azk install"}' | azk create
 ```
 
-Confirm both commands run without error and that `notes/` and `.azk/` spring up in that temp directory with no pre-existing scaffolding — this is what "no per-project init needed" means in practice.
+`reindex`/`search` alone only create `.azk/` — `notes/` is created lazily by `azk_fs.ts` the first time a note is actually written, so the `create` call above is what proves "no per-project init needed" in practice. Confirm all three commands run without error and that both `notes/` and `.azk/` now exist in that directory with no pre-existing scaffolding.
 
 ---
 
