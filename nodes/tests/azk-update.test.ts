@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-update.ts";
-import { Note } from "../../utils/zettel_fs.ts";
+import { factory, State, Utils } from "../azk-update.ts";
+import { Note } from "../../utils/azk_fs.ts";
 
 const existingNote: Note = {
   id: "20260706120000",
@@ -12,7 +12,7 @@ const existingNote: Note = {
   body: "old body",
 };
 
-Deno.test("zettelUpdateNode should re-embed and update when body changes", async () => {
+Deno.test("azkUpdateNode should re-embed and update when body changes", async () => {
   const initialState: State = { id: "20260706120000", body: "new body" };
   const written: unknown[] = [];
   const upserted: unknown[] = [];
@@ -24,7 +24,7 @@ Deno.test("zettelUpdateNode should re-embed and update when body changes", async
       return Promise.resolve();
     },
     embed: (text) => Promise.resolve(text === "new body" ? [0.5] : null),
-    upsertZettel: (zettel, embedding) => upserted.push({ zettel, embedding }),
+    upsertAzk: (note, embedding) => upserted.push({ note, embedding }),
     print: () => {},
   };
 
@@ -40,7 +40,7 @@ Deno.test("zettelUpdateNode should re-embed and update when body changes", async
   assertEquals((upserted[0] as { embedding?: number[] }).embedding, [0.5]);
 });
 
-Deno.test("zettelUpdateNode should not re-embed when body is unchanged", async () => {
+Deno.test("azkUpdateNode should not re-embed when body is unchanged", async () => {
   const initialState: State = { id: "20260706120000", tags: ["y"] };
   let embedCalled = false;
 
@@ -51,7 +51,7 @@ Deno.test("zettelUpdateNode should not re-embed when body is unchanged", async (
       embedCalled = true;
       return Promise.resolve([0.9]);
     },
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     print: () => {},
   };
 
@@ -60,14 +60,14 @@ Deno.test("zettelUpdateNode should not re-embed when body is unchanged", async (
   assertEquals(embedCalled, false);
 });
 
-Deno.test("zettelUpdateNode should transition to onNotFound when the id does not exist", async () => {
+Deno.test("azkUpdateNode should transition to onNotFound when the id does not exist", async () => {
   const initialState: State = { id: "missing-id", title: "New title" };
 
   const utils: Utils = {
     readNote: () => Promise.resolve(null),
     writeNote: () => Promise.resolve(),
     embed: () => Promise.resolve(null),
-    upsertZettel: () => {},
+    upsertAzk: () => {},
     print: () => {},
   };
 
@@ -76,5 +76,5 @@ Deno.test("zettelUpdateNode should transition to onNotFound when the id does not
   );
 
   assertEquals(result[0], "missing");
-  assertEquals(result[1].error, "Zettel not found: missing-id");
+  assertEquals(result[1].error, "Azk not found: missing-id");
 });

@@ -1,7 +1,7 @@
 import { NodeFactory } from "../ambler.ts";
-import { createLink as dbCreateLink } from "../utils/zettel_db.ts";
-import { Note, readNote as fsReadNote, writeNote as fsWriteNote } from "../utils/zettel_fs.ts";
-import { DB_PATH } from "../utils/zettel_config.ts";
+import { createLink as dbCreateLink } from "../utils/azk_db.ts";
+import { Note, readNote as fsReadNote, writeNote as fsWriteNote } from "../utils/azk_fs.ts";
+import { DB_PATH } from "../utils/azk_config.ts";
 
 export interface State {
   fromId: string;
@@ -40,7 +40,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     ]);
 
     if (!fromNote || !toNote) {
-      const error = `Cannot link: one or both zettels not found (${fromId}, ${toId})`;
+      const error = `Cannot link: one or both azk entries not found (${fromId}, ${toId})`;
       utils.print(JSON.stringify({ error }));
       return [edges.onError, { ...state, error }];
     }

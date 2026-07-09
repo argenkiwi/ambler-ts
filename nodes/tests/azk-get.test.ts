@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-get.ts";
-import { Note } from "../../utils/zettel_fs.ts";
+import { factory, State, Utils } from "../azk-get.ts";
+import { Note } from "../../utils/azk_fs.ts";
 
 const sample: Note = {
   id: "20260706120000",
@@ -12,7 +12,7 @@ const sample: Note = {
   body: "Body",
 };
 
-Deno.test("zettelGetNode should return the zettel and its links when found", async () => {
+Deno.test("azkGetNode should return the note and its links when found", async () => {
   const initialState: State = { id: sample.id };
 
   const utils: Utils = {
@@ -30,7 +30,7 @@ Deno.test("zettelGetNode should return the zettel and its links when found", asy
   assertEquals(result[1].result?.links.length, 1);
 });
 
-Deno.test("zettelGetNode should transition to onNotFound when the id does not exist", async () => {
+Deno.test("azkGetNode should transition to onNotFound when the id does not exist", async () => {
   const initialState: State = { id: "missing-id" };
 
   const utils: Utils = {
@@ -44,5 +44,5 @@ Deno.test("zettelGetNode should transition to onNotFound when the id does not ex
   );
 
   assertEquals(result[0], "missing");
-  assertEquals(result[1].error, "Zettel not found: missing-id");
+  assertEquals(result[1].error, "Azk not found: missing-id");
 });

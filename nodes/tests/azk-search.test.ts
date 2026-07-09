@@ -1,8 +1,8 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-search.ts";
-import { ZettelMeta } from "../../utils/zettel_db.ts";
+import { factory, State, Utils } from "../azk-search.ts";
+import { AzkMeta } from "../../utils/azk_db.ts";
 
-function record(id: string, title: string): ZettelMeta {
+function record(id: string, title: string): AzkMeta {
   return {
     id,
     title,
@@ -14,14 +14,14 @@ function record(id: string, title: string): ZettelMeta {
   };
 }
 
-Deno.test("zettelSearchNode should rank keyword matches when no embeddings host is reachable", async () => {
+Deno.test("azkSearchNode should rank keyword matches when no embeddings host is reachable", async () => {
   const initialState: State = { query: "sqlite" };
 
   const utils: Utils = {
-    searchZettels: () => [record("a", "SQLite notes"), record("b", "Other note")],
+    searchAzk: () => [record("a", "SQLite notes"), record("b", "Other note")],
     embed: async () => null,
     getAllEmbeddings: () => [],
-    getZettelMeta: () => null,
+    getAzkMeta: () => null,
     print: () => {},
   };
 
@@ -33,14 +33,14 @@ Deno.test("zettelSearchNode should rank keyword matches when no embeddings host 
   assertEquals(result[1].results?.map((r) => r.id), ["a", "b"]);
 });
 
-Deno.test("zettelSearchNode should surface a semantically similar note with no keyword overlap", async () => {
+Deno.test("azkSearchNode should surface a semantically similar note with no keyword overlap", async () => {
   const initialState: State = { query: "note taking" };
 
   const utils: Utils = {
-    searchZettels: () => [],
+    searchAzk: () => [],
     embed: async () => [1, 0],
     getAllEmbeddings: () => [{ id: "c", vector: [1, 0] }],
-    getZettelMeta: (id) => (id === "c" ? record("c", "Zettelkasten") : null),
+    getAzkMeta: (id) => (id === "c" ? record("c", "Zettelkasten") : null),
     print: () => {},
   };
 
@@ -52,14 +52,14 @@ Deno.test("zettelSearchNode should surface a semantically similar note with no k
   assertEquals(result[1].results?.[0].id, "c");
 });
 
-Deno.test("zettelSearchNode should transition to onEmpty when nothing matches", async () => {
+Deno.test("azkSearchNode should transition to onEmpty when nothing matches", async () => {
   const initialState: State = { query: "nothing" };
 
   const utils: Utils = {
-    searchZettels: () => [],
+    searchAzk: () => [],
     embed: async () => null,
     getAllEmbeddings: () => [],
-    getZettelMeta: () => null,
+    getAzkMeta: () => null,
     print: () => {},
   };
 

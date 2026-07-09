@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../zettel-delete.ts";
-import { Note } from "../../utils/zettel_fs.ts";
+import { factory, State, Utils } from "../azk-delete.ts";
+import { Note } from "../../utils/azk_fs.ts";
 
 const existingNote: Note = {
   id: "20260706120000",
@@ -12,7 +12,7 @@ const existingNote: Note = {
   body: "Body",
 };
 
-Deno.test("zettelDeleteNode should delete and return the id when it exists", async () => {
+Deno.test("azkDeleteNode should delete and return the id when it exists", async () => {
   const initialState: State = { id: "20260706120000" };
   const deletedFiles: string[] = [];
   const deletedFromIndex: string[] = [];
@@ -23,7 +23,7 @@ Deno.test("zettelDeleteNode should delete and return the id when it exists", asy
       deletedFiles.push(id);
       return Promise.resolve();
     },
-    deleteZettel: (id) => {
+    deleteAzk: (id) => {
       deletedFromIndex.push(id);
       return true;
     },
@@ -40,13 +40,13 @@ Deno.test("zettelDeleteNode should delete and return the id when it exists", asy
   assertEquals(deletedFromIndex, ["20260706120000"]);
 });
 
-Deno.test("zettelDeleteNode should transition to onNotFound when the id does not exist", async () => {
+Deno.test("azkDeleteNode should transition to onNotFound when the id does not exist", async () => {
   const initialState: State = { id: "missing-id" };
 
   const utils: Utils = {
     readNote: () => Promise.resolve(null),
     deleteNoteFile: () => Promise.resolve(),
-    deleteZettel: () => false,
+    deleteAzk: () => false,
     print: () => {},
   };
 
@@ -55,5 +55,5 @@ Deno.test("zettelDeleteNode should transition to onNotFound when the id does not
   );
 
   assertEquals(result[0], "missing");
-  assertEquals(result[1].error, "Zettel not found: missing-id");
+  assertEquals(result[1].error, "Azk not found: missing-id");
 });
