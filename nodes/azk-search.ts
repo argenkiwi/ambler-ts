@@ -48,6 +48,14 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
+/**
+ * Blends FTS5 keyword search with cosine-similarity semantic search, best
+ * match first. Semantic ranking is additive — it can boost a keyword hit's
+ * score or surface a note that shares no keywords with the query at all —
+ * and is skipped entirely (falling back to keyword-only) if `embed` returns
+ * `null`, e.g. the embeddings host is unreachable. An empty result set is
+ * not an error: it prints `[]` and still takes `onEmpty`/exits 0.
+ */
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,

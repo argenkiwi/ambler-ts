@@ -51,6 +51,12 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
+/**
+ * Partially updates a note (any subset of title/body/tags) and only
+ * re-embeds when `body` changes. A missing id prints `{ error }` and takes
+ * the `onNotFound` edge — the process still exits 0 unless the caller maps
+ * that edge to an explicit non-zero exit.
+ */
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
