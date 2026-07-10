@@ -8,32 +8,36 @@ metadata:
 
 # Azk Reference
 
-Syntax for all 7 subcommands is self-documented: run `azk` with no arguments for the full list, or run any subcommand with missing/invalid args for its own `Usage: ...` string. This reference covers only what that runtime output doesn't: exact JSON shapes and gotchas.
+Syntax for all 7 subcommands is self-documented: run `azk` with no arguments for the full list, or run any subcommand with a missing/invalid *CLI argument* for its own `Usage: ...` string. That only covers argument validation — `create` and `update` take their real payload over stdin, so a stdin problem never produces a `Usage:` string (see their gotchas below). This reference covers what none of that runtime output does: exact JSON shapes, and gotchas.
+
+**Exit code isn't a reliable success signal.** CLI-argument validation (missing query/id/fromId, malformed JSON on stdin) calls `Deno.exit(1)`. But failures raised *inside* a subcommand — `get`/`update`/`delete`'s "not found", `link`'s "one or both ids not found", `create`'s write/embed failure — print `{ error }` and the process still exits **0**. Always check for a top-level `error` key in the JSON; don't gate on exit code alone except for the argument-validation cases above.
 
 ### search
 `azk search "<query>" [limit]` — `limit` defaults to 5.
-Returns `{ id, title, tags, created, score }[]`, best-first, or `[]`. Degrades to keyword-only (FTS5) if no embeddings host is reachable.
+Returns `{ id, title, tags, created, score }[]`, best-first, or `[]`. Degrades to keyword-only (FTS5) if no embeddings host is reachable. An empty result isn't an error — still exit 0.
 
 ### create
 `echo '{"title":"...","body":"...","tags":[...],"links":[{"toId":"...","relation":"..."}]}' | azk create`
-Returns `{ id, title, tags, created, links }`, or `{ error }`.
-Gotcha: stdin must be valid, non-empty JSON — empty or malformed input throws an uncaught exception rather than a clean error.
+Returns `{ id, title, tags, created, links }`, or `{ error }` (exit 0 — see above).
+Gotchas:
+- Malformed or empty stdin JSON crashes with an uncaught exception (stack trace, non-zero exit) during parsing — but once parsing succeeds, a missing `title`/`body` gets a clean `{ error: "title and body are required" }` and exit 1 instead.
+- `links` isn't validated against existing ids — a `toId` that doesn't exist is stored as a dangling link anyway (unlike the standalone `link` subcommand, which checks both ids exist first). `reindex` won't clean it up either, since it trusts each note's own frontmatter links without checking the target exists.
 
 ### get
 `azk get <id>`
-Returns the full note (including body) plus every link touching it in either direction, or `{ error }` if not found.
+Returns the full note (including body) plus every link touching it in either direction, or `{ error }` if not found (exit 0).
 
 ### update
 `echo '{"body":"..."}' | azk update <id>`
-Partial update — any subset of `title`/`body`/`tags`. Returns `{ id, updated: true }` (not the updated fields themselves). Only re-embeds when `body` changes. Same stdin-must-be-valid-JSON gotcha as `create`.
+Partial update — any subset of `title`/`body`/`tags`. Returns `{ id, updated: true }` (not the updated fields themselves). Only re-embeds when `body` changes. Same stdin-parsing gotcha as `create`; a missing id's `{ error }` is exit 0 too.
 
 ### delete
 `azk delete <id>`
-Removes the note's file, its index entry, and any links referencing it (in either direction). Returns `{ id, deleted: true }`, or `{ error }` if not found.
+Removes the note's file, its index entry, and any links referencing it (in either direction). Returns `{ id, deleted: true }`, or `{ error }` if not found (exit 0).
 
 ### link
 `azk link <fromId> <toId> "<relation>"`
-Returns `{ fromId, toId, relation, linked: true }`, or `{ error }` if either id doesn't exist.
+Returns `{ fromId, toId, relation, linked: true }`, or `{ error }` if either id doesn't exist (exit 0).
 
 ### reindex
 `azk reindex`

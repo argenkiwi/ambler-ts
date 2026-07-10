@@ -27,6 +27,13 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
+/**
+ * Creates an explicit link between two existing notes, requiring both ids
+ * to already be indexed (unlike `create`'s `links` input, which isn't
+ * validated). If either is missing, prints `{ error }` and takes the
+ * `onError` edge — the process still exits 0 unless the caller maps that
+ * edge to an explicit non-zero exit.
+ */
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,

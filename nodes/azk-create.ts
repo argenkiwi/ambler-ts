@@ -60,6 +60,17 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
+/**
+ * Writes a new note and its index entry. Note: `links` here is *not*
+ * validated against existing ids (unlike the standalone `link` subcommand) —
+ * a `toId` that doesn't exist is stored as a dangling link, and `reindex`
+ * won't catch it either since it trusts each note's own frontmatter links
+ * without checking the target exists.
+ *
+ * On failure (embed/write/index throw), prints `{ error }` and takes the
+ * `onError` edge — the process still exits 0 unless the caller maps that
+ * edge to an explicit non-zero exit.
+ */
 export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
