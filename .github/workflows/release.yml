@@ -1,0 +1,137 @@
+name: Release on PR merge
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: compute the next version but skip creating the tag/release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Detect PR-merge commit
+        id: detect
+        run: |
+          subject="$(git log -1 --format=%s HEAD)"
+          echo "HEAD subject: $subject"
+          if [[ "$subject" =~ \(#([0-9]+)\)$ ]]; then
+            pr_number="${BASH_REMATCH[1]}"
+            echo "Detected PR #$pr_number merge commit."
+            echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          else
+            echo "HEAD commit is not a PR-merge commit (no trailing (#N) in subject). Skipping release."
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Already tagged?
+        id: already_tagged
+        if: steps.detect.outputs.pr_number != ''
+        run: |
+          existing="$(git tag --points-at HEAD)"
+          if [ -n "$existing" ]; then
+            echo "HEAD is already tagged ($existing) - this run is a duplicate/rerun. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Determine bump type from PR labels
+        id: bump
+        if: steps.detect.outputs.pr_number != '' && steps.already_tagged.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number="${{ steps.detect.outputs.pr_number }}"
+          labels="$(gh pr view "$pr_number" --repo "${{ github.repository }}" --json labels --jq '.labels[].name')"
+          echo "Labels on PR #$pr_number:"
+          echo "$labels"
+
+          if echo "$labels" | grep -qx "release:skip"; then
+            echo "release:skip label present. This PR will not produce a release."
+            echo "bump=skip" >> "$GITHUB_OUTPUT"
+          elif echo "$labels" | grep -qx "release:major"; then
+            echo "bump=major" >> "$GITHUB_OUTPUT"
+          elif echo "$labels" | grep -qx "release:minor"; then
+            echo "bump=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "No release:major/release:minor label found; defaulting to patch."
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute next version
+        id: version
+        if: steps.detect.outputs.pr_number != '' && steps.already_tagged.outputs.skip != 'true' && steps.bump.outputs.bump != 'skip'
+        run: |
+          latest="$(git tag --list --sort=-v:refname | head -n1)"
+          if [ -z "$latest" ]; then
+            echo "No existing tags found; bootstrapping from 0.0.0."
+            latest="0.0.0"
+          fi
+          echo "Latest tag: $latest"
+
+          IFS='.' read -r major minor patch <<< "$latest"
+          case "${{ steps.bump.outputs.bump }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+          next="${major}.${minor}.${patch}"
+          echo "Next version: $next"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Safety check - tag/release must not already exist
+        if: steps.version.outputs.next != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          next="${{ steps.version.outputs.next }}"
+          if git rev-parse -q --verify "refs/tags/$next" >/dev/null; then
+            echo "::error::Tag $next already exists. Aborting to avoid clobbering an existing release."
+            exit 1
+          fi
+          if gh release view "$next" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "::error::Release $next already exists on GitHub. Aborting to avoid clobbering an existing release."
+            exit 1
+          fi
+
+      - name: Create tag and release
+        if: steps.version.outputs.next != '' && github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          next="${{ steps.version.outputs.next }}"
+          git tag "$next"
+          git push origin "$next"
+          gh release create "$next" \
+            --repo "${{ github.repository }}" \
+            --title "$next" \
+            --generate-notes
+
+      - name: Dry run summary
+        if: steps.version.outputs.next != '' && github.event.inputs.dry_run == 'true'
+        run: |
+          echo "Dry run - would create tag/release ${{ steps.version.outputs.next }} (bump: ${{ steps.bump.outputs.bump }})"
+
+      - name: Skipped via release:skip label
+        if: steps.bump.outputs.bump == 'skip'
+        run: echo "Release explicitly suppressed for this PR via the release:skip label."
