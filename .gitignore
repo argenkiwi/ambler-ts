@@ -58,3 +58,14 @@ Thumbs.db
 # --- Azk (Ambler Zettelkasten) ---
 # Binary SQLite file: not diffable/mergeable, so it's local-only per workstation.
 .azk/
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml

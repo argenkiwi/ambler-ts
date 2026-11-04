@@ -1,0 +1,5 @@
+{
+  "$schema": "https://pi.dev/schemas/settings.schema.json",
+  "defaultProvider": "ollama",
+  "defaultModel": "qwen3.8:27b-mlx"
+}

@@ -96,6 +96,21 @@ Ambler is designed to be augmented by agents using these specialized skills:
 - `ambler-spec`: Generates or refines Markdown specifications.
 - `ambler-util`: Extracts reusable logic into utility modules.
 
+### Sandboxed agent (Pi + local Ollama)
+
+`devenv shell` provides Deno plus a `pi` command that runs the [Pi coding agent](https://github.com/earendil-works/pi) inside a Docker container (`sandbox/`). Only this repo is mounted, and Pi talks to the host's Ollama model `qwen3.8:27b-mlx` via `host.docker.internal:11434`.
+
+```bash
+# Start Docker Desktop and Ollama first
+devenv shell
+pi                 # interactive agent (builds the image on first run)
+pi -p "..."        # one-shot prompt
+sandbox-shell      # bash inside the same container
+sandbox-build      # rebuild after editing sandbox/
+```
+
+Pi doesn't ask before running commands, so it's never installed on the host. Edits under `/workspace` write straight through to your checkout.
+
 ---
 
 Built with ❤️ by [argenkiwi](https://github.com/argenkiwi)
