@@ -1,0 +1,22 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "ollama": {
+      "baseUrl": "http://host.docker.internal:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "compat": { "supportsDeveloperRole": false },
+      "models": [
+        {
+          "id": "qwen3.8:27b-mlx",
+          "name": "Qwen 3.8 27B (MLX, host)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 65536,
+          "maxTokens": 16384,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        }
+      ]
+    }
+  }
+}
