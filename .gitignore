@@ -52,6 +52,8 @@ Thumbs.db
 
 # --- Project Specific ---
 .pi/
+# Durable chat sessions (SQLite, local-only per workstation)
+.ambler/
 .agents/settings.local.json
 .claude/
 

@@ -76,12 +76,30 @@ Markdown blueprints that describe the intended behavior and state transitions be
 5.  **Execute**: Run the program with `deno task <name>`.
 
 ```bash
-# Run all tests
-deno test nodes/tests/
+# Run all tests (nodes and utils)
+deno task test
 
 # Execute the counter example
 deno run walks/counter.ts
 ```
+
+---
+
+## 💾 Durable Walks (Pi Durable)
+
+`walks/chat.ts` shows how to combine Ambler with [Pi Durable](https://github.com/earendil-works/pi/tree/main/packages/durable) for a chat that survives restarts and crashes. Nodes are unchanged; durability is added at two seams:
+
+- **Checkpoint**: the walk loop saves `(nodeId, state)` after every step (`session.saveCheckpoint`) and starts from the saved position on launch.
+- **Durable LLM turn**: the `chat` util injected into `CHAT_RESPONSE` submits the turn to Pi with an idempotent request ID, so a crash mid-response never sends the same turn to the model twice.
+
+Both live in `utils/durable.ts`. Sessions are stored in SQLite at `./.ambler/chat.sqlite` (override with the first argument or `CHAT_SESSION`); delete the file to start a new conversation.
+
+```bash
+deno task chat                 # starts, or resumes the saved conversation
+deno task chat ./other.sqlite  # a separate session
+```
+
+Pi Durable is experimental and its API changes between releases, so the version is pinned in `deno.json`.
 
 ---
 

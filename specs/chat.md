@@ -2,6 +2,16 @@
 
 This program implements a conversational chat interface between the user and a locally running LLM accessible via an OpenAI-compatible API. The conversation continues until the user types "bye", "exit", or "quit".
 
+## Durability
+
+The session is durable via Pi Durable (`utils/durable.ts`), stored in a SQLite file (default `./.ambler/chat.sqlite`, overridable by the first CLI argument or `CHAT_SESSION`).
+
+- After every step the walk saves a checkpoint of the next node and the shared state. On launch it resumes from the checkpoint; a new session starts at `LLM_CHECK`.
+- If the saved host is unreachable on resume, the walk restarts at `LLM_CHECK` (keeping the conversation) so the user can choose a working host.
+- Quitting with "bye" keeps the conversation: the saved position becomes `CHAT_PROMPT`, so the next launch continues where it left off. Delete the session file to start over.
+- `CHAT_RESPONSE` sends the turn through Pi Durable with a per-turn idempotent request ID, so a crash mid-response never sends the same turn to the model twice. Pi holds the conversation transcript; `messages` mirrors it.
+- If a turn failed (e.g. the host was down), relaunching asks the model again without duplicating the user message.
+
 ## Nodes
 
 ### LLM Check
@@ -21,7 +31,7 @@ This program implements a conversational chat interface between the user and a l
 
 ### Chat Response
 - Role — Handles the LLM reply.
-- Logic — Sends the full conversation history to the selected model and awaits a reply, then prints the assistant's reply prefixed with "Assistant: " and appends it to the history.
+- Logic — Sends the user's latest message (with the conversation history held by the durable session) to the selected model and awaits a reply, then prints the assistant's reply prefixed with "Assistant: " and appends it to the history.
 - Edges — Transitions to `CHAT_PROMPT` to continue the conversation.
 
 ### Chat Bye
