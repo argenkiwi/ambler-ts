@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -16,23 +16,21 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<State, Edge, Utils> = (
-  edges,
-  utils = defaultUtils,
-) =>
-(state) => {
-  const input = utils.readLine("Enter a starting number: ");
+export const factory: NodeFactory<State, Edge, Utils> =
+  (edges, utils = defaultUtils) =>
+  (state) => {
+    const input = utils.readLine("Enter a starting number: ");
 
-  if (input === null || input === "") {
-    return [edges.onSuccess, { ...state, count: 0 }];
-  }
+    if (input === null || input === "") {
+      return [edges.onSuccess, { ...state, count: 0 }];
+    }
 
-  // Number() rejects trailing junk ("3abc"), which parseInt would accept as 3.
-  const n = Number(input.trim());
-  if (!Number.isInteger(n)) {
-    utils.print("Error: Invalid input. Please enter a number.");
-    return [edges.onError, state];
-  }
+    // Number() rejects trailing junk ("3abc"), which parseInt would accept as 3.
+    const n = Number(input.trim());
+    if (!Number.isInteger(n)) {
+      utils.print("Error: Invalid input. Please enter a number.");
+      return [edges.onError, state];
+    }
 
-  return [edges.onSuccess, { ...state, count: n }];
-};
+    return [edges.onSuccess, { ...state, count: n }];
+  };

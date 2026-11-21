@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { walk, WalkError } from "../../ambler.ts";
+import { WalkError, walk } from "../../ambler.ts";
 import type { Message } from "../../nodes/prompt.ts";
 import { createWalk, type State } from "../chat.ts";
 
@@ -33,7 +33,8 @@ function script(
       },
       prompt: { prompt: read, print },
       response: {
-        chat: opts.chat ??
+        chat:
+          opts.chat ??
           ((messages: Message[]) =>
             Promise.resolve(`echo ${messages.at(-1)!.content}`)),
         print,

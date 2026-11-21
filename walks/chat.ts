@@ -1,25 +1,25 @@
 import { ambler, walk } from "../ambler.ts";
 import {
-  factory as llmCheck,
+  type Utils as ByeUtils,
+  factory as chatBye,
+} from "../nodes/chat-bye.ts";
+import {
   type Utils as LlmCheckUtils,
+  factory as llmCheck,
 } from "../nodes/llm-check.ts";
 import {
-  factory as modelSelect,
   type Utils as ModelSelectUtils,
+  factory as modelSelect,
 } from "../nodes/model-select.ts";
 import {
   factory as chatPrompt,
-  Message,
+  type Message,
   type Utils as PromptUtils,
 } from "../nodes/prompt.ts";
 import {
   factory as chatResponse,
   type Utils as ResponseUtils,
 } from "../nodes/response.ts";
-import {
-  factory as chatBye,
-  type Utils as ByeUtils,
-} from "../nodes/chat-bye.ts";
 
 export interface State {
   messages: Message[];
@@ -46,11 +46,14 @@ export type WalkUtils = {
 export function createWalk(utils: WalkUtils = {}) {
   return ambler<State, NodeId>({
     LLM_CHECK: () =>
-      llmCheck({
-        onSuccess: "MODEL_SELECT",
-        onError: "LLM_CHECK",
-        onQuit: "CHAT_BYE",
-      }, utils.llmCheck),
+      llmCheck(
+        {
+          onSuccess: "MODEL_SELECT",
+          onError: "LLM_CHECK",
+          onQuit: "CHAT_BYE",
+        },
+        utils.llmCheck,
+      ),
     MODEL_SELECT: () =>
       modelSelect({ onSuccess: "CHAT_PROMPT" }, utils.modelSelect),
     CHAT_PROMPT: () =>

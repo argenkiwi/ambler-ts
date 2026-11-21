@@ -35,23 +35,19 @@ function parseSourcePath(srcPath: string): {
 } {
   const normalized = srcPath.replace(/\\/g, "/");
   const lastSlash = normalized.lastIndexOf("/");
-  const fileName = lastSlash === -1
-    ? normalized
-    : normalized.substring(lastSlash + 1);
+  const fileName =
+    lastSlash === -1 ? normalized : normalized.substring(lastSlash + 1);
   const parentDir = lastSlash === -1 ? "." : normalized.substring(0, lastSlash);
   const lastParentSlash = parentDir.lastIndexOf("/");
-  const dirName = lastParentSlash === -1
-    ? parentDir
-    : parentDir.substring(lastParentSlash + 1);
-  const sourceRoot = lastParentSlash === -1
-    ? "."
-    : parentDir.substring(0, lastParentSlash);
+  const dirName =
+    lastParentSlash === -1
+      ? parentDir
+      : parentDir.substring(lastParentSlash + 1);
+  const sourceRoot =
+    lastParentSlash === -1 ? "." : parentDir.substring(0, lastParentSlash);
   const walkName = fileName.endsWith(".ts") ? fileName.slice(0, -3) : fileName;
-  const artifactType: "walk" | "node" | "util" = dirName === "nodes"
-    ? "node"
-    : dirName === "utils"
-    ? "util"
-    : "walk";
+  const artifactType: "walk" | "node" | "util" =
+    dirName === "nodes" ? "node" : dirName === "utils" ? "util" : "walk";
   return { sourceRoot, walkName, artifactType };
 }
 
@@ -92,9 +88,8 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       ];
     }
 
-    const { sourceRoot, walkName, artifactType } = parseSourcePath(
-      sourceWalkPath,
-    );
+    const { sourceRoot, walkName, artifactType } =
+      parseSourcePath(sourceWalkPath);
 
     // Check if target directory is an Ambler project
     const isAmblerProject = await utils.exists(`${targetDir}/ambler.ts`);

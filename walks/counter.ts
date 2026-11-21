@@ -1,10 +1,10 @@
 import { ambler, walk } from "../ambler.ts";
-import defer * as startNode from "../nodes/start.ts";
-import defer * as countNode from "../nodes/count.ts";
-import defer * as stopNode from "../nodes/stop.ts";
-import type { Utils as StartUtils } from "../nodes/start.ts";
 import type { Utils as CountUtils } from "../nodes/count.ts";
+import defer * as countNode from "../nodes/count.ts";
+import type { Utils as StartUtils } from "../nodes/start.ts";
+import defer * as startNode from "../nodes/start.ts";
 import type { Utils as StopUtils } from "../nodes/stop.ts";
+import defer * as stopNode from "../nodes/stop.ts";
 
 export interface State {
   count: number;

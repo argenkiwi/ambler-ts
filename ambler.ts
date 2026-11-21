@@ -71,7 +71,10 @@ export function ambler<S, K extends string>(
  * for the unexpected ones.
  */
 export class WalkError<K extends string = string> extends Error {
-  constructor(readonly nodeId: K, cause: unknown) {
+  constructor(
+    readonly nodeId: K,
+    cause: unknown,
+  ) {
     const reason = cause instanceof Error ? cause.message : String(cause);
     super(`Node ${nodeId} failed: ${reason}`, { cause });
     this.name = "WalkError";

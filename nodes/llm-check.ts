@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 import { checkHost } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
 
