@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   targetDir: string;
@@ -14,7 +14,7 @@ export type Utils = {
 
 const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
-  exit: (code) => Deno.exit(code),
+  exit: (code) => process.exit(code),
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (
@@ -28,9 +28,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     } else {
       utils.print(`Initializing ambler project in "${state.targetDir}"...`);
       utils.print(`  Created: ambler.ts (copied)`);
-      utils.print(`  Created: deno.json`);
+      utils.print(`  Created: package.json`);
+      utils.print(`  Created: tsconfig.json`);
       utils.print(
-        `\nDone! Run "deno check ${state.targetDir}/ambler.ts" to verify.`,
+        `\nDone! Run "cd ${state.targetDir} && bun install && bunx tsc --noEmit" to verify.`,
       );
     }
     return [edges.onDone, state];

@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../clone-setup.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../clone-setup.ts";
 
-Deno.test("cloneSetupNode should return onExisting and isNewProject=false when source walk exists and target is an Ambler project", async () => {
+test("cloneSetupNode should return onExisting and isNewProject=false when source walk exists and target is an Ambler project", async () => {
   const initialState: State = {
     sourceWalkPath: "../other/walks/counter.ts",
     targetDir: "/path/to/target",
@@ -11,7 +11,7 @@ Deno.test("cloneSetupNode should return onExisting and isNewProject=false when s
     exists: (path: string) => {
       if (path === "../other/walks/counter.ts") return Promise.resolve(true);
       if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
-      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      if (path === "/path/to/target/package.json") return Promise.resolve(true);
       return Promise.resolve(false);
     },
   };
@@ -21,13 +21,13 @@ Deno.test("cloneSetupNode should return onExisting and isNewProject=false when s
     utils,
   )(initialState);
 
-  assertEquals(result[0], "ANALYZE");
-  assertEquals(result[1].isNewProject, false);
-  assertEquals(result[1].sourceRoot, "../other");
-  assertEquals(result[1].walkName, "counter");
+  expect(result[0]).toEqual("ANALYZE");
+  expect(result[1].isNewProject).toEqual(false);
+  expect(result[1].sourceRoot).toEqual("../other");
+  expect(result[1].walkName).toEqual("counter");
 });
 
-Deno.test("cloneSetupNode should return onNewProject and isNewProject=true when target is NOT an Ambler project", async () => {
+test("cloneSetupNode should return onNewProject and isNewProject=true when target is NOT an Ambler project", async () => {
   const initialState: State = {
     sourceWalkPath: "../other/walks/counter.ts",
     targetDir: "/path/to/target",
@@ -45,13 +45,13 @@ Deno.test("cloneSetupNode should return onNewProject and isNewProject=true when 
     utils,
   )(initialState);
 
-  assertEquals(result[0], "INIT_SETUP");
-  assertEquals(result[1].isNewProject, true);
-  assertEquals(result[1].sourceRoot, "../other");
-  assertEquals(result[1].walkName, "counter");
+  expect(result[0]).toEqual("INIT_SETUP");
+  expect(result[1].isNewProject).toEqual(true);
+  expect(result[1].sourceRoot).toEqual("../other");
+  expect(result[1].walkName).toEqual("counter");
 });
 
-Deno.test("cloneSetupNode should return onError when source walk does not exist", async () => {
+test("cloneSetupNode should return onError when source walk does not exist", async () => {
   const initialState: State = {
     sourceWalkPath: "../other/walks/nonexistent.ts",
     targetDir: "/path/to/target",
@@ -66,14 +66,13 @@ Deno.test("cloneSetupNode should return onError when source walk does not exist"
     utils,
   )(initialState);
 
-  assertEquals(result[0], "STOP");
-  assertEquals(
-    result[1].error,
+  expect(result[0]).toEqual("STOP");
+  expect(result[1].error).toEqual(
     'Source walk not found at "../other/walks/nonexistent.ts".',
   );
 });
 
-Deno.test("cloneSetupNode should derive sourceRoot as '.' for a local walk path", async () => {
+test("cloneSetupNode should derive sourceRoot as '.' for a local walk path", async () => {
   const initialState: State = {
     sourceWalkPath: "walks/counter.ts",
     targetDir: "/path/to/target",
@@ -91,11 +90,11 @@ Deno.test("cloneSetupNode should derive sourceRoot as '.' for a local walk path"
     utils,
   )(initialState);
 
-  assertEquals(result[1].sourceRoot, ".");
-  assertEquals(result[1].walkName, "counter");
+  expect(result[1].sourceRoot).toEqual(".");
+  expect(result[1].walkName).toEqual("counter");
 });
 
-Deno.test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", async () => {
+test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", async () => {
   const initialState: State = {
     sourceWalkPath: "../other/nodes/clone-setup.ts",
     targetDir: "/path/to/target",
@@ -107,7 +106,7 @@ Deno.test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", 
         return Promise.resolve(true);
       }
       if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
-      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      if (path === "/path/to/target/package.json") return Promise.resolve(true);
       return Promise.resolve(false);
     },
   };
@@ -117,13 +116,13 @@ Deno.test("cloneSetupNode should detect artifactType 'node' for a nodes/ path", 
     utils,
   )(initialState);
 
-  assertEquals(result[0], "ANALYZE");
-  assertEquals(result[1].artifactType, "node");
-  assertEquals(result[1].sourceRoot, "../other");
-  assertEquals(result[1].walkName, "clone-setup");
+  expect(result[0]).toEqual("ANALYZE");
+  expect(result[1].artifactType).toEqual("node");
+  expect(result[1].sourceRoot).toEqual("../other");
+  expect(result[1].walkName).toEqual("clone-setup");
 });
 
-Deno.test("cloneSetupNode should detect artifactType 'util' for a utils/ path", async () => {
+test("cloneSetupNode should detect artifactType 'util' for a utils/ path", async () => {
   const initialState: State = {
     sourceWalkPath: "../other/utils/my-util.ts",
     targetDir: "/path/to/target",
@@ -133,7 +132,7 @@ Deno.test("cloneSetupNode should detect artifactType 'util' for a utils/ path", 
     exists: (path: string) => {
       if (path === "../other/utils/my-util.ts") return Promise.resolve(true);
       if (path === "/path/to/target/ambler.ts") return Promise.resolve(true);
-      if (path === "/path/to/target/deno.json") return Promise.resolve(true);
+      if (path === "/path/to/target/package.json") return Promise.resolve(true);
       return Promise.resolve(false);
     },
   };
@@ -143,8 +142,8 @@ Deno.test("cloneSetupNode should detect artifactType 'util' for a utils/ path", 
     utils,
   )(initialState);
 
-  assertEquals(result[0], "ANALYZE");
-  assertEquals(result[1].artifactType, "util");
-  assertEquals(result[1].sourceRoot, "../other");
-  assertEquals(result[1].walkName, "my-util");
+  expect(result[0]).toEqual("ANALYZE");
+  expect(result[1].artifactType).toEqual("util");
+  expect(result[1].sourceRoot).toEqual("../other");
+  expect(result[1].walkName).toEqual("my-util");
 });

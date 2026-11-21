@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 import { listModels } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
 
@@ -37,10 +37,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     }
 
     utils.print("Available models:");
-    models.forEach((m, i) => utils.print(`${i + 1}. ${m}`));
+    for (const [i, m] of models.entries()) utils.print(`${i + 1}. ${m}`);
 
     const choice = utils.getPrompt(`Select a model (1-${models.length}) [1]: `);
-    const index = choice ? parseInt(choice) - 1 : 0;
+    const index = choice ? parseInt(choice, 10) - 1 : 0;
     const selectedModel = models[index] || models[0];
 
     utils.print(`Selected model: ${selectedModel}`);

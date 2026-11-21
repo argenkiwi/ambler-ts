@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { expect, test } from "bun:test";
 import { walk } from "../../ambler.ts";
 import { createWalk } from "../counter.ts";
 
@@ -22,13 +22,13 @@ function script(lines: (string | null)[], flips: boolean[]) {
   };
 }
 
-Deno.test("counter retries invalid input, then counts until the coin says stop", async () => {
+test("counter retries invalid input, then counts until the coin says stop", async () => {
   const { printed, utils } = script(["abc", "3"], [true, false]);
 
   const final = await walk(createWalk(utils), "START", { count: 99 });
 
-  assertEquals(final.count, 5);
-  assertEquals(printed, [
+  expect(final.count).toEqual(5);
+  expect(printed).toEqual([
     "Error: Invalid input. Please enter a number.",
     "Current count: 3",
     "Current count: 4",
@@ -36,11 +36,11 @@ Deno.test("counter retries invalid input, then counts until the coin says stop",
   ]);
 });
 
-Deno.test("counter starts from 0 at end of input", async () => {
+test("counter starts from 0 at end of input", async () => {
   const { printed, utils } = script([null], [false]);
 
   const final = await walk(createWalk(utils), "START", { count: 99 });
 
-  assertEquals(final.count, 1);
-  assertEquals(printed, ["Current count: 0", "Final count: 1"]);
+  expect(final.count).toEqual(1);
+  expect(printed).toEqual(["Current count: 0", "Final count: 1"]);
 });

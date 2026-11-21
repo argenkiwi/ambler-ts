@@ -1,9 +1,9 @@
 ---
 name: ambler-util
-description: Creates or extracts utility modules into the utils/ directory of an Ambler project. Use this whenever a node's defaultUtils needs external npm/jsr dependencies, contains logic reusable across multiple nodes, or has implementations too complex to inline — even if the user just says "add a util", "extract this helper", "share this function", "create a utility", or "this code is getting too long for the node". When a user creates a node that imports an npm package or has complex async logic, proactively suggest using this skill.
+description: Creates or extracts utility modules into the utils/ directory of an Ambler project. Use this whenever a node's defaultUtils needs external npm dependencies, contains logic reusable across multiple nodes, or has implementations too complex to inline — even if the user just says "add a util", "extract this helper", "share this function", "create a utility", or "this code is getting too long for the node". When a user creates a node that imports an npm package or has complex async logic, proactively suggest using this skill.
 metadata:
   author: leandro
-  version: "2.0"
+  version: "3.0"
 ---
 
 # Ambler Util
@@ -14,7 +14,7 @@ Follow these steps to create or extract a utility module in the `utils/` directo
 
 Create a `utils/<name>.ts` file when a node's `defaultUtils` contains:
 
-1. **External dependencies** — any `npm:` or `jsr:` import (e.g., `npm:ollama`, `npm:marked`)
+1. **External dependencies** — any npm package import (e.g., `ollama`, `marked`)
 2. **Reusable logic** — code that is or could be used by more than one node
 3. **Complex implementations** — functions with significant logic (error handling, retries, connection caching, multi-step operations) that clutter the node file
 
@@ -28,7 +28,7 @@ Before writing, determine:
 
 - **Utility name**: What capability does this module provide? (e.g., `ollama_chat`, `file_writer`, `markdown_parser`). File will be named `utils/<name>.ts`.
 - **Functions to export**: What are the signatures? What arguments and return types?
-- **Dependencies**: Does it require npm/jsr packages? Which ones and what versions?
+- **Dependencies**: Does it require npm packages? Which ones and what versions?
 - **Nodes that will use it**: Which node(s) will import this utility?
 
 If any of the above is unclear, ask the user before writing code.
@@ -41,7 +41,7 @@ Export functions that implement the side-effectful work. Keep the module focused
 
 ```typescript
 // Example: utils/ollama_chat.ts
-import { Ollama } from "npm:ollama";
+import { Ollama } from "ollama";
 
 // Stateful resources (connection pools, instances) live here — private.
 const instances = new Map<string, Ollama>();
@@ -88,19 +88,15 @@ Keep it brief — one sentence summary, then `@param` and `@returns` tags. Skip 
 
 ---
 
-## 3. Update `deno.json` (if using npm/jsr packages)
+## 3. Add npm packages to `package.json` (if any)
 
-If the utility imports from `npm:` or `jsr:`, add the package to the `imports` map in `deno.json`:
+If the utility imports an npm package, add it with:
 
-```json
-{
-  "imports": {
-    "ollama": "npm:ollama@^0.6.3"
-  }
-}
+```bash
+bun add ollama
 ```
 
-Use the bare specifier as the import key and the versioned URL as the value. Check `deno.json` first — the package may already be listed.
+This records it under `dependencies` in `package.json` (e.g. `"ollama": "^0.6.4"`). The `clone` walk (`walks/clone.ts`) copies these entries into other projects, so use `dependencies`, not `devDependencies`, for anything a util imports at runtime. Check `package.json` first — the package may already be listed.
 
 ---
 
@@ -123,7 +119,7 @@ Tests still inject mock implementations and never touch the utility — that's t
 ## 5. Checklist before finishing
 
 - [ ] `utils/<name>.ts` exists and exports the required functions.
-- [ ] All npm/jsr packages used are listed in `deno.json`.
+- [ ] All npm packages used are listed in `package.json` `dependencies`.
 - [ ] Exported function signatures match the node's `Utils` type exactly.
 - [ ] Stateful resources (instances, caches) are private in the util module.
 - [ ] URL/config constants are extracted to named `const` declarations.

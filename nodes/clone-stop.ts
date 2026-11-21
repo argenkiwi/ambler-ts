@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   walkName: string;
@@ -32,7 +32,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       );
       if (state.filesToCopy) {
         utils.print("Files copied:");
-        state.filesToCopy.forEach((f) => utils.print(`  - ${f}`));
+        for (const f of state.filesToCopy) utils.print(`  - ${f}`);
       }
     }
     return [edges.onDone, state];

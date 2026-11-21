@@ -1,5 +1,5 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../clone-config.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../clone-config.ts";
 
 function makeUtils(
   targetContent: string,
@@ -9,7 +9,7 @@ function makeUtils(
   return {
     written,
     readTextFile: (path: string) => {
-      if (path.includes("/deno.json") && !path.startsWith("/source")) {
+      if (path.includes("/package.json") && !path.startsWith("/source")) {
         return Promise.resolve(targetContent);
       }
       if (path.startsWith("/source")) return Promise.resolve(sourceContent);
@@ -22,7 +22,7 @@ function makeUtils(
   };
 }
 
-Deno.test("cloneConfigNode adds walk task with default command when source has no task entry", async () => {
+test("cloneConfigNode adds walk script with default command when source has no script entry", async () => {
   const initialState: State = {
     targetDir: "/target",
     sourceRoot: "/source",
@@ -31,24 +31,22 @@ Deno.test("cloneConfigNode adds walk task with default command when source has n
   };
 
   const utils = makeUtils(
-    JSON.stringify({ imports: { "@std/assert": "jsr:@std/assert@^1.0.19" } }),
+    JSON.stringify({ dependencies: { zod: "^4.0.0" } }),
     JSON.stringify({}),
   );
 
-  const result = await factory({ onSuccess: "STOP", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "STOP", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "STOP");
-  const written = JSON.parse(utils.written["/target/deno.json"]);
-  assertEquals(
-    written.tasks["my-walk"],
-    "deno run --allow-read --allow-write walks/my-walk.ts",
-  );
-  assertEquals(written.imports["@std/assert"], "jsr:@std/assert@^1.0.19");
+  expect(result[0]).toEqual("STOP");
+  const written = JSON.parse(utils.written["/target/package.json"]);
+  expect(written.scripts["my-walk"]).toEqual("bun walks/my-walk.ts");
+  expect(written.dependencies.zod).toEqual("^4.0.0");
 });
 
-Deno.test("cloneConfigNode copies task from source deno.json when present", async () => {
+test("cloneConfigNode copies script from source package.json when present", async () => {
   const initialState: State = {
     targetDir: "/target",
     sourceRoot: "/source",
@@ -58,43 +56,43 @@ Deno.test("cloneConfigNode copies task from source deno.json when present", asyn
 
   const utils = makeUtils(
     JSON.stringify({}),
-    JSON.stringify({ tasks: { "my-walk": "deno run walks/my-walk.ts" } }),
+    JSON.stringify({ scripts: { "my-walk": "bun --watch walks/my-walk.ts" } }),
   );
 
-  const result = await factory({ onSuccess: "STOP", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "STOP", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "STOP");
-  const written = JSON.parse(utils.written["/target/deno.json"]);
-  assertEquals(written.tasks["my-walk"], "deno run walks/my-walk.ts");
+  expect(result[0]).toEqual("STOP");
+  const written = JSON.parse(utils.written["/target/package.json"]);
+  expect(written.scripts["my-walk"]).toEqual("bun --watch walks/my-walk.ts");
 });
 
-Deno.test("cloneConfigNode adds external deps when externalDeps is populated", async () => {
+test("cloneConfigNode adds external deps when externalDeps is populated", async () => {
   const initialState: State = {
     targetDir: "/target",
     sourceRoot: "/source",
     walkName: "my-util",
     artifactType: "util",
-    externalDeps: { "ollama": "npm:ollama@^0.6.3" },
+    externalDeps: { ollama: "^0.6.4" },
   };
 
-  const utils = makeUtils(
-    JSON.stringify({ imports: { "@std/assert": "jsr:@std/assert@^1.0.19" } }),
-  );
+  const utils = makeUtils(JSON.stringify({ dependencies: { zod: "^4.0.0" } }));
 
-  const result = await factory({ onSuccess: "STOP", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "STOP", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "STOP");
-  const written = JSON.parse(utils.written["/target/deno.json"]);
-  assertEquals(written.imports["ollama"], "npm:ollama@^0.6.3");
-  assertEquals(written.imports["@std/assert"], "jsr:@std/assert@^1.0.19");
-  assertEquals(written.tasks, undefined);
+  expect(result[0]).toEqual("STOP");
+  const written = JSON.parse(utils.written["/target/package.json"]);
+  expect(written.dependencies.ollama).toEqual("^0.6.4");
+  expect(written.dependencies.zod).toEqual("^4.0.0");
+  expect(written.scripts).toBeUndefined();
 });
 
-Deno.test("cloneConfigNode skips task creation for artifactType node", async () => {
+test("cloneConfigNode skips script creation for artifactType node", async () => {
   const initialState: State = {
     targetDir: "/target",
     sourceRoot: "/source",
@@ -105,15 +103,16 @@ Deno.test("cloneConfigNode skips task creation for artifactType node", async () 
 
   const utils = makeUtils(JSON.stringify({}));
 
-  const result = await factory({ onSuccess: "STOP", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "STOP", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "STOP");
-  assertEquals(utils.written["/target/deno.json"], undefined);
+  expect(result[0]).toEqual("STOP");
+  expect(utils.written["/target/package.json"]).toBeUndefined();
 });
 
-Deno.test("cloneConfigNode is a no-op when artifactType is node with no external deps", async () => {
+test("cloneConfigNode is a no-op when artifactType is node with no external deps", async () => {
   const initialState: State = {
     targetDir: "/target",
     sourceRoot: "/source",
@@ -122,13 +121,14 @@ Deno.test("cloneConfigNode is a no-op when artifactType is node with no external
   };
 
   const utils = makeUtils(
-    JSON.stringify({ tasks: { "existing": "deno run walks/existing.ts" } }),
+    JSON.stringify({ scripts: { existing: "bun walks/existing.ts" } }),
   );
 
-  const result = await factory({ onSuccess: "STOP", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "STOP", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "STOP");
-  assertEquals(utils.written["/target/deno.json"], undefined);
+  expect(result[0]).toEqual("STOP");
+  expect(utils.written["/target/package.json"]).toBeUndefined();
 });

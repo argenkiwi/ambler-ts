@@ -1,4 +1,6 @@
-import { NodeFactory } from "../ambler.ts";
+import type { MakeDirectoryOptions } from "node:fs";
+import { copyFile, mkdir } from "node:fs/promises";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   sourceRoot: string;
@@ -11,12 +13,14 @@ export type Edge = "onSuccess" | "onError";
 
 export type Utils = {
   copyFile: (src: string, dest: string) => Promise<void>;
-  mkdir: (path: string, options?: Deno.MkdirOptions) => Promise<void>;
+  mkdir: (path: string, options?: MakeDirectoryOptions) => Promise<void>;
 };
 
 const defaultUtils: Utils = {
-  copyFile: (src, dest) => Deno.copyFile(src, dest),
-  mkdir: (path, options) => Deno.mkdir(path, options),
+  copyFile: (src, dest) => copyFile(src, dest),
+  mkdir: async (path, options) => {
+    await mkdir(path, options);
+  },
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (
@@ -55,10 +59,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       return [edges.onSuccess, state];
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, {
-        ...state,
-        error: `Failed to copy files: ${message}`,
-      }];
+      return [
+        edges.onError,
+        {
+          ...state,
+          error: `Failed to copy files: ${message}`,
+        },
+      ];
     }
   };
 };

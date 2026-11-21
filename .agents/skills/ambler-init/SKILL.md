@@ -3,7 +3,7 @@ name: ambler-init
 description: Initializes a new Ambler state-machine project. Use this whenever a user wants to start a new Ambler project, bootstrap a state-machine app, or set up the Ambler folder structure — even if they just say "new project" or "set up ambler" or "create ambler folder".
 metadata:
   author: leandro
-  version: "2.1"
+  version: "3.0"
 ---
 
 # Ambler Init
@@ -14,12 +14,13 @@ This skill initializes a new Ambler project.
 
 ## Template Files
 
-Two core files are read from the skill's `assets/` directory and written to the target.
+Three core files are read from the skill's `assets/` directory and written to the target.
 
 | Source | Writes to |
 |--------|-----------|
 | `ambler.ts` | `<target>/ambler.ts` |
-| `deno.json` | `<target>/deno.json` |
+| `package.json` | `<target>/package.json` |
+| `tsconfig.json` | `<target>/tsconfig.json` |
 
 ---
 
@@ -45,16 +46,17 @@ mkdir -p "<target>/nodes/tests" "<target>/walks" "<target>/specs" "<target>/util
 Read from the skill's `assets/` directory and write to the target.
 
 1. Read `assets/ambler.ts` → write to `<target>/ambler.ts`
-2. Read `assets/deno.json` → write to `<target>/deno.json`
+2. Read `assets/package.json` → write to `<target>/package.json`
+3. Read `assets/tsconfig.json` → write to `<target>/tsconfig.json`
 
-Read and write both files. Do not skip any.
+Read and write all three files. Do not skip any.
 
 ### 5. Verify
 
-Type-check the generated `ambler.ts`:
+Install the dev dependencies and type-check the generated project:
 
 ```bash
-deno check "<target>/ambler.ts"
+cd "<target>" && bun install && bunx tsc --noEmit
 ```
 
 ### 6. Report success
@@ -62,7 +64,8 @@ deno check "<target>/ambler.ts"
 ```
 Initialized Ambler project in "<target>":
   ambler.ts
-  deno.json
+  package.json
+  tsconfig.json
   nodes/
   walks/
   specs/

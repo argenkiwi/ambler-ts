@@ -1,4 +1,6 @@
-import { NodeFactory } from "../ambler.ts";
+import { copyFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   targetDir: string;
@@ -13,8 +15,8 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  copyFile: (from, to) => Deno.copyFile(from, to),
-  getAmblerSrc: () => new URL("../ambler.ts", import.meta.url).pathname,
+  copyFile: (from, to) => copyFile(from, to),
+  getAmblerSrc: () => fileURLToPath(new URL("../ambler.ts", import.meta.url)),
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (
@@ -29,10 +31,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       await utils.copyFile(amblerSrc, targetPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, {
-        ...state,
-        error: `Failed to copy ambler.ts: ${message}`,
-      }];
+      return [
+        edges.onError,
+        {
+          ...state,
+          error: `Failed to copy ambler.ts: ${message}`,
+        },
+      ];
     }
 
     return [edges.onSuccess, state];

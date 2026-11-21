@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../prompt.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../prompt.ts";
 
-Deno.test("promptNode should transition to onMessage when user enters a message", async () => {
+test("promptNode should transition to onMessage when user enters a message", async () => {
   const initialState: State = { messages: [] };
   const utils: Utils = {
     prompt: (_msg: string) => "hello",
@@ -13,12 +13,12 @@ Deno.test("promptNode should transition to onMessage when user enters a message"
     utils,
   )(initialState);
 
-  assertEquals(result[0], "transpose");
-  assertEquals(result[1].messages.length, 1);
-  assertEquals(result[1].messages[0], { role: "user", content: "hello" });
+  expect(result[0]).toEqual("transpose");
+  expect(result[1].messages.length).toEqual(1);
+  expect(result[1].messages[0]).toEqual({ role: "user", content: "hello" });
 });
 
-Deno.test("promptNode should transition to onQuit when user enters a quit word", async () => {
+test("promptNode should transition to onQuit when user enters a quit word", async () => {
   const initialState: State = { messages: [] };
   const utils: Utils = {
     prompt: (_msg: string) => "exit",
@@ -30,11 +30,11 @@ Deno.test("promptNode should transition to onQuit when user enters a quit word",
     utils,
   )(initialState);
 
-  assertEquals(result[0], "bye");
-  assertEquals(result[1].messages.length, 0);
+  expect(result[0]).toEqual("bye");
+  expect(result[1].messages.length).toEqual(0);
 });
 
-Deno.test("promptNode should transition to onQuit when user cancels input", async () => {
+test("promptNode should transition to onQuit when user cancels input", async () => {
   const initialState: State = { messages: [] };
   const utils: Utils = {
     prompt: (_msg: string) => null,
@@ -46,6 +46,6 @@ Deno.test("promptNode should transition to onQuit when user cancels input", asyn
     utils,
   )(initialState);
 
-  assertEquals(result[0], "bye");
-  assertEquals(result[1].messages.length, 0);
+  expect(result[0]).toEqual("bye");
+  expect(result[1].messages.length).toEqual(0);
 });

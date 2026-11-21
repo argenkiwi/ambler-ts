@@ -1,20 +1,20 @@
 import { ambler, walk } from "../ambler.ts";
-import defer * as setupNode from "../nodes/clone-setup.ts";
-import defer * as analyzeNode from "../nodes/clone-analyze.ts";
-import defer * as initSetupNode from "../nodes/init-setup.ts";
-import defer * as initCopyNode from "../nodes/init-copy.ts";
-import defer * as initConfigNode from "../nodes/init-config.ts";
-import defer * as copyNode from "../nodes/clone-copy.ts";
-import defer * as configNode from "../nodes/clone-config.ts";
-import defer * as stopNode from "../nodes/clone-stop.ts";
-import type { Utils as SetupUtils } from "../nodes/clone-setup.ts";
 import type { Utils as AnalyzeUtils } from "../nodes/clone-analyze.ts";
-import type { Utils as InitSetupUtils } from "../nodes/init-setup.ts";
-import type { Utils as InitCopyUtils } from "../nodes/init-copy.ts";
-import type { Utils as InitConfigUtils } from "../nodes/init-config.ts";
-import type { Utils as CopyUtils } from "../nodes/clone-copy.ts";
+import defer * as analyzeNode from "../nodes/clone-analyze.ts";
 import type { Utils as ConfigUtils } from "../nodes/clone-config.ts";
+import defer * as configNode from "../nodes/clone-config.ts";
+import type { Utils as CopyUtils } from "../nodes/clone-copy.ts";
+import defer * as copyNode from "../nodes/clone-copy.ts";
+import type { Utils as SetupUtils } from "../nodes/clone-setup.ts";
+import defer * as setupNode from "../nodes/clone-setup.ts";
 import type { Utils as StopUtils } from "../nodes/clone-stop.ts";
+import defer * as stopNode from "../nodes/clone-stop.ts";
+import type { Utils as InitConfigUtils } from "../nodes/init-config.ts";
+import defer * as initConfigNode from "../nodes/init-config.ts";
+import type { Utils as InitCopyUtils } from "../nodes/init-copy.ts";
+import defer * as initCopyNode from "../nodes/init-copy.ts";
+import type { Utils as InitSetupUtils } from "../nodes/init-setup.ts";
+import defer * as initSetupNode from "../nodes/init-setup.ts";
 
 export interface State {
   sourceWalkPath: string;
@@ -53,11 +53,14 @@ export type WalkUtils = {
 export function createWalk(utils: WalkUtils = {}) {
   return ambler<State, NodeId>({
     SETUP: () =>
-      setupNode.factory({
-        onNewProject: "INIT_SETUP",
-        onExisting: "ANALYZE",
-        onError: "STOP",
-      }, utils.setup),
+      setupNode.factory(
+        {
+          onNewProject: "INIT_SETUP",
+          onExisting: "ANALYZE",
+          onError: "STOP",
+        },
+        utils.setup,
+      ),
     ANALYZE: () =>
       analyzeNode.factory(
         { onSuccess: "COPY", onError: "STOP" },
@@ -86,10 +89,7 @@ export function createWalk(utils: WalkUtils = {}) {
   });
 }
 
-export function initialState(
-  sourceWalkPath: string,
-  targetDir: string,
-): State {
+export function initialState(sourceWalkPath: string, targetDir: string): State {
   return {
     sourceWalkPath,
     targetDir,
@@ -102,13 +102,11 @@ export function initialState(
 }
 
 if (import.meta.main) {
-  const [sourceWalkPath, targetDir] = Deno.args;
+  const [sourceWalkPath, targetDir] = process.argv.slice(2);
 
   if (!sourceWalkPath || !targetDir) {
-    console.error(
-      "Usage: deno run --allow-read --allow-write walks/clone.ts <source-path> <target-dir>",
-    );
-    Deno.exit(1);
+    console.error("Usage: bun walks/clone.ts <source-path> <target-dir>");
+    process.exit(1);
   }
 
   const final = await walk(
@@ -116,5 +114,5 @@ if (import.meta.main) {
     "SETUP",
     initialState(sourceWalkPath, targetDir),
   );
-  if (final.error) Deno.exit(1);
+  if (final.error) process.exit(1);
 }

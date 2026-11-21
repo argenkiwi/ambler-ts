@@ -1,9 +1,9 @@
 # Ambler
 
-[![Deno](https://img.shields.io/badge/deno-^1.40-blue.svg)](https://deno.land/)
-[![TypeScript](https://img.shields.io/badge/typescript-^5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/bun-^1.4-blue.svg)](https://bun.sh/)
+[![TypeScript](https://img.shields.io/badge/typescript-^7.0-blue.svg)](https://www.typescriptlang.org/)
 
-Ambler is a lightweight Deno/TypeScript state machine framework designed for building programs as executable graphs. It provides the architectural foundation for coding agents to autonomously construct, test, and wire complex workflows, known as **walks**.
+Ambler is a lightweight Bun/TypeScript state machine framework designed for building programs as executable graphs. It provides the architectural foundation for coding agents to autonomously construct, test, and wire complex workflows, known as **walks**.
 
 ## 🚀 Key Features
 
@@ -32,18 +32,18 @@ Bootstrap your project directly from your agent session:
 
 ### For Manual Setup
 
-Use the Deno tasks to initialize or clone a project:
+Install the dev dependencies once with `bun install`, then use the scripts to initialize or clone a project:
 
 ```bash
 # Bootstrap a new project at <target-dir>
-deno task init <target-dir>
+bun run init <target-dir>
 
 # Clone an existing walk into another project
-deno task clone <source-walk-path> <target-dir>
+bun run clone <source-walk-path> <target-dir>
 ```
 
 > [!TIP]
-> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to a walk file, a node file, or a utility file — in the current project or another — and copies it along with all its dependencies into the target project, initializing it first if needed. When cloning a walk it also registers a deno task in the target's `deno.json`; when cloning a utility it propagates any external npm/jsr dependencies.
+> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to a walk file, a node file, or a utility file — in the current project or another — and copies it along with all its dependencies into the target project, initializing it first if needed. When cloning a walk it also registers a script in the target's `package.json`; when cloning a utility it propagates any external npm dependencies.
 
 ---
 
@@ -73,18 +73,18 @@ Markdown blueprints that describe the intended behavior and state transitions be
 2.  **Implement**: Build factory-based nodes in `nodes/`.
 3.  **Test**: Verify node logic in `nodes/tests/`.
 4.  **Compose**: Wire nodes together in `walks/`, and test the wiring in `walks/tests/`.
-5.  **Execute**: Run the program with `deno task <name>`.
+5.  **Execute**: Run the program with `bun run <name>`.
 
 ```bash
 # Run all node and walk tests
-deno task test
+bun run test
 
 # Type-check, lint and check formatting
-deno task check
-deno task lint
+bun run check
+bun run lint
 
 # Execute the counter example
-deno run walks/counter.ts
+bun walks/counter.ts
 ```
 
 ---

@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../clone-copy.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../clone-copy.ts";
 
-Deno.test("cloneCopyNode should copy all files in filesToCopy list", async () => {
+test("cloneCopyNode should copy all files in filesToCopy list", async () => {
   const initialState: State = {
     sourceRoot: "/source",
     targetDir: "/target",
@@ -27,15 +27,13 @@ Deno.test("cloneCopyNode should copy all files in filesToCopy list", async () =>
     utils,
   )(initialState);
 
-  assertEquals(result[0], "STOP");
-  assertEquals(
+  expect(result[0]).toEqual("STOP");
+  expect(
     filesCopied.includes("/source/walks/my.ts->/target/walks/my.ts"),
-    true,
-  );
-  assertEquals(
+  ).toEqual(true);
+  expect(
     filesCopied.includes("/source/nodes/node.ts->/target/nodes/node.ts"),
-    true,
-  );
-  assertEquals(dirsCreated.includes("/target/walks"), true);
-  assertEquals(dirsCreated.includes("/target/nodes"), true);
+  ).toEqual(true);
+  expect(dirsCreated.includes("/target/walks")).toEqual(true);
+  expect(dirsCreated.includes("/target/nodes")).toEqual(true);
 });
