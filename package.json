@@ -5,8 +5,6 @@
   "scripts": {
     "dev": "bun --watch walks/counter.ts",
     "counter": "bun walks/counter.ts",
-    "init": "bun walks/init.ts",
-    "clone": "bun walks/clone.ts",
     "chat": "bun walks/chat.ts",
     "test": "bun test nodes/tests walks/tests",
     "check": "tsc --noEmit",

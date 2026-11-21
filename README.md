@@ -16,34 +16,11 @@ Ambler is a lightweight Bun/TypeScript state machine framework designed for buil
 
 ## 🏁 Quick Start
 
-### For Agentic Development (Recommended)
-
 Install the Ambler skills locally using [`skills`](https://github.com/argenkiwi/skills):
 
 ```bash
 npx skills add argenkiwi/ambler-ts
 ```
-
-Bootstrap your project directly from your agent session:
-
-```bash
-/ambler-init <target-dir>
-```
-
-### For Manual Setup
-
-Install the dev dependencies once with `bun install`, then use the scripts to initialize or clone a project:
-
-```bash
-# Bootstrap a new project at <target-dir>
-bun run init <target-dir>
-
-# Clone an existing walk into another project
-bun run clone <source-walk-path> <target-dir>
-```
-
-> [!TIP]
-> `init` scaffolds a complete project structure (`nodes/`, `walks/`, `specs/`, `utils/`) and copies the core `ambler.ts` engine. `clone` accepts the path to a walk file, a node file, or a utility file — in the current project or another — and copies it along with all its dependencies into the target project, initializing it first if needed. When cloning a walk it also registers a script in the target's `package.json`; when cloning a utility it propagates any external npm dependencies.
 
 ---
 
@@ -93,7 +70,6 @@ bun walks/counter.ts
 
 Ambler is designed to be augmented by agents using these specialized skills:
 
-- `ambler-init`: Bootstraps new projects.
 - `ambler-node`: Scaffolds nodes with proper types and interfaces.
 - `ambler-test`: Generates comprehensive unit tests for nodes.
 - `ambler-walk`: Automatically wires nodes into executable walks based on specs.
