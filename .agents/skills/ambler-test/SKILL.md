@@ -3,7 +3,7 @@ name: ambler-test
 description: Adds or updates tests for an existing Ambler node that already has an implementation. Use this when a node exists in nodes/<name>.ts but has no test file, when tests need extending after new branches were added, or when retrofitting TDD onto existing code. For creating a brand-new node with tests, use `/ambler-node` instead.
 metadata:
   author: leandro
-  version: "3.0"
+  version: "3.1"
 ---
 
 # Ambler Test
@@ -11,6 +11,8 @@ metadata:
 Follow these steps to add or update tests for an existing node in `nodes/`.
 
 > For brand-new nodes, use `/ambler-node` — it creates both the implementation and tests via a TDD cycle. This skill is for retrofitting tests onto nodes that already exist.
+>
+> If a walk that uses the node has no `walks/tests/<walk>.test.ts`, add a wiring test as well, following Step 6 of `/ambler-walk`.
 
 ---
 
@@ -92,6 +94,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 - **Assert `result[0]`** for the next node key and **`result[1]`** for the updated state.
 - **Test names**: `"<name>Node should <expected behavior> when <condition>"`.
 - **Do not use `async`/`await` for synchronous nodes** — masks type errors.
+- **End of input**: If the node reads input, include a case where the read util returns `null`.
 
 ---
 

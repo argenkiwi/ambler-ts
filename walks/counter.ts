@@ -1,28 +1,34 @@
-import { ambler } from "../ambler.ts";
+import { ambler, walk } from "../ambler.ts";
 import defer * as startNode from "../nodes/start.ts";
 import defer * as countNode from "../nodes/count.ts";
 import defer * as stopNode from "../nodes/stop.ts";
+import type { Utils as StartUtils } from "../nodes/start.ts";
+import type { Utils as CountUtils } from "../nodes/count.ts";
+import type { Utils as StopUtils } from "../nodes/stop.ts";
 
 export interface State {
   count: number;
 }
 
-type NodeId = "START" | "COUNT" | "STOP";
+export type NodeId = "START" | "COUNT" | "STOP";
 
-const amble = ambler<State, NodeId>({
-  START: () => startNode.factory({ onSuccess: "COUNT", onError: "START" }),
-  COUNT: () => countNode.factory({ onCount: "COUNT", onStop: "STOP" }),
-  STOP: () => stopNode.factory({ onDone: null }),
-});
+/** Per-node utils overrides; omitted nodes use their defaults. */
+export type WalkUtils = {
+  start?: StartUtils;
+  count?: CountUtils;
+  stop?: StopUtils;
+};
+
+export function createWalk(utils: WalkUtils = {}) {
+  return ambler<State, NodeId>({
+    START: () =>
+      startNode.factory({ onSuccess: "COUNT", onError: "START" }, utils.start),
+    COUNT: () =>
+      countNode.factory({ onCount: "COUNT", onStop: "STOP" }, utils.count),
+    STOP: () => stopNode.factory({ onDone: null }, utils.stop),
+  });
+}
 
 if (import.meta.main) {
-  let nodeId: NodeId | null = "START";
-  let state: State = {
-    count: 0,
-  };
-
-  while (nodeId) {
-    const next = amble(nodeId, state);
-    [nodeId, state] = next instanceof Promise ? await next : next;
-  }
+  await walk(createWalk(), "START", { count: 0 });
 }

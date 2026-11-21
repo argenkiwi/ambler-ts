@@ -1,29 +1,42 @@
-import { ambler } from "../ambler.ts";
+import { ambler, walk } from "../ambler.ts";
 import defer * as setupNode from "../nodes/init-setup.ts";
 import defer * as copyNode from "../nodes/init-copy.ts";
 import defer * as configNode from "../nodes/init-config.ts";
 import defer * as stopNode from "../nodes/init-stop.ts";
+import type { Utils as SetupUtils } from "../nodes/init-setup.ts";
+import type { Utils as CopyUtils } from "../nodes/init-copy.ts";
+import type { Utils as ConfigUtils } from "../nodes/init-config.ts";
+import type { Utils as StopUtils } from "../nodes/init-stop.ts";
 
 export interface State {
   targetDir: string;
   error?: string;
 }
 
-type NodeId = "SETUP" | "COPY" | "CONFIG" | "STOP";
+export type NodeId = "SETUP" | "COPY" | "CONFIG" | "STOP";
 
-const amble = ambler<State, NodeId>({
-  SETUP: () => setupNode.factory({ onSuccess: "COPY", onError: "STOP" }),
-  COPY: () => copyNode.factory({ onSuccess: "CONFIG", onError: "STOP" }),
-  CONFIG: () => configNode.factory({ onSuccess: "STOP", onError: "STOP" }),
-  STOP: () => stopNode.factory({ onDone: null }),
-});
+/** Per-node utils overrides; omitted nodes use their defaults. */
+export type WalkUtils = {
+  setup?: SetupUtils;
+  copy?: CopyUtils;
+  config?: ConfigUtils;
+  stop?: StopUtils;
+};
+
+export function createWalk(utils: WalkUtils = {}) {
+  return ambler<State, NodeId>({
+    SETUP: () =>
+      setupNode.factory({ onSuccess: "COPY", onError: "STOP" }, utils.setup),
+    COPY: () =>
+      copyNode.factory({ onSuccess: "CONFIG", onError: "STOP" }, utils.copy),
+    CONFIG: () =>
+      configNode.factory({ onSuccess: "STOP", onError: "STOP" }, utils.config),
+    STOP: () => stopNode.factory({ onDone: null }, utils.stop),
+  });
+}
 
 if (import.meta.main) {
   const targetDir = Deno.args[0];
-  let nodeId: NodeId | null = "SETUP";
-  let state: State = {
-    targetDir,
-  };
 
   if (!targetDir) {
     console.error(
@@ -32,8 +45,6 @@ if (import.meta.main) {
     Deno.exit(1);
   }
 
-  while (nodeId) {
-    const next = amble(nodeId, state);
-    [nodeId, state] = next instanceof Promise ? await next : next;
-  }
+  const final = await walk(createWalk(), "SETUP", { targetDir });
+  if (final.error) Deno.exit(1);
 }

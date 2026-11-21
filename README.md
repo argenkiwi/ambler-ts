@@ -57,7 +57,7 @@ Atomic, functional blocks that perform specific tasks. Each node is a factory th
 - **Utils**: Injected dependencies (e.g., CLI output, LLM clients).
 
 ### 2. Walks (`walks/`)
-The graph definition. A walk wires factories into a concrete execution plan and initiates the runner.
+The graph definition. A walk exports `createWalk(utils)`, which wires factories into a concrete execution plan (with optional per-node utils overrides for tests), and runs it with `walk(amble, startId, initialState)`. `walk()` returns the final state and wraps any error a node throws in a `WalkError` that names the node.
 
 ### 3. Specs (`specs/`)
 Markdown blueprints that describe the intended behavior and state transitions before a single line of code is written.
@@ -72,12 +72,16 @@ Markdown blueprints that describe the intended behavior and state transitions be
 1.  **Specify**: Define the graph in `specs/`.
 2.  **Implement**: Build factory-based nodes in `nodes/`.
 3.  **Test**: Verify node logic in `nodes/tests/`.
-4.  **Compose**: Wire nodes together in `walks/`.
+4.  **Compose**: Wire nodes together in `walks/`, and test the wiring in `walks/tests/`.
 5.  **Execute**: Run the program with `deno task <name>`.
 
 ```bash
-# Run all tests
-deno test nodes/tests/
+# Run all node and walk tests
+deno task test
+
+# Type-check, lint and check formatting
+deno task check
+deno task lint
 
 # Execute the counter example
 deno run walks/counter.ts

@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node — with tests, using test-driven development. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node". Also use when creating a node WITH tests or following TDD for a new node. For adding tests to an existing node that already has an implementation, use `/ambler-test` instead.
 metadata:
   author: leandro
-  version: "3.0"
+  version: "3.1"
 ---
 
 # Ambler Node
@@ -207,6 +207,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 - **Immutability**: Never mutate `state` directly; always return `{ ...state, ...updates }`.
 - **Utils**: All side effects go through `utils.*`. Complex or reusable logic (e.g., LLM calls, file I/O) should be moved to `utils/` via `/ambler-util`.
 - **Termination**: Terminal nodes are wired with `null` in the walk (e.g., `stopNode({ onDone: null })`).
+- **Expected vs unexpected failures**: A failure the walk should react to (bad input, missing file) goes through an edge such as `onError`, usually with an `error` field in state. Let a truly unexpected failure throw. `walk()` wraps it in a `WalkError` that names the node, so don't swallow it into a generic message.
+- **End of input**: Any node that reads input must handle `null` (stdin closed, Ctrl+D) without looping. Route it to an `onQuit`-style edge or a sensible default, never back to the same retry edge.
+- **Construction options**: If the node should be reusable with different fixed configuration (a prompt's question, a file name), declare an options type and take it as the factory's third argument: `NodeFactory<State, Edge, Utils, Options>` with `(edges, utils = defaultUtils, options = defaultOptions)`.
 - **Do not modify the tests** between steps 4 and 6 — the tests define the contract; the implementation must satisfy them.
 
 ---
@@ -261,3 +264,4 @@ All tests must be green. Fix the implementation (never the tests) until they pas
 - [ ] Tests were written (step 3) before the full implementation (step 5).
 - [ ] Tests failed on step 4 before passing on step 6.
 - [ ] No tests were modified between steps 4 and 6.
+- [ ] If the node reads input, a test covers end of input (`null`) and it doesn't loop.

@@ -6,7 +6,8 @@ export interface State {
   host: string;
 }
 
-export type Edge = "onSuccess" | "onError";
+/** `onQuit` fires at end of input, so a closed stdin cannot loop forever. */
+export type Edge = "onSuccess" | "onError" | "onQuit";
 
 export type Utils = {
   checkHost: (host: string) => Promise<boolean>;
@@ -25,7 +26,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
   utils = defaultUtils,
 ) => {
   return async (state) => {
-    const defaultHosts = ["http://localhost:11434/v1", "http://localhost:1234/v1"];
+    const defaultHosts = [
+      "http://localhost:11434/v1",
+      "http://localhost:1234/v1",
+    ];
     const hostsToTry = state.host ? [state.host] : defaultHosts;
 
     for (const host of hostsToTry) {
@@ -43,6 +47,10 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const newHost = utils.getPrompt(
       "Enter LLM host URL (e.g. http://localhost:11434/v1 or http://localhost:1234/v1): ",
     );
+
+    if (newHost === null) {
+      return [edges.onQuit, state];
+    }
 
     if (!newHost) {
       return [edges.onError, state];
