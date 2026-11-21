@@ -128,7 +128,7 @@ test("<name> retries invalid input, then finishes", async () => {
 });
 ```
 
-Cover at least the main path, plus every path that loops back or ends early (error edges, end of input). See `walks/tests/counter.test.ts` and `walks/tests/clone.test.ts` for examples, including an in-memory file system.
+Cover at least the main path, plus every path that loops back or ends early (error edges, end of input). See `walks/tests/counter.test.ts` and `walks/tests/chat.test.ts` for examples.
 
 ---
 

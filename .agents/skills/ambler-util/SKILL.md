@@ -96,7 +96,7 @@ If the utility imports an npm package, add it with:
 bun add ollama
 ```
 
-This records it under `dependencies` in `package.json` (e.g. `"ollama": "^0.6.4"`). The `clone` walk (`walks/clone.ts`) copies these entries into other projects, so use `dependencies`, not `devDependencies`, for anything a util imports at runtime. Check `package.json` first — the package may already be listed.
+This records it under `dependencies` in `package.json` (e.g. `"ollama": "^0.6.4"`). Use `dependencies`, not `devDependencies`, for anything a util imports at runtime. Check `package.json` first — the package may already be listed.
 
 ---
 
