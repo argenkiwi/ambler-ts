@@ -1,4 +1,4 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 import { getPrompt } from "../utils/prompt.ts";
 
 export interface Message {

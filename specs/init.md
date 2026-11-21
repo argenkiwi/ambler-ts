@@ -16,7 +16,7 @@ This program bootstraps a new Ambler project by creating the necessary directory
 - If copying fails, transitions to `STOP` with an error.
 
 ### Config
-- Writes the `deno.json` configuration file to the `targetDir`.
+- Writes the `package.json` and `tsconfig.json` configuration files to the `targetDir`.
 - If successful, transitions to `STOP`.
 - If writing fails, transitions to `STOP` with an error.
 

@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../clone-stop.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../clone-stop.ts";
 
-Deno.test("cloneStopNode should print success message when no error is present", async () => {
+test("cloneStopNode should print success message when no error is present", async () => {
   const initialState: State = {
     walkName: "counter",
     targetDir: "/target",
@@ -13,19 +13,15 @@ Deno.test("cloneStopNode should print success message when no error is present",
     print: (msg) => messages.push(msg),
   };
 
-  const result = await factory(
-    { onDone: null },
-    utils,
-  )(initialState);
+  const result = await factory({ onDone: null }, utils)(initialState);
 
-  assertEquals(result[0], null);
-  assertEquals(
+  expect(result[0]).toEqual(null);
+  expect(
     messages.includes('Successfully cloned walk "counter" to "/target".'),
-    true,
-  );
+  ).toEqual(true);
 });
 
-Deno.test("cloneStopNode should print error message when error is present", async () => {
+test("cloneStopNode should print error message when error is present", async () => {
   const initialState: State = {
     walkName: "counter",
     targetDir: "/target",
@@ -37,11 +33,8 @@ Deno.test("cloneStopNode should print error message when error is present", asyn
     print: (msg) => messages.push(msg),
   };
 
-  const result = await factory(
-    { onDone: null },
-    utils,
-  )(initialState);
+  const result = await factory({ onDone: null }, utils)(initialState);
 
-  assertEquals(result[0], null);
-  assertEquals(messages.includes("Error: Something went wrong"), true);
+  expect(result[0]).toEqual(null);
+  expect(messages.includes("Error: Something went wrong")).toEqual(true);
 });

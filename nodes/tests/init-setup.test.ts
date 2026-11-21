@@ -1,7 +1,13 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../init-setup.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../init-setup.ts";
 
-Deno.test("initSetupNode should transition to onSuccess when targetDir is valid", async () => {
+/** Mimics the ENOENT error node:fs rejects with for a missing path. */
+const notFound = (path = "") =>
+  Object.assign(new Error(`ENOENT: no such file or directory, ${path}`), {
+    code: "ENOENT",
+  });
+
+test("initSetupNode should transition to onSuccess when targetDir is valid", async () => {
   const initialState: State = { targetDir: "new-project" };
   const createdDirs: string[] = [];
 
@@ -10,7 +16,7 @@ Deno.test("initSetupNode should transition to onSuccess when targetDir is valid"
       createdDirs.push(path);
       return Promise.resolve();
     },
-    stat: () => Promise.reject(new Deno.errors.NotFound()),
+    stat: () => Promise.reject(notFound()),
   };
 
   const [edge, state] = await factory(
@@ -18,17 +24,17 @@ Deno.test("initSetupNode should transition to onSuccess when targetDir is valid"
     utils,
   )(initialState);
 
-  assertEquals(edge, "COPY");
-  assertEquals(createdDirs.length, 5);
-  assertEquals(state.error, undefined);
+  expect(edge).toEqual("COPY");
+  expect(createdDirs.length).toEqual(5);
+  expect(state.error).toBeUndefined();
 });
 
-Deno.test("initSetupNode should transition to onError when targetDir is missing", async () => {
+test("initSetupNode should transition to onError when targetDir is missing", async () => {
   const initialState: State = { targetDir: "" };
 
   const utils: Utils = {
     mkdir: () => Promise.resolve(),
-    stat: () => Promise.reject(new Deno.errors.NotFound()),
+    stat: () => Promise.reject(notFound()),
   };
 
   const [edge, state] = await factory(
@@ -36,11 +42,11 @@ Deno.test("initSetupNode should transition to onError when targetDir is missing"
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(state.error, "No target directory provided.");
+  expect(edge).toEqual("STOP");
+  expect(state.error).toEqual("No target directory provided.");
 });
 
-Deno.test("initSetupNode should transition to onError when targetDir is not a directory", async () => {
+test("initSetupNode should transition to onError when targetDir is not a directory", async () => {
   const initialState: State = { targetDir: "file.txt" };
 
   const utils: Utils = {
@@ -48,7 +54,7 @@ Deno.test("initSetupNode should transition to onError when targetDir is not a di
     stat: () =>
       Promise.resolve({
         isDirectory: false,
-      } as Deno.FileInfo),
+      }),
   };
 
   const [edge, state] = await factory(
@@ -56,16 +62,16 @@ Deno.test("initSetupNode should transition to onError when targetDir is not a di
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(state.error, '"file.txt" exists and is not a directory.');
+  expect(edge).toEqual("STOP");
+  expect(state.error).toEqual('"file.txt" exists and is not a directory.');
 });
 
-Deno.test("initSetupNode should transition to onError when mkdir fails", async () => {
+test("initSetupNode should transition to onError when mkdir fails", async () => {
   const initialState: State = { targetDir: "new-project" };
 
   const utils: Utils = {
     mkdir: () => Promise.reject(new Error("Permission denied")),
-    stat: () => Promise.reject(new Deno.errors.NotFound()),
+    stat: () => Promise.reject(notFound()),
   };
 
   const [edge, state] = await factory(
@@ -73,6 +79,8 @@ Deno.test("initSetupNode should transition to onError when mkdir fails", async (
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(state.error, "Failed to create directories: Permission denied");
+  expect(edge).toEqual("STOP");
+  expect(state.error).toEqual(
+    "Failed to create directories: Permission denied",
+  );
 });

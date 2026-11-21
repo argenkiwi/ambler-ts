@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.6"
+  version: "3.0"
 ---
 
 # Ambler Walk
@@ -83,17 +83,17 @@ export function createWalk(utils: WalkUtils = {}) {
 
 if (import.meta.main) {
   const final = await walk(createWalk(), "START", { field: "initial" });
-  if (final.error) Deno.exit(1);
+  if (final.error) process.exit(1);
 }
 ```
 
 **Key rules:**
 - Import `ambler` and `walk` from `../ambler.ts`. Never hand-write the run loop: `walk()` runs it, returns the final state, and wraps any thrown error in a `WalkError` that names the failing node.
-- Use `import defer * as <alias>` for every node to support lazy loading (Deno 2.8+). Utils types come in through separate `import type` lines, which are erased at runtime and don't defeat the deferral.
+- Use `import defer * as <alias>` for every node to support lazy loading (Bun 1.4+; type-checks with TypeScript 7+). Utils types come in through separate `import type` lines, which are erased at runtime and don't defeat the deferral.
 - Export `State`, `NodeId`, `WalkUtils` and `createWalk(utils)` so the wiring can be tested (Step 6).
 - Use arrow functions to defer node creation: `START: () => startNode.factory({ ... }, utils.start)`.
 - Every edge in a factory's record is required, so an unwired edge is a type error. Wire a terminal edge with `null`.
-- If a failure ends the walk through an `error` state field, exit with `Deno.exit(1)` so shell callers see a non-zero status.
+- If a failure ends the walk through an `error` state field, exit with `process.exit(1)` so shell callers see a non-zero status.
 - To reuse one generic node under several IDs with different configuration (e.g. two yes/no prompts), pass construction options as the factory's third argument: `confirmNode.factory(edges, utils.confirm, { question: "Proceed?" })`.
 
 ---
@@ -103,11 +103,11 @@ if (import.meta.main) {
 Node tests check each node on its own. A wiring test checks that the edges connect the nodes into the program the spec describes. Drive the whole walk through `createWalk` with one scripted set of mocked utils (inputs played back from an array, output recorded), then assert the final state and everything printed:
 
 ```typescript
-import { assertEquals } from "@std/assert";
+import { expect, test } from "bun:test";
 import { walk } from "../../ambler.ts";
 import { createWalk } from "../<name>.ts";
 
-Deno.test("<name> retries invalid input, then finishes", async () => {
+test("<name> retries invalid input, then finishes", async () => {
   const lines = ["bad", "good"];
   const printed: string[] = [];
   const print = (msg: string) => {
@@ -123,8 +123,8 @@ Deno.test("<name> retries invalid input, then finishes", async () => {
     { field: "initial" },
   );
 
-  assertEquals(final.field, "good");
-  assertEquals(printed, ["Error: ...", "Done."]);
+  expect(final.field).toEqual("good");
+  expect(printed).toEqual(["Error: ...", "Done."]);
 });
 ```
 
@@ -132,31 +132,17 @@ Cover at least the main path, plus every path that loops back or ends early (err
 
 ---
 
-## Step 7 — Add Deno Task
+## Step 7 — Add a Script
 
-Add (or update) an entry in `deno.json` under `tasks` for this walk:
-
-```json
-"<name>": "deno run [permissions] walks/<name>.ts"
-```
-
-Choose permissions based on the Deno APIs used by the walk's nodes:
-
-| API used by nodes | Permission flag |
-|---|---|
-| `Deno.readTextFile`, `Deno.copyFile`, `Deno.stat` | `--allow-read` |
-| `Deno.writeTextFile`, `Deno.mkdir`, `Deno.copyFile` (dst) | `--allow-write` |
-| `Deno.env` | `--allow-env` |
-| `fetch` / network calls | `--allow-net` |
-| None of the above (only stdin/stdout) | *(no flags needed)* |
-
-Example for a walk with file I/O:
+Add (or update) an entry in `package.json` under `scripts` for this walk:
 
 ```json
-"my-walk": "deno run --allow-read --allow-write walks/my-walk.ts"
+"<name>": "bun walks/<name>.ts"
 ```
 
-Users pass arguments after the task name: `deno task my-walk <arg1> <arg2>`
+Bun has no permission flags: a walk can read, write and use the network without opting in. So keep side effects behind each node's `Utils`, where tests can mock them and reviewers can see them.
+
+Users pass arguments after the script name: `bun run <name> <arg1> <arg2>`
 
 ---
 
@@ -165,8 +151,8 @@ Users pass arguments after the task name: `deno task my-walk <arg1> <arg2>`
 Run the checks and tests, then run the walk to confirm it behaves as specified:
 
 ```
-deno task check && deno task lint && deno task test
-deno task <name>
+bun run check && bun run lint && bun run test
+bun run <name>
 ```
 
 ---
@@ -179,6 +165,6 @@ Before finishing, confirm:
 - [ ] `walks/<name>.ts` exports `State`, `NodeId`, `WalkUtils` and `createWalk`, and runs through `walk()`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts` and passing tests (enforced by `/ambler-node`).
 - [ ] `walks/tests/<name>.test.ts` covers the main path and every loop or early exit.
-- [ ] All tests pass (`deno task test`).
-- [ ] `deno.json` has a task for `<name>` with the correct permission flags.
+- [ ] All tests pass (`bun run test`).
+- [ ] `package.json` has a script for `<name>`.
 - [ ] The walk runs end-to-end without errors.

@@ -37,8 +37,9 @@ export async function llmChat(
     );
   }
 
-  const data: { choices: { message: { content: string } }[] } = await response
-    .json();
+  const data = (await response.json()) as {
+    choices: { message: { content: string } }[];
+  };
   return data.choices[0].message.content;
 }
 
@@ -70,6 +71,6 @@ export async function listModels(host: string): Promise<string[]> {
     );
   }
   // OpenAI API returns { data: [{ id }] }.
-  const data: { data: { id: string }[] } = await response.json();
+  const data = (await response.json()) as { data: { id: string }[] };
   return data.data.map((m) => m.id);
 }

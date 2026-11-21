@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../clone-analyze.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../clone-analyze.ts";
 
-Deno.test("cloneAnalyzeNode should identify dependencies in the walk file (artifactType walk)", async () => {
+test("cloneAnalyzeNode should identify dependencies in the walk file (artifactType walk)", async () => {
   const initialState: State = {
     sourceRoot: "../other",
     walkName: "test-walk",
@@ -43,17 +43,17 @@ import { otherUtil } from "../utils/other.ts";
     utils,
   )(initialState);
 
-  assertEquals(result[0], "INIT");
+  expect(result[0]).toEqual("INIT");
   const files = result[1].filesToCopy || [];
-  assertEquals(files.includes("walks/test-walk.ts"), true);
-  assertEquals(files.includes("specs/test-walk.md"), true);
-  assertEquals(files.includes("nodes/start.ts"), true);
-  assertEquals(files.includes("nodes/next.ts"), true);
-  assertEquals(files.includes("utils/helper.ts"), true);
-  assertEquals(files.includes("utils/other.ts"), true);
+  expect(files.includes("walks/test-walk.ts")).toEqual(true);
+  expect(files.includes("specs/test-walk.md")).toEqual(true);
+  expect(files.includes("nodes/start.ts")).toEqual(true);
+  expect(files.includes("nodes/next.ts")).toEqual(true);
+  expect(files.includes("utils/helper.ts")).toEqual(true);
+  expect(files.includes("utils/other.ts")).toEqual(true);
 });
 
-Deno.test("cloneAnalyzeNode should copy only the node and its utils for artifactType node", async () => {
+test("cloneAnalyzeNode should copy only the node and its utils for artifactType node", async () => {
   const initialState = {
     sourceRoot: "../other",
     walkName: "my-node",
@@ -69,7 +69,7 @@ import { someUtil } from "../utils/helper.ts";
       if (path === "../other/nodes/my-node.ts") {
         return Promise.resolve(nodeContent);
       }
-      if (path === "../other/deno.json") {
+      if (path === "../other/package.json") {
         return Promise.resolve(JSON.stringify({}));
       }
       return Promise.resolve("");
@@ -81,18 +81,19 @@ import { someUtil } from "../utils/helper.ts";
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "DONE", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "DONE");
+  expect(result[0]).toEqual("DONE");
   const files = result[1].filesToCopy ?? [];
-  assertEquals(files.includes("nodes/my-node.ts"), true);
-  assertEquals(files.includes("utils/helper.ts"), true);
-  assertEquals(files.includes("walks/my-node.ts"), false);
+  expect(files.includes("nodes/my-node.ts")).toEqual(true);
+  expect(files.includes("utils/helper.ts")).toEqual(true);
+  expect(files.includes("walks/my-node.ts")).toEqual(false);
 });
 
-Deno.test("cloneAnalyzeNode should copy only the util file for artifactType util", async () => {
+test("cloneAnalyzeNode should copy only the util file for artifactType util", async () => {
   const initialState = {
     sourceRoot: "../other",
     walkName: "my-util",
@@ -101,7 +102,7 @@ Deno.test("cloneAnalyzeNode should copy only the util file for artifactType util
 
   const utils = {
     readFile: (path: string) => {
-      if (path === "../other/deno.json") {
+      if (path === "../other/package.json") {
         return Promise.resolve(JSON.stringify({}));
       }
       return Promise.resolve("");
@@ -112,16 +113,17 @@ Deno.test("cloneAnalyzeNode should copy only the util file for artifactType util
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "DONE", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "DONE");
+  expect(result[0]).toEqual("DONE");
   const files = result[1].filesToCopy ?? [];
-  assertEquals(files, ["utils/my-util.ts"]);
+  expect(files).toEqual(["utils/my-util.ts"]);
 });
 
-Deno.test("cloneAnalyzeNode should collect externalDeps from utils that import bare specifiers", async () => {
+test("cloneAnalyzeNode should collect externalDeps from utils that import bare specifiers", async () => {
   const initialState = {
     sourceRoot: "../other",
     walkName: "my-util",
@@ -130,7 +132,7 @@ Deno.test("cloneAnalyzeNode should collect externalDeps from utils that import b
 
   const utilContent = `
 import { Ollama } from "ollama";
-import { assertEquals } from "@std/assert";
+import { z } from "zod";
 import { relative } from "./local.ts";
   `;
 
@@ -139,13 +141,15 @@ import { relative } from "./local.ts";
       if (path === "../other/utils/my-util.ts") {
         return Promise.resolve(utilContent);
       }
-      if (path === "../other/deno.json") {
-        return Promise.resolve(JSON.stringify({
-          imports: {
-            "ollama": "npm:ollama@^0.6.3",
-            "@std/assert": "jsr:@std/assert@^1.0.19",
-          },
-        }));
+      if (path === "../other/package.json") {
+        return Promise.resolve(
+          JSON.stringify({
+            dependencies: {
+              ollama: "^0.6.4",
+              zod: "^4.0.0",
+            },
+          }),
+        );
       }
       return Promise.resolve("");
     },
@@ -155,13 +159,14 @@ import { relative } from "./local.ts";
     },
   };
 
-  const result = await factory({ onSuccess: "DONE", onError: "STOP" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "DONE", onError: "STOP" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "DONE");
+  expect(result[0]).toEqual("DONE");
   const deps = result[1].externalDeps ?? {};
-  assertEquals(deps["ollama"], "npm:ollama@^0.6.3");
-  assertEquals(deps["@std/assert"], "jsr:@std/assert@^1.0.19");
-  assertEquals(deps["./local.ts"], undefined);
+  expect(deps.ollama).toEqual("^0.6.4");
+  expect(deps.zod).toEqual("^4.0.0");
+  expect(deps["./local.ts"]).toBeUndefined();
 });

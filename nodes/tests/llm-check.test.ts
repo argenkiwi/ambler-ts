@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../llm-check.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../llm-check.ts";
 
-Deno.test("llmCheckNode should transition to onSuccess when host is reachable", async () => {
+test("llmCheckNode should transition to onSuccess when host is reachable", async () => {
   const initialState: State = { host: "http://localhost:11434" };
 
   const utils: Utils = {
@@ -10,19 +10,20 @@ Deno.test("llmCheckNode should transition to onSuccess when host is reachable", 
     print: (_msg: string) => {},
   };
 
-  const result = await factory({
-    onSuccess: "next",
-    onError: "retry",
-    onQuit: "quit",
-  }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    {
+      onSuccess: "next",
+      onError: "retry",
+      onQuit: "quit",
+    },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "next");
-  assertEquals(result[1].host, "http://localhost:11434");
+  expect(result[0]).toEqual("next");
+  expect(result[1].host).toEqual("http://localhost:11434");
 });
 
-Deno.test("llmCheckNode should transition to onError with new host when host is unreachable and user provides new one", async () => {
+test("llmCheckNode should transition to onError with new host when host is unreachable and user provides new one", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {
@@ -31,19 +32,20 @@ Deno.test("llmCheckNode should transition to onError with new host when host is 
     print: (_msg: string) => {},
   };
 
-  const result = await factory({
-    onSuccess: "next",
-    onError: "retry",
-    onQuit: "quit",
-  }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    {
+      onSuccess: "next",
+      onError: "retry",
+      onQuit: "quit",
+    },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "retry");
-  assertEquals(result[1].host, "http://right:11434");
+  expect(result[0]).toEqual("retry");
+  expect(result[1].host).toEqual("http://right:11434");
 });
 
-Deno.test("llmCheckNode should transition to onError when host is unreachable and user enters nothing", async () => {
+test("llmCheckNode should transition to onError when host is unreachable and user enters nothing", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {
@@ -57,11 +59,11 @@ Deno.test("llmCheckNode should transition to onError when host is unreachable an
     utils,
   )(initialState);
 
-  assertEquals(result[0], "retry");
-  assertEquals(result[1].host, "http://wrong:11434");
+  expect(result[0]).toEqual("retry");
+  expect(result[1].host).toEqual("http://wrong:11434");
 });
 
-Deno.test("llmCheckNode should transition to onQuit at end of input instead of retrying forever", async () => {
+test("llmCheckNode should transition to onQuit at end of input instead of retrying forever", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {
@@ -75,6 +77,6 @@ Deno.test("llmCheckNode should transition to onQuit at end of input instead of r
     utils,
   )(initialState);
 
-  assertEquals(result[0], "quit");
-  assertEquals(result[1].host, "http://wrong:11434");
+  expect(result[0]).toEqual("quit");
+  expect(result[1].host).toEqual("http://wrong:11434");
 });

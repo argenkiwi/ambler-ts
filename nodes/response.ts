@@ -1,6 +1,6 @@
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 import { llmChat } from "../utils/llm_chat.ts";
-import { Message } from "./prompt.ts";
+import type { Message } from "./prompt.ts";
 
 export interface State {
   messages: Message[];

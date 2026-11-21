@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Ambler is a Deno/TypeScript state-machine framework: programs are executable graphs of atomic `nodes/` (factories with injected `Utils`) wired together in `walks/`, documented up front in `specs/`. See `README.md` for the full architecture and the developer workflow (Specify → Implement → Test → Compose → Execute). The `.agents/skills/` directory has one skill per step of that workflow (`ambler-spec`, `ambler-node`, `ambler-test`, `ambler-walk`, `ambler-util`, `ambler-init`).
+Ambler is a Bun/TypeScript state-machine framework: programs are executable graphs of atomic `nodes/` (factories with injected `Utils`) wired together in `walks/`, documented up front in `specs/`. See `README.md` for the full architecture and the developer workflow (Specify → Implement → Test → Compose → Execute). The `.agents/skills/` directory has one skill per step of that workflow (`ambler-spec`, `ambler-node`, `ambler-test`, `ambler-walk`, `ambler-util`, `ambler-init`).
 
 ## Zettelkasten RAG Protocol
 

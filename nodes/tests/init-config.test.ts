@@ -1,15 +1,18 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../init-config.ts";
+import { expect, test } from "bun:test";
+import {
+  factory,
+  PROJECT_FILES,
+  type State,
+  type Utils,
+} from "../init-config.ts";
 
-Deno.test("initConfigNode should transition to onSuccess when writeTextFile succeeds", async () => {
+test("initConfigNode writes package.json and tsconfig.json then transitions to onSuccess", async () => {
   const initialState: State = { targetDir: "new-project" };
-  let writtenPath = "";
-  let writtenData = "";
+  const written: Record<string, string> = {};
 
   const utils: Utils = {
     writeTextFile: (path: string, data: string) => {
-      writtenPath = path;
-      writtenData = data;
+      written[path] = data;
       return Promise.resolve();
     },
   };
@@ -19,13 +22,21 @@ Deno.test("initConfigNode should transition to onSuccess when writeTextFile succ
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(writtenPath, "new-project/deno.json");
-  assertEquals(writtenData.includes("imports"), true);
-  assertEquals(state.error, undefined);
+  expect(edge).toEqual("STOP");
+  expect(Object.keys(written)).toEqual([
+    "new-project/package.json",
+    "new-project/tsconfig.json",
+  ]);
+  expect(JSON.parse(written["new-project/package.json"]).type).toEqual(
+    "module",
+  );
+  expect(written["new-project/tsconfig.json"]).toEqual(
+    PROJECT_FILES["tsconfig.json"],
+  );
+  expect(state.error).toBeUndefined();
 });
 
-Deno.test("initConfigNode should transition to onError when writeTextFile fails", async () => {
+test("initConfigNode transitions to onError naming the file that failed to write", async () => {
   const initialState: State = { targetDir: "new-project" };
 
   const utils: Utils = {
@@ -37,6 +48,6 @@ Deno.test("initConfigNode should transition to onError when writeTextFile fails"
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(state.error, "Failed to write deno.json: Write error");
+  expect(edge).toEqual("STOP");
+  expect(state.error).toEqual("Failed to write package.json: Write error");
 });

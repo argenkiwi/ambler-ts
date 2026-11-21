@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../init-copy.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../init-copy.ts";
 
-Deno.test("initCopyNode should transition to onSuccess when copyFile succeeds", async () => {
+test("initCopyNode should transition to onSuccess when copyFile succeeds", async () => {
   const initialState: State = { targetDir: "new-project" };
   let copiedFrom = "";
   let copiedTo = "";
@@ -20,13 +20,13 @@ Deno.test("initCopyNode should transition to onSuccess when copyFile succeeds", 
     utils,
   )(initialState);
 
-  assertEquals(edge, "CONFIG");
-  assertEquals(copiedFrom, "/source/ambler.ts");
-  assertEquals(copiedTo, "new-project/ambler.ts");
-  assertEquals(state.error, undefined);
+  expect(edge).toEqual("CONFIG");
+  expect(copiedFrom).toEqual("/source/ambler.ts");
+  expect(copiedTo).toEqual("new-project/ambler.ts");
+  expect(state.error).toBeUndefined();
 });
 
-Deno.test("initCopyNode should transition to onError when copyFile fails", async () => {
+test("initCopyNode should transition to onError when copyFile fails", async () => {
   const initialState: State = { targetDir: "new-project" };
 
   const utils: Utils = {
@@ -39,6 +39,6 @@ Deno.test("initCopyNode should transition to onError when copyFile fails", async
     utils,
   )(initialState);
 
-  assertEquals(edge, "STOP");
-  assertEquals(state.error, "Failed to copy ambler.ts: Disk full");
+  expect(edge).toEqual("STOP");
+  expect(state.error).toEqual("Failed to copy ambler.ts: Disk full");
 });

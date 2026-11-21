@@ -1,4 +1,5 @@
-import { NodeFactory } from "../ambler.ts";
+import { readFile, writeFile } from "node:fs/promises";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   targetDir: string;
@@ -17,8 +18,8 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  readTextFile: (path) => Deno.readTextFile(path),
-  writeTextFile: (path, data) => Deno.writeTextFile(path, data),
+  readTextFile: (path) => readFile(path, "utf8"),
+  writeTextFile: (path, data) => writeFile(path, data),
 };
 
 export const factory: NodeFactory<State, Edge, Utils> = (
@@ -34,9 +35,11 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       externalDeps = {},
     } = state;
 
-    let denoJson: Record<string, unknown> = {};
+    let packageJson: Record<string, unknown> = {};
     try {
-      denoJson = JSON.parse(await utils.readTextFile(`${targetDir}/deno.json`));
+      packageJson = JSON.parse(
+        await utils.readTextFile(`${targetDir}/package.json`),
+      );
     } catch {
       // Missing or unparseable — start fresh
     }
@@ -44,27 +47,27 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     let changed = false;
 
     if (artifactType === "walk") {
-      let taskCommand =
-        `deno run --allow-read --allow-write walks/${walkName}.ts`;
+      let scriptCommand = `bun walks/${walkName}.ts`;
       try {
-        const sourceDenoJson = JSON.parse(
-          await utils.readTextFile(`${sourceRoot}/deno.json`),
+        const sourcePackageJson = JSON.parse(
+          await utils.readTextFile(`${sourceRoot}/package.json`),
         );
-        const sourceTask = (sourceDenoJson.tasks as Record<string, string>)
-          ?.[walkName];
-        if (sourceTask) taskCommand = sourceTask;
+        const sourceScript = (
+          sourcePackageJson.scripts as Record<string, string>
+        )?.[walkName];
+        if (sourceScript) scriptCommand = sourceScript;
       } catch {
         // Use default command
       }
-      if (!denoJson.tasks) denoJson.tasks = {};
-      (denoJson.tasks as Record<string, string>)[walkName] = taskCommand;
+      if (!packageJson.scripts) packageJson.scripts = {};
+      (packageJson.scripts as Record<string, string>)[walkName] = scriptCommand;
       changed = true;
     }
 
     if (Object.keys(externalDeps).length > 0) {
-      if (!denoJson.imports) denoJson.imports = {};
+      if (!packageJson.dependencies) packageJson.dependencies = {};
       for (const [key, value] of Object.entries(externalDeps)) {
-        (denoJson.imports as Record<string, string>)[key] = value;
+        (packageJson.dependencies as Record<string, string>)[key] = value;
       }
       changed = true;
     }
@@ -72,15 +75,18 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     if (changed) {
       try {
         await utils.writeTextFile(
-          `${targetDir}/deno.json`,
-          JSON.stringify(denoJson, null, 2) + "\n",
+          `${targetDir}/package.json`,
+          `${JSON.stringify(packageJson, null, 2)}\n`,
         );
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        return [edges.onError, {
-          ...state,
-          error: `Failed to update deno.json: ${message}`,
-        }];
+        return [
+          edges.onError,
+          {
+            ...state,
+            error: `Failed to update package.json: ${message}`,
+          },
+        ];
       }
     }
 

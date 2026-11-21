@@ -1,4 +1,5 @@
-import { NodeFactory } from "../ambler.ts";
+import { readFile, stat } from "node:fs/promises";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   sourceRoot: string;
@@ -17,10 +18,10 @@ export type Utils = {
 };
 
 const defaultUtils: Utils = {
-  readFile: (path) => Deno.readTextFile(path),
+  readFile: (path) => readFile(path, "utf8"),
   exists: async (path) => {
     try {
-      await Deno.stat(path);
+      await stat(path);
       return true;
     } catch {
       return false;
@@ -38,9 +39,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
     let sourceImports: Record<string, string> = {};
     try {
-      const denoJsonContent = await utils.readFile(`${sourceRoot}/deno.json`);
+      const packageJson = await utils.readFile(`${sourceRoot}/package.json`);
       sourceImports =
-        (JSON.parse(denoJsonContent).imports as Record<string, string>) ?? {};
+        (JSON.parse(packageJson).dependencies as Record<string, string>) ?? {};
     } catch {
       // Missing or unparseable — treat as empty
     }
@@ -60,12 +61,12 @@ export const factory: NodeFactory<State, Edge, Utils> = (
           );
           const utilRegex =
             /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/utils\/([^"']+\.ts)["']/gm;
-          let match;
+          let match: RegExpExecArray | null;
           while ((match = utilRegex.exec(nodeContent)) !== null) {
             const relPath = `utils/${match[1]}`;
             if (
               !filesToCopy.includes(relPath) &&
-              await utils.exists(`${sourceRoot}/${relPath}`)
+              (await utils.exists(`${sourceRoot}/${relPath}`))
             ) {
               filesToCopy.push(relPath);
             }
@@ -84,7 +85,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
         const nodeRegex =
           /^\s*(?:import|export)\s+[\s\S]*?from\s+["']\.\.\/nodes\/([^"']+\.ts)["']/gm;
-        let match;
+        let match: RegExpExecArray | null;
         const nodes: string[] = [];
         while ((match = nodeRegex.exec(content)) !== null) {
           const relPath = `nodes/${match[1]}`;
@@ -110,12 +111,12 @@ export const factory: NodeFactory<State, Edge, Utils> = (
           const nodeContent = await utils.readFile(
             `${sourceRoot}/${relNodePath}`,
           );
-          let utilMatch;
+          let utilMatch: RegExpExecArray | null;
           while ((utilMatch = utilRegex.exec(nodeContent)) !== null) {
             const relPath = `utils/${utilMatch[1]}`;
             if (
               !filesToCopy.includes(relPath) &&
-              await utils.exists(`${sourceRoot}/${relPath}`)
+              (await utils.exists(`${sourceRoot}/${relPath}`))
             ) {
               filesToCopy.push(relPath);
             }
@@ -125,13 +126,13 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
       const uniqueFiles = Array.from(new Set(filesToCopy));
 
-      // Scan utils for bare-specifier external deps present in source deno.json imports
+      // Scan utils for bare-specifier external deps present in source package.json dependencies
       const externalDeps: Record<string, string> = {};
       const bareImportRegex = /from\s+["']([^"'./][^"']*?)["']/gm;
       for (const file of uniqueFiles) {
         if (!file.startsWith("utils/")) continue;
         const content = await utils.readFile(`${sourceRoot}/${file}`);
-        let match;
+        let match: RegExpExecArray | null;
         while ((match = bareImportRegex.exec(content)) !== null) {
           const specifier = match[1];
           if (sourceImports[specifier]) {
@@ -140,17 +141,23 @@ export const factory: NodeFactory<State, Edge, Utils> = (
         }
       }
 
-      return [edges.onSuccess, {
-        ...state,
-        filesToCopy: uniqueFiles,
-        externalDeps,
-      }];
+      return [
+        edges.onSuccess,
+        {
+          ...state,
+          filesToCopy: uniqueFiles,
+          externalDeps,
+        },
+      ];
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return [edges.onError, {
-        ...state,
-        error: `Failed to analyze walk: ${message}`,
-      }];
+      return [
+        edges.onError,
+        {
+          ...state,
+          error: `Failed to analyze walk: ${message}`,
+        },
+      ];
     }
   };
 };

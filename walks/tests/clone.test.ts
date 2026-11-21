@@ -1,6 +1,12 @@
-import { assertEquals } from "@std/assert";
+import { expect, test } from "bun:test";
 import { walk } from "../../ambler.ts";
 import { createWalk, initialState } from "../clone.ts";
+
+/** Mimics the ENOENT error node:fs rejects with for a missing path. */
+const notFound = (path = "") =>
+  Object.assign(new Error(`ENOENT: no such file or directory, ${path}`), {
+    code: "ENOENT",
+  });
 
 /** An in-memory file system shared by every node's utils. */
 function memoryFs(seed: Record<string, string>) {
@@ -9,7 +15,7 @@ function memoryFs(seed: Record<string, string>) {
   const read = (path: string) =>
     files.has(path)
       ? Promise.resolve(files.get(path)!)
-      : Promise.reject(new Deno.errors.NotFound(path));
+      : Promise.reject(notFound(path));
   const write = (path: string, data: string) => {
     files.set(path, data);
     return Promise.resolve();
@@ -26,7 +32,7 @@ function memoryFs(seed: Record<string, string>) {
       analyze: { readFile: read, exists },
       initSetup: {
         mkdir,
-        stat: () => Promise.reject(new Deno.errors.NotFound()),
+        stat: () => Promise.reject(notFound()),
       },
       initCopy: { copyFile, getAmblerSrc: () => "src/ambler.ts" },
       initConfig: { writeTextFile: write },
@@ -43,8 +49,8 @@ function memoryFs(seed: Record<string, string>) {
 
 const source = {
   "src/ambler.ts": "// engine",
-  "src/deno.json": JSON.stringify({
-    tasks: { counter: "deno run walks/counter.ts" },
+  "src/package.json": JSON.stringify({
+    scripts: { counter: "bun walks/counter.ts" },
   }),
   "src/walks/counter.ts":
     'import defer * as startNode from "../nodes/start.ts";\n',
@@ -52,11 +58,11 @@ const source = {
   "src/specs/counter.md": "# spec",
 };
 
-Deno.test("clone copies a walk with its spec and nodes into an existing project and registers its task", async () => {
+test("clone copies a walk with its spec and nodes into an existing project and registers its task", async () => {
   const fs = memoryFs({
     ...source,
     "dst/ambler.ts": "// engine",
-    "dst/deno.json": "{}",
+    "dst/package.json": "{}",
   });
 
   const final = await walk(
@@ -65,24 +71,20 @@ Deno.test("clone copies a walk with its spec and nodes into an existing project 
     initialState("src/walks/counter.ts", "dst"),
   );
 
-  assertEquals(final.error, undefined);
-  assertEquals(final.filesToCopy, [
+  expect(final.error).toBeUndefined();
+  expect(final.filesToCopy).toEqual([
     "walks/counter.ts",
     "specs/counter.md",
     "nodes/start.ts",
   ]);
-  assertEquals(fs.files.get("dst/nodes/start.ts"), "// start node");
-  assertEquals(
-    JSON.parse(fs.files.get("dst/deno.json")!).tasks.counter,
-    "deno run walks/counter.ts",
+  expect(fs.files.get("dst/nodes/start.ts")).toEqual("// start node");
+  expect(JSON.parse(fs.files.get("dst/package.json")!).scripts.counter).toEqual(
+    "bun walks/counter.ts",
   );
-  assertEquals(
-    fs.printed[0],
-    'Successfully cloned walk "counter" to "dst".',
-  );
+  expect(fs.printed[0]).toEqual('Successfully cloned walk "counter" to "dst".');
 });
 
-Deno.test("clone initialises the target first when it is not an Ambler project", async () => {
+test("clone initialises the target first when it is not an Ambler project", async () => {
   const fs = memoryFs(source);
 
   const final = await walk(
@@ -91,16 +93,15 @@ Deno.test("clone initialises the target first when it is not an Ambler project",
     initialState("src/walks/counter.ts", "dst"),
   );
 
-  assertEquals(final.error, undefined);
-  assertEquals(final.isNewProject, true);
-  assertEquals(fs.files.get("dst/ambler.ts"), "// engine");
-  assertEquals(
-    fs.files.get("dst/walks/counter.ts"),
+  expect(final.error).toBeUndefined();
+  expect(final.isNewProject).toEqual(true);
+  expect(fs.files.get("dst/ambler.ts")).toEqual("// engine");
+  expect(fs.files.get("dst/walks/counter.ts")).toEqual(
     source["src/walks/counter.ts"],
   );
 });
 
-Deno.test("clone stops with an error when the source does not exist", async () => {
+test("clone stops with an error when the source does not exist", async () => {
   const fs = memoryFs({});
 
   const final = await walk(
@@ -109,8 +110,10 @@ Deno.test("clone stops with an error when the source does not exist", async () =
     initialState("src/walks/missing.ts", "dst"),
   );
 
-  assertEquals(final.error, 'Source walk not found at "src/walks/missing.ts".');
-  assertEquals(fs.printed, [
+  expect(final.error).toEqual(
+    'Source walk not found at "src/walks/missing.ts".',
+  );
+  expect(fs.printed).toEqual([
     'Error: Source walk not found at "src/walks/missing.ts".',
   ]);
 });

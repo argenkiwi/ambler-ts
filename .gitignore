@@ -16,14 +16,11 @@ pids
 *.seed
 *.pid.lock
 
-# --- Deno ---
+# --- Coverage ---
 # Coverage reports
 cov/
 coverage/
 *.lcov
-
-# Vendor directory (if using 'deno vendor')
-vendor/
 
 # --- Dependencies ---
 node_modules/

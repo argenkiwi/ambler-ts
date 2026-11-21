@@ -1,102 +1,87 @@
-import { factory, State, Utils } from "../start.ts";
-import { assertEquals } from "@std/assert";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../start.ts";
 
-Deno.test(
-  "startNode should transition to onSuccess with 0 if input is empty",
-  async () => {
-    const initialState: State = { count: 0 };
+test("startNode should transition to onSuccess with 0 if input is empty", async () => {
+  const initialState: State = { count: 0 };
 
-    const utils: Utils = {
-      readLine: (_msg: string) => "",
-      print: (_msg: string) => {},
-    };
+  const utils: Utils = {
+    readLine: (_msg: string) => "",
+    print: (_msg: string) => {},
+  };
 
-    const result = await factory(
-      { onSuccess: "NEXT", onError: "ERROR" },
-      utils,
-    )(initialState);
+  const result = await factory(
+    { onSuccess: "NEXT", onError: "ERROR" },
+    utils,
+  )(initialState);
 
-    assertEquals(result[0], "NEXT");
-    assertEquals(result[1].count, 0);
-  },
-);
+  expect(result[0]).toEqual("NEXT");
+  expect(result[1].count).toEqual(0);
+});
 
-Deno.test(
-  "startNode should transition to onSuccess with input number",
-  async () => {
-    const initialState: State = { count: 0 };
+test("startNode should transition to onSuccess with input number", async () => {
+  const initialState: State = { count: 0 };
 
-    const utils: Utils = {
-      readLine: (_msg: string) => "42",
-      print: (_msg: string) => {},
-    };
+  const utils: Utils = {
+    readLine: (_msg: string) => "42",
+    print: (_msg: string) => {},
+  };
 
-    const result = await factory(
-      { onSuccess: "NEXT", onError: "ERROR" },
-      utils,
-    )(initialState);
+  const result = await factory(
+    { onSuccess: "NEXT", onError: "ERROR" },
+    utils,
+  )(initialState);
 
-    assertEquals(result[0], "NEXT");
-    assertEquals(result[1].count, 42);
-  },
-);
+  expect(result[0]).toEqual("NEXT");
+  expect(result[1].count).toEqual(42);
+});
 
-Deno.test(
-  "startNode should transition to onError if input is invalid",
-  async () => {
-    const initialState: State = { count: 123 };
+test("startNode should transition to onError if input is invalid", async () => {
+  const initialState: State = { count: 123 };
 
-    const utils: Utils = {
-      readLine: (_msg: string) => "abc",
-      print: (_msg: string) => {},
-    };
+  const utils: Utils = {
+    readLine: (_msg: string) => "abc",
+    print: (_msg: string) => {},
+  };
 
-    const result = await factory(
-      { onSuccess: "NEXT", onError: "ERROR" },
-      utils,
-    )(initialState);
+  const result = await factory(
+    { onSuccess: "NEXT", onError: "ERROR" },
+    utils,
+  )(initialState);
 
-    assertEquals(result[0], "ERROR");
-    assertEquals(result[1].count, 123);
-  },
-);
+  expect(result[0]).toEqual("ERROR");
+  expect(result[1].count).toEqual(123);
+});
 
-Deno.test(
-  "startNode should transition to onError if input has trailing junk",
-  async () => {
-    const initialState: State = { count: 123 };
+test("startNode should transition to onError if input has trailing junk", async () => {
+  const initialState: State = { count: 123 };
 
-    const utils: Utils = {
-      readLine: (_msg: string) => "3abc",
-      print: (_msg: string) => {},
-    };
+  const utils: Utils = {
+    readLine: (_msg: string) => "3abc",
+    print: (_msg: string) => {},
+  };
 
-    const result = await factory(
-      { onSuccess: "NEXT", onError: "ERROR" },
-      utils,
-    )(initialState);
+  const result = await factory(
+    { onSuccess: "NEXT", onError: "ERROR" },
+    utils,
+  )(initialState);
 
-    assertEquals(result[0], "ERROR");
-    assertEquals(result[1].count, 123);
-  },
-);
+  expect(result[0]).toEqual("ERROR");
+  expect(result[1].count).toEqual(123);
+});
 
-Deno.test(
-  "startNode should transition to onSuccess with 0 at end of input",
-  async () => {
-    const initialState: State = { count: 7 };
+test("startNode should transition to onSuccess with 0 at end of input", async () => {
+  const initialState: State = { count: 7 };
 
-    const utils: Utils = {
-      readLine: (_msg: string) => null,
-      print: (_msg: string) => {},
-    };
+  const utils: Utils = {
+    readLine: (_msg: string) => null,
+    print: (_msg: string) => {},
+  };
 
-    const result = await factory(
-      { onSuccess: "NEXT", onError: "ERROR" },
-      utils,
-    )(initialState);
+  const result = await factory(
+    { onSuccess: "NEXT", onError: "ERROR" },
+    utils,
+  )(initialState);
 
-    assertEquals(result[0], "NEXT");
-    assertEquals(result[1].count, 0);
-  },
-);
+  expect(result[0]).toEqual("NEXT");
+  expect(result[1].count).toEqual(0);
+});

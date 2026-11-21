@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../response.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../response.ts";
 
-Deno.test("responseNode should transition to onComplete and append assistant response", async () => {
+test("responseNode should transition to onComplete and append assistant response", async () => {
   const initialState: State = {
     messages: [{ role: "user", content: "hello" }],
     host: "http://localhost:11434",
@@ -12,14 +12,11 @@ Deno.test("responseNode should transition to onComplete and append assistant res
     print: (_msg: string) => {},
   };
 
-  const result = await factory(
-    { onComplete: "prompt" },
-    utils,
-  )(initialState);
+  const result = await factory({ onComplete: "prompt" }, utils)(initialState);
 
-  assertEquals(result[0], "prompt");
-  assertEquals(result[1].messages.length, 2);
-  assertEquals(result[1].messages[1], {
+  expect(result[0]).toEqual("prompt");
+  expect(result[1].messages.length).toEqual(2);
+  expect(result[1].messages[1]).toEqual({
     role: "assistant",
     content: "hi there",
   });

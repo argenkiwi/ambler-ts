@@ -1,4 +1,5 @@
-import { NodeFactory } from "../ambler.ts";
+import { stat } from "node:fs/promises";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   sourceWalkPath: string;
@@ -19,7 +20,7 @@ export type Utils = {
 const defaultUtils: Utils = {
   exists: async (path) => {
     try {
-      await Deno.stat(path);
+      await stat(path);
       return true;
     } catch {
       return false;
@@ -27,32 +28,26 @@ const defaultUtils: Utils = {
   },
 };
 
-function parseSourcePath(
-  srcPath: string,
-): {
+function parseSourcePath(srcPath: string): {
   sourceRoot: string;
   walkName: string;
   artifactType: "walk" | "node" | "util";
 } {
   const normalized = srcPath.replace(/\\/g, "/");
   const lastSlash = normalized.lastIndexOf("/");
-  const fileName = lastSlash === -1
-    ? normalized
-    : normalized.substring(lastSlash + 1);
+  const fileName =
+    lastSlash === -1 ? normalized : normalized.substring(lastSlash + 1);
   const parentDir = lastSlash === -1 ? "." : normalized.substring(0, lastSlash);
   const lastParentSlash = parentDir.lastIndexOf("/");
-  const dirName = lastParentSlash === -1
-    ? parentDir
-    : parentDir.substring(lastParentSlash + 1);
-  const sourceRoot = lastParentSlash === -1
-    ? "."
-    : parentDir.substring(0, lastParentSlash);
+  const dirName =
+    lastParentSlash === -1
+      ? parentDir
+      : parentDir.substring(lastParentSlash + 1);
+  const sourceRoot =
+    lastParentSlash === -1 ? "." : parentDir.substring(0, lastParentSlash);
   const walkName = fileName.endsWith(".ts") ? fileName.slice(0, -3) : fileName;
-  const artifactType: "walk" | "node" | "util" = dirName === "nodes"
-    ? "node"
-    : dirName === "utils"
-    ? "util"
-    : "walk";
+  const artifactType: "walk" | "node" | "util" =
+    dirName === "nodes" ? "node" : dirName === "utils" ? "util" : "walk";
   return { sourceRoot, walkName, artifactType };
 }
 
@@ -64,17 +59,23 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     const { sourceWalkPath, targetDir } = state;
 
     if (!sourceWalkPath) {
-      return [edges.onError, {
-        ...state,
-        error: "No source walk path provided.",
-      }];
+      return [
+        edges.onError,
+        {
+          ...state,
+          error: "No source walk path provided.",
+        },
+      ];
     }
 
     if (!targetDir) {
-      return [edges.onError, {
-        ...state,
-        error: "No target directory provided.",
-      }];
+      return [
+        edges.onError,
+        {
+          ...state,
+          error: "No target directory provided.",
+        },
+      ];
     }
 
     if (!(await utils.exists(sourceWalkPath))) {
@@ -87,22 +88,24 @@ export const factory: NodeFactory<State, Edge, Utils> = (
       ];
     }
 
-    const { sourceRoot, walkName, artifactType } = parseSourcePath(
-      sourceWalkPath,
-    );
+    const { sourceRoot, walkName, artifactType } =
+      parseSourcePath(sourceWalkPath);
 
     // Check if target directory is an Ambler project
     const isAmblerProject = await utils.exists(`${targetDir}/ambler.ts`);
-    const isDenoProject = await utils.exists(`${targetDir}/deno.json`);
+    const isPackageProject = await utils.exists(`${targetDir}/package.json`);
 
-    const isNewProject = !(isAmblerProject && isDenoProject);
+    const isNewProject = !(isAmblerProject && isPackageProject);
 
-    return [isNewProject ? edges.onNewProject : edges.onExisting, {
-      ...state,
-      sourceRoot,
-      walkName,
-      artifactType,
-      isNewProject,
-    }];
+    return [
+      isNewProject ? edges.onNewProject : edges.onExisting,
+      {
+        ...state,
+        sourceRoot,
+        walkName,
+        artifactType,
+        isNewProject,
+      },
+    ];
   };
 };

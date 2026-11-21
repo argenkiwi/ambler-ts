@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../stop.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../stop.ts";
 
-Deno.test("stopNode should print final count and call onDone", async () => {
+test("stopNode should print final count and call onDone", async () => {
   const initialState: State = { count: 15 };
   let capturedMessage: string | undefined;
 
@@ -11,11 +11,9 @@ Deno.test("stopNode should print final count and call onDone", async () => {
     },
   };
 
-  const result = await factory({ onDone: null }, utils)(
-    initialState,
-  );
+  const result = await factory({ onDone: null }, utils)(initialState);
 
-  assertEquals(result[0], null);
-  assertEquals(result[1].count, 15);
-  assertEquals(capturedMessage, "Final count: 15");
+  expect(result[0]).toEqual(null);
+  expect(result[1].count).toEqual(15);
+  expect(capturedMessage).toEqual("Final count: 15");
 });

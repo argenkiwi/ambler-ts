@@ -3,7 +3,7 @@ name: ambler-node
 description: Creates a new Ambler node — with tests, using test-driven development. Use this whenever the user wants to add a node, step, or state to an Ambler project — even if they phrase it as "add a step", "create a handler", or describe the behavior without using the word "node". Also use when creating a node WITH tests or following TDD for a new node. For adding tests to an existing node that already has an implementation, use `/ambler-test` instead.
 metadata:
   author: leandro
-  version: "3.1"
+  version: "4.0"
 ---
 
 # Ambler Node
@@ -32,7 +32,7 @@ Write only the type exports and a stub factory. The factory body must throw so t
 **Synchronous skeleton:**
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   // Fields from requirements
@@ -61,7 +61,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 **Asynchronous skeleton:**
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -89,22 +89,22 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 Verify the skeleton compiles before writing tests:
 
 ```bash
-deno check nodes/<name>.ts
+bun run check
 ```
 
 ---
 
 ## 3. Write `nodes/tests/<name>.test.ts`
 
-Write one `Deno.test` per branch identified in step 1. All utils must be mocked — no real I/O, network, or timing.
+Write one `test` per branch identified in step 1. All utils must be mocked — no real I/O, network, or timing.
 
 **Synchronous node:**
 
 ```typescript
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../<name>.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../<name>.ts";
 
-Deno.test("<name>Node should <behavior> when <condition>", () => {
+test("<name>Node should <behavior> when <condition>", () => {
   const initialState: State = { /* ... */ };
 
   const utils: Utils = {
@@ -116,18 +116,18 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");
-  assertEquals(result[1].someField, expectedValue);
+  expect(result[0]).toEqual("next");
+  expect(result[1].someField).toEqual(expectedValue);
 });
 ```
 
 **Asynchronous node:**
 
 ```typescript
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../<name>.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../<name>.ts";
 
-Deno.test("<name>Node should <behavior> when <condition>", async () => {
+test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: State = { /* ... */ };
 
   const utils: Utils = {
@@ -139,8 +139,8 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");
-  assertEquals(result[1].someField, expectedValue);
+  expect(result[0]).toEqual("next");
+  expect(result[1].someField).toEqual(expectedValue);
 });
 ```
 
@@ -157,7 +157,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 ## 4. Run tests — expect failure
 
 ```bash
-deno test nodes/tests/<name>.test.ts
+bun test nodes/tests/<name>.test.ts
 ```
 
 Tests must fail with `Error: not implemented` (or assertion errors). This confirms the tests are actually exercising the code path.
@@ -173,7 +173,7 @@ Tests must fail with `Error: not implemented` (or assertion errors). This confir
 Replace the stub body with the real logic. The type exports (`State`, `Edge`, `Utils`, `defaultUtils`) stay exactly as written in step 2.
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 
 export interface State {
   count: number;
@@ -219,7 +219,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 If you need to use an existing node but the walk's state has different property names, create an adapter node. Adapters wrap a real factory, so there is no stub phase — write the adapter implementation and tests together, then verify green in step 6.
 
 ```typescript
-import { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../ambler.ts";
 import { factory as originalFactory, Edge, Utils } from "./originalNode.ts";
 
 export interface State {
@@ -244,7 +244,7 @@ export const factory: NodeFactory<State, Edge, Utils> = (edges, utils) => {
 ## 6. Run tests — must pass
 
 ```bash
-deno test nodes/tests/<name>.test.ts
+bun test nodes/tests/<name>.test.ts
 ```
 
 All tests must be green. Fix the implementation (never the tests) until they pass.

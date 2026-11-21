@@ -3,7 +3,7 @@ name: ambler-test
 description: Adds or updates tests for an existing Ambler node that already has an implementation. Use this when a node exists in nodes/<name>.ts but has no test file, when tests need extending after new branches were added, or when retrofitting TDD onto existing code. For creating a brand-new node with tests, use `/ambler-node` instead.
 metadata:
   author: leandro
-  version: "3.1"
+  version: "4.0"
 ---
 
 # Ambler Test
@@ -37,15 +37,15 @@ Check whether `nodes/tests/<name>.test.ts` exists.
 
 ## 3. Write or update `nodes/tests/<name>.test.ts`
 
-Write one `Deno.test` per uncovered branch. All utils must be mocked.
+Write one `test` per uncovered branch. All utils must be mocked.
 
 **Synchronous node:**
 
 ```typescript
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../<name>.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../<name>.ts";
 
-Deno.test("<name>Node should <behavior> when <condition>", () => {
+test("<name>Node should <behavior> when <condition>", () => {
   const initialState: State = { /* ... */ };
 
   const utils: Utils = {
@@ -58,18 +58,18 @@ Deno.test("<name>Node should <behavior> when <condition>", () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");
-  assertEquals(result[1].someField, expectedValue);
+  expect(result[0]).toEqual("next");
+  expect(result[1].someField).toEqual(expectedValue);
 });
 ```
 
 **Asynchronous node:**
 
 ```typescript
-import { assertEquals } from "@std/assert";
-import { factory, State, Utils } from "../<name>.ts";
+import { expect, test } from "bun:test";
+import { factory, type State, type Utils } from "../<name>.ts";
 
-Deno.test("<name>Node should <behavior> when <condition>", async () => {
+test("<name>Node should <behavior> when <condition>", async () => {
   const initialState: State = { /* ... */ };
 
   const utils: Utils = {
@@ -82,8 +82,8 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
     utils,
   )(initialState);
 
-  assertEquals(result[0], "next");
-  assertEquals(result[1].someField, expectedValue);
+  expect(result[0]).toEqual("next");
+  expect(result[1].someField).toEqual(expectedValue);
 });
 ```
 
@@ -101,7 +101,7 @@ Deno.test("<name>Node should <behavior> when <condition>", async () => {
 ## 4. Run tests — must pass
 
 ```bash
-deno test nodes/tests/<name>.test.ts
+bun test nodes/tests/<name>.test.ts
 ```
 
 All tests must pass. If any fail, fix the implementation (not the tests).
