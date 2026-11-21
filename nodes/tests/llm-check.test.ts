@@ -10,7 +10,11 @@ Deno.test("llmCheckNode should transition to onSuccess when host is reachable", 
     print: (_msg: string) => {},
   };
 
-  const result = await factory({ onSuccess: "next", onError: "retry" }, utils)(
+  const result = await factory({
+    onSuccess: "next",
+    onError: "retry",
+    onQuit: "quit",
+  }, utils)(
     initialState,
   );
 
@@ -27,7 +31,11 @@ Deno.test("llmCheckNode should transition to onError with new host when host is 
     print: (_msg: string) => {},
   };
 
-  const result = await factory({ onSuccess: "next", onError: "retry" }, utils)(
+  const result = await factory({
+    onSuccess: "next",
+    onError: "retry",
+    onQuit: "quit",
+  }, utils)(
     initialState,
   );
 
@@ -35,7 +43,25 @@ Deno.test("llmCheckNode should transition to onError with new host when host is 
   assertEquals(result[1].host, "http://right:11434");
 });
 
-Deno.test("llmCheckNode should transition to onError when host is unreachable and user cancels", async () => {
+Deno.test("llmCheckNode should transition to onError when host is unreachable and user enters nothing", async () => {
+  const initialState: State = { host: "http://wrong:11434" };
+
+  const utils: Utils = {
+    checkHost: (_host: string) => Promise.resolve(false),
+    getPrompt: (_msg: string) => "",
+    print: (_msg: string) => {},
+  };
+
+  const result = await factory(
+    { onSuccess: "next", onError: "retry", onQuit: "quit" },
+    utils,
+  )(initialState);
+
+  assertEquals(result[0], "retry");
+  assertEquals(result[1].host, "http://wrong:11434");
+});
+
+Deno.test("llmCheckNode should transition to onQuit at end of input instead of retrying forever", async () => {
   const initialState: State = { host: "http://wrong:11434" };
 
   const utils: Utils = {
@@ -44,10 +70,11 @@ Deno.test("llmCheckNode should transition to onError when host is unreachable an
     print: (_msg: string) => {},
   };
 
-  const result = await factory({ onSuccess: "next", onError: "retry" }, utils)(
-    initialState,
-  );
+  const result = await factory(
+    { onSuccess: "next", onError: "retry", onQuit: "quit" },
+    utils,
+  )(initialState);
 
-  assertEquals(result[0], "retry");
+  assertEquals(result[0], "quit");
   assertEquals(result[1].host, "http://wrong:11434");
 });

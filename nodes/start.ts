@@ -27,8 +27,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
     return [edges.onSuccess, { ...state, count: 0 }];
   }
 
-  const n = parseInt(input);
-  if (isNaN(n)) {
+  // Number() rejects trailing junk ("3abc"), which parseInt would accept as 3.
+  const n = Number(input.trim());
+  if (!Number.isInteger(n)) {
     utils.print("Error: Invalid input. Please enter a number.");
     return [edges.onError, state];
   }

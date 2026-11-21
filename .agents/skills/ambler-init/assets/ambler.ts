@@ -27,8 +27,10 @@ export type Node<S, K extends string> = (
  * @template NS The base state type required by this node.
  * @template E The union of valid edge names for this node.
  * @template U The type of the utilities object provided to the node.
+ * @template O Construction-time options, so one generic node (e.g. a yes/no
+ *   prompt) can be wired under several IDs with different configuration.
  */
-export type NodeFactory<NS, E extends string, U = unknown> = <
+export type NodeFactory<NS, E extends string, U = unknown, O = undefined> = <
   N extends string,
   S extends NS,
 >(
@@ -36,6 +38,8 @@ export type NodeFactory<NS, E extends string, U = unknown> = <
   edges: Record<E, NoInfer<N> | null>,
   /** Optional utilities or dependencies required by the node. */
   utils?: U,
+  /** Optional configuration fixed when the walk is wired. */
+  options?: O,
 ) => Node<S, N>;
 
 /**
@@ -58,4 +62,44 @@ export function ambler<S, K extends string>(
     loaded[nodeId] ??= nodes[nodeId]();
     return loaded[nodeId]!(state);
   };
+}
+
+/**
+ * Thrown by {@link walk} when a node throws, recording which node failed.
+ *
+ * Expected failures should be routed through an edge (e.g. `onError`); this is
+ * for the unexpected ones.
+ */
+export class WalkError<K extends string = string> extends Error {
+  constructor(readonly nodeId: K, cause: unknown) {
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    super(`Node ${nodeId} failed: ${reason}`, { cause });
+    this.name = "WalkError";
+  }
+}
+
+/**
+ * Runs a walk from `start` until a node returns `null` as its next ID.
+ *
+ * @param amble The runner returned by {@link ambler}.
+ * @param start The ID of the first node to run.
+ * @param state The initial state.
+ * @returns The final state.
+ * @throws {WalkError} If any node throws.
+ */
+export async function walk<S, K extends string>(
+  amble: (nodeId: K, state: S) => Next<S, K> | Promise<Next<S, K>>,
+  start: K,
+  state: S,
+): Promise<S> {
+  let nodeId: K | null = start;
+  while (nodeId !== null) {
+    const current: K = nodeId;
+    try {
+      [nodeId, state] = await amble(current, state);
+    } catch (cause) {
+      throw new WalkError(current, cause);
+    }
+  }
+  return state;
 }

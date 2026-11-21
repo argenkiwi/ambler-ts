@@ -60,3 +60,43 @@ Deno.test(
     assertEquals(result[1].count, 123);
   },
 );
+
+Deno.test(
+  "startNode should transition to onError if input has trailing junk",
+  async () => {
+    const initialState: State = { count: 123 };
+
+    const utils: Utils = {
+      readLine: (_msg: string) => "3abc",
+      print: (_msg: string) => {},
+    };
+
+    const result = await factory(
+      { onSuccess: "NEXT", onError: "ERROR" },
+      utils,
+    )(initialState);
+
+    assertEquals(result[0], "ERROR");
+    assertEquals(result[1].count, 123);
+  },
+);
+
+Deno.test(
+  "startNode should transition to onSuccess with 0 at end of input",
+  async () => {
+    const initialState: State = { count: 7 };
+
+    const utils: Utils = {
+      readLine: (_msg: string) => null,
+      print: (_msg: string) => {},
+    };
+
+    const result = await factory(
+      { onSuccess: "NEXT", onError: "ERROR" },
+      utils,
+    )(initialState);
+
+    assertEquals(result[0], "NEXT");
+    assertEquals(result[1].count, 0);
+  },
+);

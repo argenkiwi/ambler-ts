@@ -3,7 +3,7 @@ name: ambler-walk
 description: Creates a complete Ambler walk — the TypeScript wiring file (walks/<name>.ts) and the Markdown spec (specs/<name>.md) — and ensures all required nodes exist. Use this whenever a user wants to add a new program or flow to an Ambler project, even if they say "new walk", "add a program", "wire up these nodes", or just describe what they want the app to do.
 metadata:
   author: leandro
-  version: "2.5"
+  version: "2.6"
 ---
 
 # Ambler Walk
@@ -50,48 +50,89 @@ For each node defined in the specification:
 ## Step 5 — Create the Wiring File (`walks/<name>.ts`)
 
 ```typescript
-import { ambler } from "../ambler.ts";
+import { ambler, walk } from "../ambler.ts";
 import defer * as startNode from "../nodes/start.ts";
 import defer * as nextNode from "../nodes/next.ts";
 import defer * as stopNode from "../nodes/stop.ts";
+import type { Utils as StartUtils } from "../nodes/start.ts";
+import type { Utils as NextUtils } from "../nodes/next.ts";
+import type { Utils as StopUtils } from "../nodes/stop.ts";
 
 export interface State {
   field: string;
+  error?: string;
 }
 
-type NodeId = "start" | "next" | "stop";
+export type NodeId = "START" | "NEXT" | "STOP";
 
-const amble = ambler<State, NodeId>({
-  start: () => startNode.factory({ onSuccess: "next", onError: "start" }),
-  next:  () => nextNode.factory({ onComplete: "stop" }),
-  stop:  () => stopNode.factory({ onDone: null }),
-});
+/** Per-node utils overrides; omitted nodes use their defaults. */
+export type WalkUtils = {
+  start?: StartUtils;
+  next?: NextUtils;
+  stop?: StopUtils;
+};
+
+export function createWalk(utils: WalkUtils = {}) {
+  return ambler<State, NodeId>({
+    START: () =>
+      startNode.factory({ onSuccess: "NEXT", onError: "START" }, utils.start),
+    NEXT: () => nextNode.factory({ onComplete: "STOP" }, utils.next),
+    STOP: () => stopNode.factory({ onDone: null }, utils.stop),
+  });
+}
 
 if (import.meta.main) {
-  let nodeId: NodeId | null = "start";
-  let state: State = {
-    field: "initial",
-  };
-
-  while (nodeId) {
-    const next = amble(nodeId, state);
-    [nodeId, state] = next instanceof Promise ? await next : next;
-  }
+  const final = await walk(createWalk(), "START", { field: "initial" });
+  if (final.error) Deno.exit(1);
 }
 ```
 
 **Key rules:**
-- Import `ambler` from `../ambler.ts`.
-- Use `import defer * as <alias>` for every node to support lazy loading (Deno 2.8+).
-- Define `State` interface at the top of the file.
-- Define `NodeId` union type for node identifiers.
-- Provide a map of node IDs to **functions that return nodes** to `ambler<State, NodeId>({ ... })`.
-- Use arrow functions to defer node creation: `start: () => startNode.factory({ ... })`.
-- Call `ambler` outside the `if` guard and use `instanceof Promise` in the loop.
+- Import `ambler` and `walk` from `../ambler.ts`. Never hand-write the run loop: `walk()` runs it, returns the final state, and wraps any thrown error in a `WalkError` that names the failing node.
+- Use `import defer * as <alias>` for every node to support lazy loading (Deno 2.8+). Utils types come in through separate `import type` lines, which are erased at runtime and don't defeat the deferral.
+- Export `State`, `NodeId`, `WalkUtils` and `createWalk(utils)` so the wiring can be tested (Step 6).
+- Use arrow functions to defer node creation: `START: () => startNode.factory({ ... }, utils.start)`.
+- Every edge in a factory's record is required, so an unwired edge is a type error. Wire a terminal edge with `null`.
+- If a failure ends the walk through an `error` state field, exit with `Deno.exit(1)` so shell callers see a non-zero status.
+- To reuse one generic node under several IDs with different configuration (e.g. two yes/no prompts), pass construction options as the factory's third argument: `confirmNode.factory(edges, utils.confirm, { question: "Proceed?" })`.
 
 ---
 
-## Step 5 — Add Deno Task
+## Step 6 — Test the Wiring (`walks/tests/<name>.test.ts`)
+
+Node tests check each node on its own. A wiring test checks that the edges connect the nodes into the program the spec describes. Drive the whole walk through `createWalk` with one scripted set of mocked utils (inputs played back from an array, output recorded), then assert the final state and everything printed:
+
+```typescript
+import { assertEquals } from "@std/assert";
+import { walk } from "../../ambler.ts";
+import { createWalk } from "../<name>.ts";
+
+Deno.test("<name> retries invalid input, then finishes", async () => {
+  const lines = ["bad", "good"];
+  const printed: string[] = [];
+  const print = (msg: string) => {
+    printed.push(msg);
+  };
+
+  const final = await walk(
+    createWalk({
+      start: { readLine: () => lines.shift() ?? null, print },
+      stop: { print },
+    }),
+    "START",
+    { field: "initial" },
+  );
+
+  assertEquals(final.field, "good");
+  assertEquals(printed, ["Error: ...", "Done."]);
+});
+```
+
+Cover at least the main path, plus every path that loops back or ends early (error edges, end of input). See `walks/tests/counter.test.ts` and `walks/tests/clone.test.ts` for examples, including an in-memory file system.
+
+---
+
+## Step 7 — Add Deno Task
 
 Add (or update) an entry in `deno.json` under `tasks` for this walk:
 
@@ -119,18 +160,13 @@ Users pass arguments after the task name: `deno task my-walk <arg1> <arg2>`
 
 ---
 
-## Step 6 — Verify
+## Step 8 — Verify
 
-Run the walk to confirm it behaves as specified:
+Run the checks and tests, then run the walk to confirm it behaves as specified:
 
 ```
+deno task check && deno task lint && deno task test
 deno task <name>
-```
-
-If the walk has new nodes, also run:
-
-```
-deno test nodes/tests/
 ```
 
 ---
@@ -140,8 +176,9 @@ deno test nodes/tests/
 Before finishing, confirm:
 
 - [ ] `specs/<name>.md` exists and matches the node names in the `.ts` file.
-- [ ] `walks/<name>.ts` exists with the correct `State`, `initialState`, and wired `nodes`.
+- [ ] `walks/<name>.ts` exports `State`, `NodeId`, `WalkUtils` and `createWalk`, and runs through `walk()`.
 - [ ] Every node used in the walk has a corresponding `nodes/<nodeName>.ts` and passing tests (enforced by `/ambler-node`).
-- [ ] All tests pass (`deno test nodes/tests/`).
+- [ ] `walks/tests/<name>.test.ts` covers the main path and every loop or early exit.
+- [ ] All tests pass (`deno task test`).
 - [ ] `deno.json` has a task for `<name>` with the correct permission flags.
 - [ ] The walk runs end-to-end without errors.
