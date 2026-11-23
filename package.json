@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "ambler": "bun cli.ts",
     "dev": "bun --watch walks/counter.ts",
     "counter": "bun walks/counter.ts",
     "chat": "bun walks/chat.ts",
