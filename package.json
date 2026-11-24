@@ -1,15 +1,19 @@
 {
-  "name": "ambler-ts",
-  "private": true,
+  "name": "ambler",
+  "description": "Native Ambler Tooling Protocol CLI for TypeScript on Bun: ambler node|walk|util|check",
+  "bin": {
+    "ambler": "cli.ts"
+  },
+  "files": ["ambler.ts", "cli.ts", "nodes", "walks", "utils"],
   "type": "module",
   "scripts": {
     "ambler": "bun cli.ts",
-    "dev": "bun --watch walks/counter.ts",
-    "counter": "bun walks/counter.ts",
+    "dev": "bun --watch examples/counter/counter.ts",
+    "counter": "bun examples/counter/counter.ts",
     "chat": "bun walks/chat.ts",
-    "test": "bun test nodes/tests walks/tests",
+    "test": "bun test nodes/tests walks/tests examples",
     "check": "tsc --noEmit",
-    "lint": "biome check ambler.ts cli.ts nodes walks utils"
+    "lint": "biome check ambler.ts cli.ts nodes walks utils examples"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",

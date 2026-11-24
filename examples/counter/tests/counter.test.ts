@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { walk } from "../../ambler.ts";
+import { walk } from "../../../ambler.ts";
 import { createWalk } from "../counter.ts";
 
 /** Plays back typed lines and coin flips, and records everything printed. */
