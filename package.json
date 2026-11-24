@@ -9,7 +9,7 @@
     "chat": "bun walks/chat.ts",
     "test": "bun test nodes/tests walks/tests",
     "check": "tsc --noEmit",
-    "lint": "biome check ambler.ts nodes walks utils"
+    "lint": "biome check ambler.ts cli.ts nodes walks utils"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
