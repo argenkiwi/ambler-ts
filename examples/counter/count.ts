@@ -1,4 +1,4 @@
-import type { NodeFactory } from "../ambler.ts";
+import type { NodeFactory } from "../../ambler.ts";
 
 export interface State {
   count: number;

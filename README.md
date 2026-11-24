@@ -61,7 +61,7 @@ bun run check
 bun run lint
 
 # Execute the counter example
-bun walks/counter.ts
+bun examples/counter/counter.ts
 ```
 
 ---

@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": ["ambler.ts", "nodes/**", "walks/**", "utils/**"]
+    "includes": ["ambler.ts", "nodes/**", "walks/**", "utils/**", "examples/**/*.ts"]
   },
   "formatter": {
     "indentStyle": "space",
