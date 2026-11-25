@@ -20,6 +20,10 @@ test("scaffoldNode writes node and test with edges and state from flags", async 
   expect(node).toContain('export type Edge = "onSuccess" | "onFail";');
   expect(node).toContain("count: number;");
   expect(fs.files.has("nodes/tests/foo-bar.test.ts")).toBe(true);
+  expect(fs.formatted).toEqual([
+    "nodes/foo-bar.ts",
+    "nodes/tests/foo-bar.test.ts",
+  ]);
   expect(fs.out).toEqual([
     "Created nodes/foo-bar.ts",
     "Created nodes/tests/foo-bar.test.ts",

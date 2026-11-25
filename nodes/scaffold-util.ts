@@ -38,6 +38,7 @@ export const factory: NodeFactory<State, Edge, Utils> =
 
     utils.mkdir("utils");
     utils.writeFile(utilFile, renderUtil(name));
+    utils.format([utilFile]);
     utils.print(`Created ${utilFile}`);
     return [edges.onDone, state];
   };

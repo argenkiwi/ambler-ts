@@ -93,6 +93,7 @@ export const factory: NodeFactory<State, Edge, Utils> =
       utils.writeFile(specFile, renderWalkSpec(name, nodeNames));
     }
     utils.writeFile(testFile, renderWalkTest(name));
+    utils.format([walkFile, testFile]);
 
     utils.print(`Created ${walkFile}`);
     utils.print(`Created ${testFile}`);
