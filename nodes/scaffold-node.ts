@@ -81,6 +81,7 @@ export const factory: NodeFactory<State, Edge, Utils> =
     utils.mkdir(join("nodes", "tests"));
     utils.writeFile(nodeFile, renderNode(edgeNames, stateFields));
     utils.writeFile(testFile, renderNodeTest(name, edgeNames, stateFields));
+    utils.format([nodeFile, testFile]);
 
     utils.print(`Created ${nodeFile}`);
     utils.print(`Created ${testFile}`);

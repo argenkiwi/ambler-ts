@@ -14,19 +14,31 @@ export interface EdgeMapping {
   toTarget: string;
 }
 
-export function renderNode(edges: string[], stateFields: StateField[]): string {
-  const stateInterface =
-    stateFields.length > 0
-      ? stateFields.map((f) => `  ${f.name}: ${f.type};`).join("\n")
-      : "  // Add state fields as needed\n";
+/**
+ * An interface with `fields`, or an empty one with the Biome suppression that
+ * keeps `noEmptyInterface` quiet until the first field is added.
+ */
+function renderInterface(
+  name: string,
+  fields: StateField[],
+  why: string,
+): string {
+  if (fields.length === 0) {
+    return `// biome-ignore lint/suspicious/noEmptyInterface: ${why}
+export interface ${name} {}`;
+  }
+  const body = fields.map((f) => `  ${f.name}: ${f.type};`).join("\n");
+  return `export interface ${name} {
+${body}
+}`;
+}
 
+export function renderNode(edges: string[], stateFields: StateField[]): string {
   const edgeUnion = edges.map((e) => `"${e}"`).join(" | ");
 
   return `import type { NodeFactory } from "../ambler.ts";
 
-export interface State {
-${stateInterface}
-}
+${renderInterface("State", stateFields, "add the fields this node reads and writes")}
 
 export type Edge = ${edgeUnion};
 
@@ -39,8 +51,8 @@ const defaultUtils: Utils = {
 };
 
 export const factory: NodeFactory<State, Edge, Utils> =
-  (edges, utils = defaultUtils) =>
-  async (state) => {
+  (_edges, _utils = defaultUtils) =>
+  async (_state) => {
     throw new Error("not yet implemented");
   };
 `;
@@ -51,7 +63,7 @@ export function renderNodeTest(
   edges: string[],
   stateFields: StateField[],
 ): string {
-  const defaultMockState =
+  const mockFields =
     stateFields.length > 0
       ? stateFields
           .map((f) => {
@@ -61,15 +73,14 @@ export function renderNodeTest(
           })
           .join("\n")
       : "";
+  const defaultMockState = mockFields ? `{\n${mockFields}\n  }` : "{}";
 
   const testCases = edges
     .map(
       (
         edge,
       ) => `test("${toCamel(name)}Node should transition to ${edge}", async () => {
-  const initialState: State = {
-${defaultMockState}
-  };
+  const initialState: State = ${defaultMockState};
 
   const utils: Utils = {
     print: (_msg: string) => {},
@@ -96,7 +107,9 @@ export function renderWalk(
 ): string {
   const startNode = nodeNames[0];
 
-  const imports = nodeNames
+  // Sorted by path, as Biome's organizeImports wants them.
+  const imports = [...nodeNames]
+    .sort()
     .map(
       (n) =>
         `import type { Utils as ${toPascal(n)}Utils } from "../nodes/${n}.ts";\nimport defer * as ${toCamel(n)}Node from "../nodes/${n}.ts";`,
@@ -119,9 +132,7 @@ export function renderWalk(
   return `import { ambler, walk } from "../ambler.ts";
 ${imports}
 
-export interface State {
-  // Shared state
-}
+${renderInterface("State", [], "add the fields the nodes share")}
 
 export type NodeId = ${nodeIds};
 
@@ -167,9 +178,7 @@ export function renderUtil(name: string): string {
  * Shared utility ${name}.
  */
 
-export interface ${toPascal(name)}Utils {
-  // Utility signatures
-}
+${renderInterface(`${toPascal(name)}Utils`, [], "add one function per side effect")}
 
 export const default${toPascal(name)}Utils: ${toPascal(name)}Utils = {
   // Production implementation
