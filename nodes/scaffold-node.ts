@@ -3,12 +3,11 @@ import { parseArgs } from "node:util";
 import type { NodeFactory } from "../ambler.ts";
 import { defaultScaffoldUtils, type ScaffoldUtils } from "../utils/fs.ts";
 import { toCamel, toEdge, toKebab } from "../utils/naming.ts";
-import { readSources, typeNames } from "../utils/node-source.ts";
+import { findTypeImports, readSources } from "../utils/node-source.ts";
 import {
   renderNode,
   renderNodeTest,
   type StateField,
-  type TypeImport,
 } from "../utils/templates.ts";
 
 export interface State {
@@ -116,21 +115,14 @@ export const factory: NodeFactory<State, Edge, Utils> =
     }
 
     // Types the fields name, imported from the node or utility exporting them.
-    const exporters = [...readSources(utils, "utils"), ...nodes];
-    const typeImports: TypeImport[] = [];
-    for (const typeName of new Set(
-      stateFields.flatMap((f) => typeNames(f.type)),
-    )) {
-      const from = exporters.find(({ source }) =>
-        source.exports.includes(typeName),
+    const { imports: typeImports, missing } = findTypeImports(
+      stateFields.map((f) => f.type),
+      [...readSources(utils, "utils"), ...nodes],
+    );
+    for (const typeName of missing) {
+      utils.printError(
+        `Warning: no file in nodes/ or utils/ exports the type ${typeName}; declare or import it in ${nodeFile}`,
       );
-      if (from) {
-        typeImports.push({ name: typeName, file: from.file });
-      } else {
-        utils.printError(
-          `Warning: no file in nodes/ or utils/ exports the type ${typeName}; declare or import it in ${nodeFile}`,
-        );
-      }
     }
 
     utils.mkdir(join("nodes", "tests"));

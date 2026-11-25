@@ -200,3 +200,21 @@ export function readSources(
     .listFiles(dir)
     .map((file) => ({ file, source: parseNode(fs.readFile(file)) }));
 }
+
+/**
+ * Where to import each named type the `types` refer to: the first file in
+ * `exporters` that exports it. Names no file exports are `missing`.
+ */
+export function findTypeImports(
+  types: string[],
+  exporters: { file: string; source: NodeSource }[],
+): { imports: { name: string; file: string }[]; missing: string[] } {
+  const imports: { name: string; file: string }[] = [];
+  const missing: string[] = [];
+  for (const name of new Set(types.flatMap(typeNames))) {
+    const from = exporters.find(({ source }) => source.exports.includes(name));
+    if (from) imports.push({ name, file: from.file });
+    else missing.push(name);
+  }
+  return { imports, missing };
+}
