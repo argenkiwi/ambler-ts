@@ -17,7 +17,7 @@ const defaultUtils: Utils = {
 export const USAGE = `Usage: bun cli.ts <command> [options]
 
 Commands:
-  node <name> (--outcomes <a,b> | --terminal) [--state <fields>]
+  node <name> (--outcomes <a,b> | --terminal) [--state <field>[:<Type>]]...
   walk <name> --nodes <n1,n2> [--edge <e=t>] [--no-runner]
   util <name>
   check [--lint-only]

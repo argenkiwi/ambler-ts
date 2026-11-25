@@ -1,10 +1,19 @@
 /** Pure source-code templates for the scaffolding nodes. */
 
+import { dirname, relative } from "node:path";
 import { toCamel, toPascal, toShout } from "./naming.ts";
 
 export interface StateField {
   name: string;
   type: string;
+  optional?: boolean;
+}
+
+/** A type a generated file imports: its name and the project file exporting it. */
+export interface TypeImport {
+  name: string;
+  /** Project-relative, e.g. `utils/game.ts`. */
+  file: string;
 }
 
 export interface EdgeMapping {
@@ -27,17 +36,52 @@ function renderInterface(
     return `// biome-ignore lint/suspicious/noEmptyInterface: ${why}
 export interface ${name} {}`;
   }
-  const body = fields.map((f) => `  ${f.name}: ${f.type};`).join("\n");
+  const body = fields
+    .map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`)
+    .join("\n");
   return `export interface ${name} {
 ${body}
 }`;
 }
 
-export function renderNode(edges: string[], stateFields: StateField[]): string {
+/** `import type` lines for `types`, as seen from the project file `from`. */
+function renderTypeImports(from: string, types: TypeImport[]): string {
+  const byFile = new Map<string, string[]>();
+  for (const t of types) {
+    byFile.set(t.file, [...(byFile.get(t.file) ?? []), t.name]);
+  }
+  return [...byFile]
+    .map(([file, names]) => {
+      let spec = relative(dirname(from), file);
+      if (!spec.startsWith(".")) spec = `./${spec}`;
+      return `import type { ${names.join(", ")} } from "${spec}";\n`;
+    })
+    .join("");
+}
+
+/** A placeholder of `type` for a test's initial state; it type-checks. */
+export function mockValue(type: string): string {
+  if (type === "number") return "0";
+  if (type === "boolean") return "false";
+  if (type === "string") return '""';
+  if (/\[\]$/.test(type) || /^(Readonly)?Array</.test(type)) return "[]";
+  const members = type.split("|").map((m) => m.trim());
+  if (members.includes("null")) return "null";
+  if (members.includes("undefined")) return "undefined";
+  const literal = /^(["'][^"']*["']|-?\d+(\.\d+)?|true|false)$/;
+  if (members.every((m) => literal.test(m))) return members[0];
+  return `{} as ${type}`;
+}
+
+export function renderNode(
+  edges: string[],
+  stateFields: StateField[],
+  typeImports: TypeImport[] = [],
+): string {
   const edgeUnion = edges.map((e) => `"${e}"`).join(" | ");
 
   return `import type { NodeFactory } from "../ambler.ts";
-
+${renderTypeImports("nodes/node.ts", typeImports)}
 ${renderInterface("State", stateFields, "add the fields this node reads and writes")}
 
 export type Edge = ${edgeUnion};
@@ -62,17 +106,12 @@ export function renderNodeTest(
   name: string,
   edges: string[],
   stateFields: StateField[],
+  typeImports: TypeImport[] = [],
 ): string {
-  const mockFields =
-    stateFields.length > 0
-      ? stateFields
-          .map((f) => {
-            const val =
-              f.type === "number" ? "0" : f.type === "boolean" ? "false" : '""';
-            return `    ${f.name}: ${val},`;
-          })
-          .join("\n")
-      : "";
+  const mockFields = stateFields
+    .filter((f) => !f.optional)
+    .map((f) => `    ${f.name}: ${mockValue(f.type)},`)
+    .join("\n");
   const defaultMockState = mockFields ? `{\n${mockFields}\n  }` : "{}";
 
   const testCases = edges
@@ -96,7 +135,7 @@ export function renderNodeTest(
 
   return `import { expect, test } from "bun:test";
 import { factory, type State, type Utils } from "../${name}.ts";
-
+${renderTypeImports("nodes/tests/test.ts", typeImports)}
 ${testCases}
 `;
 }
