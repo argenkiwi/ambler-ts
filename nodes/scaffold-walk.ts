@@ -4,10 +4,18 @@ import type { NodeFactory } from "../ambler.ts";
 import { defaultScaffoldUtils, type ScaffoldUtils } from "../utils/fs.ts";
 import { toEdge, toKebab, toShout } from "../utils/naming.ts";
 import {
-  type EdgeMapping,
+  type Field,
+  findTypeImports,
+  type NodeSource,
+  parseNode,
+  readSources,
+} from "../utils/node-source.ts";
+import { addWalkScript } from "../utils/package-json.ts";
+import {
   renderWalk,
   renderWalkSpec,
   renderWalkTest,
+  type WalkNode,
 } from "../utils/templates.ts";
 
 export interface State {
@@ -19,22 +27,80 @@ export type Edge = "onDone" | "onError";
 
 export type Utils = ScaffoldUtils;
 
-/** Parses `from.edge=target` flags; `null`/`halt` targets end the walk. */
-function parseEdgeMappings(flags: string[]): EdgeMapping[] {
-  const mappings: EdgeMapping[] = [];
-  for (const e of flags) {
-    if (!e.includes("=") || !e.includes(".")) continue;
-    const [from, to] = e.split("=");
-    const [node, edge] = from.split(".");
-    const target = to.trim();
-    const ends = ["null", "halt"].includes(target.toLowerCase());
-    mappings.push({
-      fromNode: toKebab(node.trim()),
-      edge: toEdge(edge.trim()),
-      toTarget: ends ? "null" : `"${toShout(target)}"`,
+interface EdgeFlag {
+  node: string;
+  edge: string;
+  /** Kebab-case node name, or `null` to end the walk. */
+  target: string | null;
+}
+
+/**
+ * Parses `node.edge=target` flags, each of which may hold several edges
+ * separated by commas. `halt` (or `null`) ends the walk. Returns the flag
+ * that is not of that form as an error.
+ */
+function parseEdgeFlags(flags: string[]): EdgeFlag[] | { bad: string } {
+  const parsed: EdgeFlag[] = [];
+  for (const item of flags.flatMap((f) => f.split(","))) {
+    const flag = item.trim();
+    if (!flag) continue;
+    const m = /^([^.=\s]+)\.([^.=\s]+)=([^.=\s]+)$/.exec(flag);
+    if (!m) return { bad: flag };
+    const ends = ["null", "halt"].includes(m[3].toLowerCase());
+    parsed.push({
+      node: toKebab(m[1]),
+      edge: toEdge(m[2]),
+      target: ends ? null : toKebab(m[3]),
     });
   }
-  return mappings;
+  return parsed;
+}
+
+/** `ambler node` command that would create `name` with the edges given. */
+function nodeCommand(name: string, flags: EdgeFlag[]): string {
+  const outcomes = flags
+    .filter((f) => f.node === name)
+    .map((f) => toShout(f.edge.slice(2)).toLowerCase());
+  const shape =
+    outcomes.length > 0
+      ? `--outcomes ${[...new Set(outcomes)].join(",")}`
+      : "(--outcomes <a,b> | --terminal)";
+  return `  ambler node ${name} ${shape}`;
+}
+
+/**
+ * One `State` with every field of every node. A field is optional only if
+ * every node that has it says so. Returns the first field nodes give
+ * different types as an error.
+ */
+function mergeState(
+  nodes: { file: string; source: NodeSource }[],
+): Field[] | { conflict: string } {
+  const merged = new Map<string, { field: Field; files: string[] }>();
+  for (const { file, source } of nodes) {
+    for (const field of source.state) {
+      const seen = merged.get(field.name);
+      if (!seen) {
+        merged.set(field.name, { field: { ...field }, files: [file] });
+      } else if (seen.field.type !== field.type) {
+        const given = nodes
+          .map((n) => ({
+            file: n.file,
+            f: n.source.state.find((f) => f.name === field.name),
+          }))
+          .filter((n) => n.f)
+          .map((n) => `${n.file}: ${n.f?.type}`)
+          .join(", ");
+        return {
+          conflict: `nodes give "${field.name}" different types (${given})`,
+        };
+      } else {
+        seen.field.optional &&= field.optional;
+        seen.files.push(file);
+      }
+    }
+  }
+  return [...merged.values()].map((m) => m.field);
 }
 
 export const factory: NodeFactory<State, Edge, Utils> =
@@ -50,7 +116,6 @@ export const factory: NodeFactory<State, Edge, Utils> =
       options: {
         nodes: { type: "string" },
         edge: { type: "string", multiple: true },
-        // Accepted for compatibility; currently has no effect.
         "no-runner": { type: "boolean" },
       },
       allowPositionals: true,
@@ -77,26 +142,144 @@ export const factory: NodeFactory<State, Edge, Utils> =
       return [edges.onError, failed(2, "Error: --nodes must be provided")];
     }
 
-    const nodeNames = values.nodes
-      .split(",")
-      .map((n) => toKebab(n.trim()))
-      .filter(Boolean);
+    const nodeNames = [
+      ...new Set(
+        values.nodes
+          .split(",")
+          .map((n) => toKebab(n.trim()))
+          .filter(Boolean),
+      ),
+    ];
+
+    const flags = parseEdgeFlags(values.edge ?? []);
+    if ("bad" in flags) {
+      return [
+        edges.onError,
+        failed(
+          2,
+          `Error: --edge ${flags.bad} is not <node>.<outcome>=<node|halt>`,
+        ),
+      ];
+    }
+
+    const missing = nodeNames.filter(
+      (n) => !utils.exists(join("nodes", `${n}.ts`)),
+    );
+    if (missing.length > 0) {
+      return [
+        edges.onError,
+        failed(
+          2,
+          [
+            `Error: no node at ${missing.map((n) => join("nodes", `${n}.ts`)).join(", ")}. Create ${missing.length > 1 ? "them" : "it"} first:`,
+            ...missing.map((n) => nodeCommand(n, flags)),
+          ].join("\n"),
+        ),
+      ];
+    }
+
+    const nodes = nodeNames.map((n) => {
+      const file = join("nodes", `${n}.ts`);
+      return { name: n, file, source: parseNode(utils.readFile(file)) };
+    });
+
+    for (const flag of flags) {
+      const from = nodes.find((n) => n.name === flag.node);
+      if (!from) {
+        return [
+          edges.onError,
+          failed(
+            2,
+            `Error: --edge names ${flag.node}, which is not in --nodes`,
+          ),
+        ];
+      }
+      if (!from.source.edges.includes(flag.edge)) {
+        return [
+          edges.onError,
+          failed(
+            2,
+            `Error: ${flag.node} has no edge ${flag.edge}; its edges are ${from.source.edges.join(", ")}`,
+          ),
+        ];
+      }
+      if (flag.target !== null && !nodeNames.includes(flag.target)) {
+        return [
+          edges.onError,
+          failed(
+            2,
+            `Error: ${flag.node}.${flag.edge} leads to ${flag.target}, which is not in --nodes`,
+          ),
+        ];
+      }
+    }
+
+    // Every edge of every node is wired: to the --edge target, to null for a
+    // node whose only edge is onDone, or else to an `unwired(…)` placeholder.
+    const walkNodes: WalkNode[] = nodes.map((n) => ({
+      name: n.name,
+      edges: n.source.edges.map((edge) => {
+        const flag = flags.findLast(
+          (f) => f.node === n.name && f.edge === edge,
+        );
+        const id = `${toShout(n.name)}.${edge}`;
+        const target = flag
+          ? flag.target === null
+            ? "null"
+            : `"${toShout(flag.target)}"`
+          : n.source.edges.length === 1 && edge === "onDone"
+            ? "null"
+            : `unwired("${id}")`;
+        return { edge, target };
+      }),
+    }));
+
+    const stateFields = mergeState(nodes);
+    if ("conflict" in stateFields) {
+      return [edges.onError, failed(2, `Error: ${stateFields.conflict}`)];
+    }
+
+    const { imports: typeImports, missing: missingTypes } = findTypeImports(
+      stateFields.map((f) => f.type),
+      [...readSources(utils, "utils"), ...nodes],
+    );
+    for (const typeName of missingTypes) {
+      utils.printError(
+        `Warning: no file in nodes/ or utils/ exports the type ${typeName}; declare or import it in ${walkFile}`,
+      );
+    }
 
     utils.mkdir(join("walks", "tests"));
     utils.mkdir("specs");
 
-    utils.writeFile(
-      walkFile,
-      renderWalk(nodeNames, parseEdgeMappings(values.edge ?? [])),
-    );
-    if (!utils.exists(specFile)) {
-      utils.writeFile(specFile, renderWalkSpec(name, nodeNames));
-    }
+    utils.writeFile(walkFile, renderWalk(walkNodes, stateFields, typeImports));
     utils.writeFile(testFile, renderWalkTest(name));
     utils.format([walkFile, testFile]);
-
     utils.print(`Created ${walkFile}`);
     utils.print(`Created ${testFile}`);
-    utils.print(`Created ${specFile}`);
+
+    if (utils.exists(specFile)) {
+      utils.print(`Kept ${specFile}`);
+    } else {
+      utils.writeFile(specFile, renderWalkSpec(name, nodeNames));
+      utils.print(`Created ${specFile}`);
+    }
+
+    if (!values["no-runner"]) {
+      if (!utils.exists("package.json")) {
+        utils.printError(
+          `Warning: no package.json; add a script that runs bun ${walkFile}`,
+        );
+      } else {
+        const updated = addWalkScript(utils.readFile("package.json"), name);
+        if (updated === null) {
+          utils.print(`Kept the ${name} script in package.json`);
+        } else {
+          utils.writeFile("package.json", updated);
+          utils.print(`Added the ${name} script to package.json`);
+        }
+      }
+    }
+
     return [edges.onDone, state];
   };

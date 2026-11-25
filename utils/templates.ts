@@ -16,13 +16,6 @@ export interface TypeImport {
   file: string;
 }
 
-export interface EdgeMapping {
-  fromNode: string;
-  edge: string;
-  /** Already rendered: `null` or a quoted node id. */
-  toTarget: string;
-}
-
 /**
  * An interface with `fields`, or an empty one with the Biome suppression that
  * keeps `noEmptyInterface` quiet until the first field is added.
@@ -140,10 +133,20 @@ ${testCases}
 `;
 }
 
+/** A node of a walk, with every edge of its `Edge` union and its target. */
+export interface WalkNode {
+  /** Kebab-case node name. */
+  name: string;
+  /** Rendered targets: `null`, `"NODE_ID"` or `unwired("NODE.onEdge")`. */
+  edges: { edge: string; target: string }[];
+}
+
 export function renderWalk(
-  nodeNames: string[],
-  edgeMappings: EdgeMapping[],
+  nodes: WalkNode[],
+  stateFields: StateField[] = [],
+  typeImports: TypeImport[] = [],
 ): string {
+  const nodeNames = nodes.map((n) => n.name);
   const startNode = nodeNames[0];
 
   // Sorted by path, as Biome's organizeImports wants them.
@@ -157,28 +160,43 @@ export function renderWalk(
 
   const nodeIds = nodeNames.map((n) => `"${toShout(n)}"`).join(" | ");
 
-  const walkWiring = nodeNames
+  const walkWiring = nodes
     .map((n) => {
-      const matched = edgeMappings.filter((m) => m.fromNode === n);
-      const edgeObj =
-        matched.length > 0
-          ? matched.map((m) => `${m.edge}: ${m.toTarget}`).join(", ")
-          : `onDone: null`;
-      return `    ${toShout(n)}: () => ${toCamel(n)}Node.factory({ ${edgeObj} }, utils.${toCamel(n)}),`;
+      const edgeObj = n.edges.map((e) => `${e.edge}: ${e.target}`).join(", ");
+      return `    ${toShout(n.name)}: () => ${toCamel(n.name)}Node.factory({ ${edgeObj} }, utils.${toCamel(n.name)}),`;
     })
     .join("\n");
 
+  const usesUnwired = nodes.some((n) =>
+    n.edges.some((e) => e.target.startsWith("unwired(")),
+  );
+  const unwired = usesUnwired
+    ? `
+/** An edge still to wire: the walk throws when it reaches its node. */
+function unwired(edge: string): never {
+  throw new Error(\`\${edge} is not wired yet\`);
+}
+`
+    : "";
+
+  const initialFields = stateFields
+    .filter((f) => !f.optional)
+    .map((f) => `${f.name}: ${mockValue(f.type)}`)
+    .join(", ");
+  const initialState = initialFields ? `{ ${initialFields} }` : "{}";
+
   return `import { ambler, walk } from "../ambler.ts";
 ${imports}
-
-${renderInterface("State", [], "add the fields the nodes share")}
+${renderTypeImports("walks/walk.ts", typeImports)}
+${renderInterface("State", stateFields, "add the fields the nodes share")}
 
 export type NodeId = ${nodeIds};
 
+/** Per-node utils overrides; omitted nodes use their defaults. */
 export type WalkUtils = {
 ${nodeNames.map((n) => `  ${toCamel(n)}?: ${toPascal(n)}Utils;`).join("\n")}
 };
-
+${unwired}
 export function createWalk(utils: WalkUtils = {}) {
   return ambler<State, NodeId>({
 ${walkWiring}
@@ -186,7 +204,7 @@ ${walkWiring}
 }
 
 if (import.meta.main) {
-  await walk(createWalk(), "${toShout(startNode)}", {});
+  await walk(createWalk(), "${toShout(startNode)}", ${initialState});
 }
 `;
 }
