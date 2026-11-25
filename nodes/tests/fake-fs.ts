@@ -15,6 +15,16 @@ export function fakeFs(initial: Record<string, string> = {}) {
     writeFile: (p, c) => {
       files.set(p, c);
     },
+    readFile: (p) => {
+      const content = files.get(p);
+      if (content === undefined) throw new Error(`ENOENT: ${p}`);
+      return content;
+    },
+    listFiles: (dir) =>
+      [...files.keys()]
+        .filter((p) => p.startsWith(`${dir}/`) && p.endsWith(".ts"))
+        .filter((p) => !p.slice(dir.length + 1).includes("/"))
+        .sort(),
     format: (paths) => {
       formatted.push(...paths);
     },
