@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "types": ["bun"]
   },
-  "include": ["ambler.ts", "nodes", "walks", "utils", "examples", "cli.ts"]
+  "include": ["ambler.ts", "nodes", "walks", "utils", "guides", "examples", "cli.ts"]
 }

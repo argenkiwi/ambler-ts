@@ -8,7 +8,7 @@ The native Ambler Tooling Protocol (ATP) command-line tool, run as `bun cli.ts <
 - Initial node of the application.
 - Takes the first entry of `argv` as the command and removes it from `argv`.
 - `node` transitions to `SCAFFOLD_NODE`, `walk` to `SCAFFOLD_WALK`, `util` to `SCAFFOLD_UTIL`, `check` to `RUN_CHECKS`.
-- `--help` or `-h` transitions to `CLI_HELP` (exit code 0).
+- `help`, `--help` or `-h` transitions to `CLI_HELP` (exit code 0), leaving any topic in `argv`.
 - No command transitions to `CLI_HELP` with exit code 2.
 - Any other command transitions to `CLI_ERROR`.
 
@@ -38,7 +38,9 @@ The native Ambler Tooling Protocol (ATP) command-line tool, run as `bun cli.ts <
 - If all pass, prints a success message and transitions to `onDone`.
 
 ### CliHelp
-- Prints the usage text and transitions to `onDone`.
+- Usage: `help [topic]`.
+- For `help`, prints the guide for the topic in `argv`, or the general guide if there is none, and transitions to `onDone`. An unknown topic prints the known topics on standard error and sets exit code 1.
+- For `--help`, `-h` or no command, prints the usage text and transitions to `onDone`, keeping the exit code.
 
 ### CliError
 - Prints `Unknown command: <command>`, sets exit code 2 and transitions to `onDone`.

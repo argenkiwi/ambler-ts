@@ -27,6 +27,7 @@ export const factory: NodeFactory<State, Edge> = (edges) => (state) => {
       return [edges.onUtil, next];
     case "check":
       return [edges.onCheck, next];
+    case "help":
     case "--help":
     case "-h":
       return [edges.onHelp, { ...next, exitCode: 0 }];

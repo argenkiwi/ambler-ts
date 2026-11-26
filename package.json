@@ -4,7 +4,7 @@
   "bin": {
     "ambler": "cli.ts"
   },
-  "files": ["ambler.ts", "cli.ts", "nodes", "walks", "utils"],
+  "files": ["ambler.ts", "cli.ts", "nodes", "walks", "utils", "guides"],
   "type": "module",
   "scripts": {
     "ambler": "bun cli.ts",
@@ -13,7 +13,7 @@
     "chat": "bun walks/chat.ts",
     "test": "bun test nodes/tests walks/tests examples",
     "check": "tsc --noEmit",
-    "lint": "biome check ambler.ts cli.ts nodes walks utils examples"
+    "lint": "biome check ambler.ts cli.ts nodes walks utils guides examples"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
