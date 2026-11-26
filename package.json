@@ -11,7 +11,7 @@
     "dev": "bun --watch examples/counter/counter.ts",
     "counter": "bun examples/counter/counter.ts",
     "chat": "bun walks/chat.ts",
-    "test": "bun test nodes/tests walks/tests examples",
+    "test": "bun test nodes/tests walks/tests utils/tests examples",
     "check": "tsc --noEmit",
     "lint": "biome check ambler.ts cli.ts nodes walks utils guides examples"
   },

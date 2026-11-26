@@ -3,10 +3,11 @@ import { factory } from "../run-checks.ts";
 
 const edges = { onDone: "DONE", onError: "ERROR" };
 
-function fake(failAt?: string, code = 3) {
+function fake(failAt?: string, code = 3, files: Record<string, string> = {}) {
   const ran: string[] = [];
   const out: string[] = [];
   const utils = {
+    sources: () => files,
     run: (cmd: string[]) => {
       ran.push(cmd.join(" "));
       return cmd.join(" ") === failAt ? code : 0;
@@ -43,4 +44,35 @@ test("runChecks stops at the first failure with that exit code", async () => {
   expect(state.exitCode).toBe(3);
   expect(ran).toEqual(["bun run check"]);
   expect(out.at(-1)).toBe("Check failed at step: bun run check");
+});
+
+// Built in pieces so that this test is not itself a placeholder the rule finds.
+const UNFINISHED = `throw new Error("${["not yet", "implemented"].join(" ")}");\n`;
+
+test("runChecks reports placeholders left and fails before any tool runs", async () => {
+  for (const argv of [[], ["--lint-only"]]) {
+    const { ran, out, utils } = fake(undefined, 3, {
+      "nodes/greet.ts": UNFINISHED,
+      "nodes/bye.ts": "export const x = 1;\n",
+      "walks/tests/hello.test.ts": `\n${UNFINISHED}`,
+    });
+    const [next, state] = await factory(edges, utils)({ argv, exitCode: 0 });
+    expect(next).toBe("ERROR");
+    expect(state.exitCode).toBe(1);
+    expect(ran).toEqual([]);
+    expect(out.map((line) => line.split(": todo: ")[0])).toEqual([
+      "nodes/greet.ts:1",
+      "walks/tests/hello.test.ts:2",
+      "Check failed: 2 convention violations",
+    ]);
+  }
+});
+
+test("runChecks goes on to the tools when no placeholder is left", async () => {
+  const { ran, utils } = fake(undefined, 3, {
+    "nodes/bye.ts": "export const x = 1;\n",
+  });
+  const [next] = await factory(edges, utils)({ argv: [], exitCode: 0 });
+  expect(next).toBe("DONE");
+  expect(ran.length).toBe(3);
 });

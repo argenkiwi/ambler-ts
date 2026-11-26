@@ -6,7 +6,7 @@ Run it from the project root when the work is done. It checks the structural con
 
     <path>:<line>: <rule>: <what to do>
 
-If there are none, it runs `bun run check` (`tsc`), `bun run lint` (Biome) and `bun run test`, stopping at the first that fails. `--lint-only` skips those. It exits 1 if anything failed. Run `bun install` first.
+If there are none, it runs `bun run check` (`tsc`), `bun run lint` (Biome) and `bun run test`, stopping at the first that fails. `--lint-only` skips the tests. It exits 1 if anything failed. Run `bun install` first.
 
 ## Rules
 
