@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import {
   cpSync,
+  mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -39,11 +41,19 @@ beforeAll(() => {
     join(dir, "tsconfig.json"),
     JSON.stringify({
       extends: join(repo, "tsconfig.json"),
-      // Walks are left out until `ambler walk` merges the nodes' State.
-      include: ["ambler.ts", "nodes", "utils"],
+      include: ["ambler.ts", "nodes", "walks", "utils"],
     }),
   );
   symlinkSync(join(repo, "node_modules"), join(dir, "node_modules"));
+  writeFileSync(
+    join(dir, "package.json"),
+    '{\n  "name": "demo",\n  "scripts": {\n    "test": "bun test"\n  }\n}\n',
+  );
+  mkdirSync(join(dir, "utils"));
+  writeFileSync(
+    join(dir, "utils", "game.ts"),
+    "export type Board = string[][];\n",
+  );
 });
 
 afterAll(() => {
@@ -61,7 +71,24 @@ test("scaffolded nodes, utils and walks pass biome check and tsc unchanged", () 
       "--state",
       "count:number",
       "--state",
-      "label",
+      "label:string",
+      "--state",
+      "board:Board",
+      "--state",
+      "winner:Record<string, number> | null",
+    ],
+    // Reuses the types long-named-thing gives these fields.
+    [
+      "node",
+      "reuse",
+      "--outcomes",
+      "ok",
+      "--state",
+      "count",
+      "--state",
+      "board",
+      "--state",
+      "winner",
     ],
     ["node", "stop", "--terminal"],
     ["util", "helper"],
@@ -69,15 +96,24 @@ test("scaffolded nodes, utils and walks pass biome check and tsc unchanged", () 
       "walk",
       "demo",
       "--nodes",
-      "probe,long-named-thing,stop",
+      "probe,long-named-thing,reuse,stop",
       "--edge",
-      "probe.ready=long-named-thing",
+      "probe.ready=long-named-thing,long-named-thing.ready=stop",
     ],
   ]) {
     const { code, out } = ambler(...args);
     expect(out).toContain("Created");
+    expect(out).not.toContain("Warning");
     expect(code).toBe(0);
   }
+
+  const reuse = readFileSync(join(dir, "nodes", "reuse.ts"), "utf8");
+  expect(reuse).toContain('import type { Board } from "../utils/game.ts";');
+  expect(reuse).toContain("count: number;");
+  expect(reuse).toContain("winner: Record<string, number> | null;");
+  expect(readFileSync(join(dir, "package.json"), "utf8")).toContain(
+    '"demo": "bun walks/demo.ts"',
+  );
 
   const lint = sh([
     join("node_modules", ".bin", "biome"),

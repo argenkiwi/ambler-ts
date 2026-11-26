@@ -1,17 +1,19 @@
 /** Pure source-code templates for the scaffolding nodes. */
 
+import { dirname, relative } from "node:path";
 import { toCamel, toPascal, toShout } from "./naming.ts";
 
 export interface StateField {
   name: string;
   type: string;
+  optional?: boolean;
 }
 
-export interface EdgeMapping {
-  fromNode: string;
-  edge: string;
-  /** Already rendered: `null` or a quoted node id. */
-  toTarget: string;
+/** A type a generated file imports: its name and the project file exporting it. */
+export interface TypeImport {
+  name: string;
+  /** Project-relative, e.g. `utils/game.ts`. */
+  file: string;
 }
 
 /**
@@ -27,17 +29,52 @@ function renderInterface(
     return `// biome-ignore lint/suspicious/noEmptyInterface: ${why}
 export interface ${name} {}`;
   }
-  const body = fields.map((f) => `  ${f.name}: ${f.type};`).join("\n");
+  const body = fields
+    .map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`)
+    .join("\n");
   return `export interface ${name} {
 ${body}
 }`;
 }
 
-export function renderNode(edges: string[], stateFields: StateField[]): string {
+/** `import type` lines for `types`, as seen from the project file `from`. */
+function renderTypeImports(from: string, types: TypeImport[]): string {
+  const byFile = new Map<string, string[]>();
+  for (const t of types) {
+    byFile.set(t.file, [...(byFile.get(t.file) ?? []), t.name]);
+  }
+  return [...byFile]
+    .map(([file, names]) => {
+      let spec = relative(dirname(from), file);
+      if (!spec.startsWith(".")) spec = `./${spec}`;
+      return `import type { ${names.join(", ")} } from "${spec}";\n`;
+    })
+    .join("");
+}
+
+/** A placeholder of `type` for a test's initial state; it type-checks. */
+export function mockValue(type: string): string {
+  if (type === "number") return "0";
+  if (type === "boolean") return "false";
+  if (type === "string") return '""';
+  if (/\[\]$/.test(type) || /^(Readonly)?Array</.test(type)) return "[]";
+  const members = type.split("|").map((m) => m.trim());
+  if (members.includes("null")) return "null";
+  if (members.includes("undefined")) return "undefined";
+  const literal = /^(["'][^"']*["']|-?\d+(\.\d+)?|true|false)$/;
+  if (members.every((m) => literal.test(m))) return members[0];
+  return `{} as ${type}`;
+}
+
+export function renderNode(
+  edges: string[],
+  stateFields: StateField[],
+  typeImports: TypeImport[] = [],
+): string {
   const edgeUnion = edges.map((e) => `"${e}"`).join(" | ");
 
   return `import type { NodeFactory } from "../ambler.ts";
-
+${renderTypeImports("nodes/node.ts", typeImports)}
 ${renderInterface("State", stateFields, "add the fields this node reads and writes")}
 
 export type Edge = ${edgeUnion};
@@ -62,17 +99,12 @@ export function renderNodeTest(
   name: string,
   edges: string[],
   stateFields: StateField[],
+  typeImports: TypeImport[] = [],
 ): string {
-  const mockFields =
-    stateFields.length > 0
-      ? stateFields
-          .map((f) => {
-            const val =
-              f.type === "number" ? "0" : f.type === "boolean" ? "false" : '""';
-            return `    ${f.name}: ${val},`;
-          })
-          .join("\n")
-      : "";
+  const mockFields = stateFields
+    .filter((f) => !f.optional)
+    .map((f) => `    ${f.name}: ${mockValue(f.type)},`)
+    .join("\n");
   const defaultMockState = mockFields ? `{\n${mockFields}\n  }` : "{}";
 
   const testCases = edges
@@ -96,15 +128,25 @@ export function renderNodeTest(
 
   return `import { expect, test } from "bun:test";
 import { factory, type State, type Utils } from "../${name}.ts";
-
+${renderTypeImports("nodes/tests/test.ts", typeImports)}
 ${testCases}
 `;
 }
 
+/** A node of a walk, with every edge of its `Edge` union and its target. */
+export interface WalkNode {
+  /** Kebab-case node name. */
+  name: string;
+  /** Rendered targets: `null`, `"NODE_ID"` or `unwired("NODE.onEdge")`. */
+  edges: { edge: string; target: string }[];
+}
+
 export function renderWalk(
-  nodeNames: string[],
-  edgeMappings: EdgeMapping[],
+  nodes: WalkNode[],
+  stateFields: StateField[] = [],
+  typeImports: TypeImport[] = [],
 ): string {
+  const nodeNames = nodes.map((n) => n.name);
   const startNode = nodeNames[0];
 
   // Sorted by path, as Biome's organizeImports wants them.
@@ -118,28 +160,43 @@ export function renderWalk(
 
   const nodeIds = nodeNames.map((n) => `"${toShout(n)}"`).join(" | ");
 
-  const walkWiring = nodeNames
+  const walkWiring = nodes
     .map((n) => {
-      const matched = edgeMappings.filter((m) => m.fromNode === n);
-      const edgeObj =
-        matched.length > 0
-          ? matched.map((m) => `${m.edge}: ${m.toTarget}`).join(", ")
-          : `onDone: null`;
-      return `    ${toShout(n)}: () => ${toCamel(n)}Node.factory({ ${edgeObj} }, utils.${toCamel(n)}),`;
+      const edgeObj = n.edges.map((e) => `${e.edge}: ${e.target}`).join(", ");
+      return `    ${toShout(n.name)}: () => ${toCamel(n.name)}Node.factory({ ${edgeObj} }, utils.${toCamel(n.name)}),`;
     })
     .join("\n");
 
+  const usesUnwired = nodes.some((n) =>
+    n.edges.some((e) => e.target.startsWith("unwired(")),
+  );
+  const unwired = usesUnwired
+    ? `
+/** An edge still to wire: the walk throws when it reaches its node. */
+function unwired(edge: string): never {
+  throw new Error(\`\${edge} is not wired yet\`);
+}
+`
+    : "";
+
+  const initialFields = stateFields
+    .filter((f) => !f.optional)
+    .map((f) => `${f.name}: ${mockValue(f.type)}`)
+    .join(", ");
+  const initialState = initialFields ? `{ ${initialFields} }` : "{}";
+
   return `import { ambler, walk } from "../ambler.ts";
 ${imports}
-
-${renderInterface("State", [], "add the fields the nodes share")}
+${renderTypeImports("walks/walk.ts", typeImports)}
+${renderInterface("State", stateFields, "add the fields the nodes share")}
 
 export type NodeId = ${nodeIds};
 
+/** Per-node utils overrides; omitted nodes use their defaults. */
 export type WalkUtils = {
 ${nodeNames.map((n) => `  ${toCamel(n)}?: ${toPascal(n)}Utils;`).join("\n")}
 };
-
+${unwired}
 export function createWalk(utils: WalkUtils = {}) {
   return ambler<State, NodeId>({
 ${walkWiring}
@@ -147,7 +204,7 @@ ${walkWiring}
 }
 
 if (import.meta.main) {
-  await walk(createWalk(), "${toShout(startNode)}", {});
+  await walk(createWalk(), "${toShout(startNode)}", ${initialState});
 }
 `;
 }
