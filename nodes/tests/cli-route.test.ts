@@ -25,12 +25,19 @@ for (const [command, target] of [
   });
 }
 
-test("cliRoute sends --help and -h to help with exit code 0", async () => {
-  for (const flag of ["--help", "-h"]) {
+test("cliRoute sends help, --help and -h to help with exit code 0", async () => {
+  for (const flag of ["help", "--help", "-h"]) {
     const [next, state] = await route([flag]);
     expect(next).toBe("HELP");
     expect(state.exitCode).toBe(0);
   }
+});
+
+test("cliRoute leaves the help topic in argv", async () => {
+  const [next, state] = await route(["help", "walk"]);
+  expect(next).toBe("HELP");
+  expect(state.command).toBe("help");
+  expect(state.argv).toEqual(["walk"]);
 });
 
 test("cliRoute sends no command to help with exit code 2", async () => {
