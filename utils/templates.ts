@@ -3,6 +3,9 @@
 import { dirname, relative } from "node:path";
 import { toCamel, toPascal, toShout } from "./naming.ts";
 
+/** What a scaffolded body throws, built in pieces so `check` does not flag this file. */
+export const NOT_IMPLEMENTED = ["not yet", "implemented"].join(" ");
+
 export interface StateField {
   name: string;
   type: string;
@@ -90,7 +93,7 @@ const defaultUtils: Utils = {
 export const factory: NodeFactory<State, Edge, Utils> =
   (_edges, _utils = defaultUtils) =>
   async (_state) => {
-    throw new Error("not yet implemented");
+    throw new Error("${NOT_IMPLEMENTED}");
   };
 `;
 }
@@ -121,7 +124,7 @@ export function renderNodeTest(
   // Replace with expected assertion once implemented
   expect(async () => {
     await factory({ ${edges.map((e) => `${e}: "${e}"`).join(", ")} }, utils)(initialState);
-  }).toThrow("not yet implemented");
+  }).toThrow("${NOT_IMPLEMENTED}");
 });`,
     )
     .join("\n\n");
@@ -137,7 +140,7 @@ ${testCases}
 export interface WalkNode {
   /** Kebab-case node name. */
   name: string;
-  /** Rendered targets: `null`, `"NODE_ID"` or `unwired("NODE.onEdge")`. */
+  /** Rendered targets: `null`, `"NODE_ID"` or an `unwired(…)` call naming `NODE.onEdge`. */
   edges: { edge: string; target: string }[];
 }
 

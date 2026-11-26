@@ -21,6 +21,7 @@ test("cli walk routes commands to the right handler", async () => {
     },
     cliError: { printError: (m) => errors.push(m) },
     runChecks: {
+      sources: () => ({}),
       run: () => 0,
       print: (m) => printed.push(m),
       printError: () => {},

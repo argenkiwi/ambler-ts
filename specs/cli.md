@@ -33,7 +33,8 @@ The native Ambler Tooling Protocol (ATP) command-line tool, run as `bun cli.ts <
 
 ### RunChecks
 - Usage: `check [--lint-only]`.
-- Runs `bun run check`, `bun run lint` and, unless `--lint-only`, `bun test nodes/tests walks/tests`, stopping at the first failure.
+- First checks the conventions of the project's `nodes/`, `walks/` and `utils/` folders, tests included, printing one line per violation as `<path>:<line>: <rule>: <what to do>`. The one rule so far is `todo`: no placeholder the scaffolders write is left, that is no `throw new Error("not yet implemented")`, no `.toThrow("not yet implemented")` and no `unwired("NODE.onEdge")` call. If there are violations, it prints how many, sets exit code 1 and transitions to `onError`, with or without `--lint-only`.
+- Then runs `bun run check`, `bun run lint` and, unless `--lint-only`, `bun test nodes/tests walks/tests`, stopping at the first failure.
 - On failure prints the failed step, sets the exit code to the step's exit code (1 if unknown) and transitions to `onError`.
 - If all pass, prints a success message and transitions to `onDone`.
 

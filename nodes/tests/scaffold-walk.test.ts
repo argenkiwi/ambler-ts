@@ -2,6 +2,9 @@ import { expect, test } from "bun:test";
 import { factory } from "../scaffold-walk.ts";
 import { fakeFs } from "./fake-fs.ts";
 
+// Built in pieces so that this test is not itself a placeholder `check` finds.
+const unwiredCall = (edge: string) => ["unwired(", `"${edge}"`, ")"].join("");
+
 const edges = { onDone: "DONE", onError: "ERROR" };
 const run = (fs: ReturnType<typeof fakeFs>, argv: string[]) =>
   factory(edges, fs.utils)({ argv, exitCode: 0 });
@@ -51,10 +54,10 @@ test("scaffoldWalk merges State, wires every edge and adds the runner script", a
   );
   expect(walk).toContain('import type { Board } from "../utils/game.ts";');
   expect(walk).toContain(
-    'START: () => startNode.factory({ onSuccess: "COUNT", onError: unwired("START.onError") }',
+    `START: () => startNode.factory({ onSuccess: "COUNT", onError: ${unwiredCall("START.onError")} }`,
   );
   expect(walk).toContain(
-    'COUNT: () => countNode.factory({ onCount: unwired("COUNT.onCount"), onStop: "STOP" }',
+    `COUNT: () => countNode.factory({ onCount: ${unwiredCall("COUNT.onCount")}, onStop: "STOP" }`,
   );
   expect(walk).toContain("STOP: () => stopNode.factory({ onDone: null }");
   expect(walk).toContain("function unwired(edge: string): never {");
