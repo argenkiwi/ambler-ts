@@ -1,12 +1,9 @@
 import type { NodeFactory } from "../ambler.ts";
 import { llmChat } from "../utils/llm_chat.ts";
 import type { Message } from "./prompt.ts";
+import type { HasHost, HasMessages, HasModel } from "./state.ts";
 
-export interface State {
-  messages: Message[];
-  host: string;
-  model: string;
-}
+export interface State extends HasMessages, HasHost, HasModel {}
 
 export type Edge = "onComplete";
 

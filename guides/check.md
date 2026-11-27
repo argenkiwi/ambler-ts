@@ -13,6 +13,7 @@ If there are none, it runs `bun run check` (`tsc`), `bun run lint` (Biome) and `
 - `layout`: `package.json` and `ambler.ts` exist.
 - `parse`: the file is valid TypeScript.
 - `todo`: no `not yet implemented` or `unwired(…)` is left in a node, walk, utility or test.
+- `state-contracts`: `Has*` interfaces are declared only in `nodes/state.ts`, each with exactly one field and named after it (`HasCount { count: number }`); every node exports `State`, as an interface that only extends `Has*` contracts and declares no member of its own, or as `type State = object`.
 - `file-name`: node, walk and utility files are kebab-case.
 - `node-shape`: a node exports `factory`, `State`, `Utils` and an `Edge` union of `on…` names.
 - `node-tests`: a node has `nodes/tests/<node>.test.ts`.

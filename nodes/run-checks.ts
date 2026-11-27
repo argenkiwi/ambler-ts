@@ -2,12 +2,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import type { NodeFactory } from "../ambler.ts";
-import { todo } from "../utils/conventions.ts";
+import { stateContracts, todo } from "../utils/conventions.ts";
+import type { HasArgv, HasExitCode } from "./state.ts";
 
-export interface State {
-  argv: string[];
-  exitCode: number;
-}
+export interface State extends HasArgv, HasExitCode {}
 
 export type Edge = "onDone" | "onError";
 
@@ -59,7 +57,10 @@ export const factory: NodeFactory<State, Edge, Utils> =
     const sources = utils.sources();
     const violations = Object.keys(sources)
       .sort()
-      .flatMap((path) => todo(path, sources[path] ?? ""));
+      .flatMap((path) => [
+        ...todo(path, sources[path] ?? ""),
+        ...stateContracts(path, sources[path] ?? ""),
+      ]);
     if (violations.length > 0) {
       for (const line of violations) utils.print(line);
       const plural = violations.length === 1 ? "" : "s";

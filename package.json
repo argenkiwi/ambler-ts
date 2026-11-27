@@ -1,5 +1,6 @@
 {
   "name": "ambler",
+  "version": "3.1.0",
   "description": "Native Ambler Tooling Protocol CLI for TypeScript on Bun: ambler node|walk|util|check",
   "bin": {
     "ambler": "cli.ts"

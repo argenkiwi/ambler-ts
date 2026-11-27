@@ -13,7 +13,7 @@ Wires existing nodes into `walks/<name>.ts`. Run it from the project root, after
 What it writes:
 
 - `walks/<name>.ts`:
-  - `State`, with every field of every node's `State`. It fails if two nodes give a field different types.
+  - `State`, with the field of every `Has*` contract the nodes' `State`s extend, typed (and optional or not) as `nodes/state.ts` declares it; `type State = object` if there are none. It fails with exit code 2 if a node extends a contract `nodes/state.ts` lacks, or declares a field of its own.
   - `NodeId`, one id per node in capitals: `READ_MOVE`.
   - `WalkUtils`, an optional override of each node's utils, for tests.
   - `createWalk(utils)`, which wires each node's edges with `ambler()`. Nodes are imported with `import defer`, so each loads when first reached.
@@ -29,7 +29,7 @@ What it writes:
 - Run it with `walk()` from `ambler.ts`. Do not write the loop yourself.
 - The initial state is built in the `import.meta.main` block. If the program takes arguments, read `process.argv` there.
 - If the walk can end in failure, exit 1 there: `if (final.error) process.exit(1);`.
-- State the nodes do not share does not belong in `State`.
+- `State` is concrete and has exactly the fields of the contracts its nodes extend: a field no node uses does not belong in it. It does not extend the `Has*` contracts itself; `tsc` checks it satisfies each node's `State`.
 
 ## After generating
 
@@ -38,4 +38,4 @@ What it writes:
 3. Fill in the spec.
 4. Run it, then `bun run ambler check`.
 
-Changing a walk later (adding a node, moving an edge) is an edit by hand: add the imports, the `NodeId`, the `WalkUtils` field and the entry; `tsc` points at each one you miss. Update the spec in the same change.
+Changing a walk later (adding a node, moving an edge) is an edit by hand: add the imports, the `NodeId`, the `WalkUtils` field, the entry and any field the node's contracts add to `State`; `tsc` points at each one you miss. Update the spec in the same change.

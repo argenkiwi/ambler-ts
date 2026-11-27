@@ -1,14 +1,13 @@
 import type { NodeFactory } from "../ambler.ts";
 import { getPrompt } from "../utils/prompt.ts";
+import type { HasMessages } from "./state.ts";
 
 export interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-export interface State {
-  messages: Message[];
-}
+export interface State extends HasMessages {}
 
 export type Edge = "onMessage" | "onQuit";
 

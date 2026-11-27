@@ -4,11 +4,9 @@ import type { NodeFactory } from "../ambler.ts";
 import { defaultScaffoldUtils, type ScaffoldUtils } from "../utils/fs.ts";
 import { toKebab } from "../utils/naming.ts";
 import { renderUtil } from "../utils/templates.ts";
+import type { HasArgv, HasExitCode } from "./state.ts";
 
-export interface State {
-  argv: string[];
-  exitCode: number;
-}
+export interface State extends HasArgv, HasExitCode {}
 
 export type Edge = "onDone" | "onError";
 

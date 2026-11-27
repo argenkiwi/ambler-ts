@@ -1,8 +1,11 @@
 /**
- * Pure readers of an existing node's source: the fields of its `State`, the
- * names in its `Edge` union and the names it exports. Good enough for files
- * written by `ambler node` and formatted by Biome; not a TypeScript parser.
+ * Pure readers of an existing node's source: the fields and contracts of its
+ * `State`, the names in its `Edge` union and the names it exports; and of the
+ * state registry, `nodes/state.ts`. Good enough for files written by
+ * `ambler node` and formatted by Biome; not a TypeScript parser.
  */
+
+import { dirname, relative } from "node:path";
 
 export interface Field {
   name: string;
@@ -11,7 +14,10 @@ export interface Field {
 }
 
 export interface NodeSource {
+  /** Fields the `State` declares itself, which the conventions forbid. */
   state: Field[];
+  /** The `Has*` contracts the `State` extends. */
+  contracts: string[];
   edges: string[];
   exports: string[];
 }
@@ -123,20 +129,26 @@ function normalizeType(type: string): string {
     .replace(/;\s*\}/g, " }");
 }
 
-function stateFields(src: string, masked: string): Field[] {
-  const head =
-    /export\s+(?:interface\s+State\b[^{]*|type\s+State\s*=\s*)\{/.exec(masked);
-  if (!head) return [];
-  const open = head.index + head[0].length - 1;
+/**
+ * The members of the object type whose `{` is at `open`: the property fields,
+ * and how many members of any kind (methods and index signatures included).
+ */
+function members(
+  src: string,
+  masked: string,
+  open: number,
+): { fields: Field[]; count: number } {
   const end = closing(masked, open);
   const body = src.slice(open + 1, end - 1);
   const maskedBody = masked.slice(open + 1, end - 1);
 
   const fields: Field[] = [];
+  let count = 0;
   let offset = 0;
   for (const part of splitTopLevel(maskedBody, ";,")) {
     const raw = body.slice(offset, offset + part.length);
     offset += part.length + 1;
+    if (part.trim()) count++;
     const m = /^\s*(?:readonly\s+)?([A-Za-z_$][\w$]*)(\?)?\s*:([\s\S]+)$/.exec(
       raw,
     );
@@ -148,7 +160,77 @@ function stateFields(src: string, masked: string): Field[] {
       });
     }
   }
-  return fields;
+  return { fields, count };
+}
+
+/** A top-level `interface` or `type` declaration. */
+export interface Declaration {
+  name: string;
+  kind: "interface" | "type";
+  exported: boolean;
+  /** The base type names an interface extends, without type arguments. */
+  extends: string[];
+  /** The property fields of an interface or object type literal. */
+  fields: Field[];
+  /** Every member of an interface or object type literal, fields or not. */
+  memberCount: number;
+  /** A type alias's type, whitespace normalised. */
+  type?: string;
+  /** Offset of the declaration in the source. */
+  index: number;
+}
+
+/** Every `interface` and `type` declaration in `src`, in source order. */
+export function declarations(src: string): Declaration[] {
+  const masked = mask(src);
+  const plain = mask(src, true);
+  const found: Declaration[] = [];
+  for (const m of masked.matchAll(
+    /(?<![\w$.])(export\s+)?(?:declare\s+)?(interface|type)\s+([A-Za-z_$][\w$]*)/g,
+  )) {
+    const after = m.index + m[0].length;
+    const decl: Declaration = {
+      name: m[3],
+      kind: m[2] as "interface" | "type",
+      exported: Boolean(m[1]),
+      extends: [],
+      fields: [],
+      memberCount: 0,
+      index: m.index,
+    };
+    if (decl.kind === "interface") {
+      const open = masked.indexOf("{", after);
+      if (open < 0) continue;
+      const heading = masked.slice(after, open);
+      const ext = /\bextends\b([\s\S]*)$/.exec(heading);
+      if (ext) {
+        decl.extends = splitTopLevel(ext[1], ",")
+          .map((b) => /^\s*([A-Za-z_$][\w$.]*)/.exec(b)?.[1] ?? "")
+          .filter(Boolean);
+      }
+      const body = members(plain, masked, open);
+      decl.fields = body.fields;
+      decl.memberCount = body.count;
+    } else {
+      const eq = /^\s*(?:<[^=]*>)?\s*=/.exec(masked.slice(after));
+      if (!eq) continue;
+      const start = after + eq[0].length;
+      const [alias] = splitTopLevel(masked.slice(start), ";");
+      decl.type = normalizeType(plain.slice(start, start + alias.length));
+      const open = start + alias.length - alias.trimStart().length;
+      if (masked[open] === "{") {
+        const body = members(plain, masked, open);
+        decl.fields = body.fields;
+        decl.memberCount = body.count;
+      }
+    }
+    found.push(decl);
+  }
+  return found;
+}
+
+function stateDeclaration(src: string): Declaration | undefined {
+  return declarations(src).find((d) => d.exported && d.name === "State");
 }
 
 function edgeNames(src: string, masked: string): string[] {
@@ -160,7 +242,10 @@ function edgeNames(src: string, masked: string): string[] {
   return [...text.matchAll(/["']([^"']+)["']/g)].map((m) => m[1]);
 }
 
-/** Reads the `State` fields, `Edge` names and exported names of a node. */
+/**
+ * Reads the `State` fields and contracts, `Edge` names and exported names of
+ * a node.
+ */
 export function parseNode(src: string): NodeSource {
   const masked = mask(src);
   const plain = mask(src, true);
@@ -169,11 +254,101 @@ export function parseNode(src: string): NodeSource {
       /export\s+(?:declare\s+)?(?:type|interface|enum|class|const|function)\s+([A-Za-z_$][\w$]*)/g,
     ),
   ].map((m) => m[1]);
+  const state = stateDeclaration(src);
   return {
-    state: stateFields(plain, masked),
+    state: state?.fields ?? [],
+    contracts: state?.extends ?? [],
     edges: edgeNames(plain, masked),
     exports,
   };
+}
+
+/** The state registry: every `Has*` contract of the project lives here. */
+export const REGISTRY = "nodes/state.ts";
+
+/** A state contract: `export interface HasCount { count: number }`. */
+export interface Contract {
+  /** `Has` and the field's name in PascalCase. */
+  name: string;
+  field: Field;
+}
+
+/** The contract name for the camelCase `field`: `count` is `HasCount`. */
+export function contractName(field: string): string {
+  return `Has${field.charAt(0).toUpperCase()}${field.slice(1)}`;
+}
+
+/** The `Has*` interfaces of the registry with their one field each. */
+export function parseRegistry(src: string): Contract[] {
+  return declarations(src)
+    .filter(
+      (d) =>
+        d.kind === "interface" &&
+        /^Has[A-Z]/.test(d.name) &&
+        d.fields.length > 0,
+    )
+    .map((d) => ({ name: d.name, field: d.fields[0] }));
+}
+
+/** The type names `src` imports, with the module each comes from. */
+function importedTypes(src: string): { names: string[]; spec: string }[] {
+  return [
+    ...mask(src, true).matchAll(
+      /import\s+type\s*\{([^}]*)\}\s*from\s*["']([^"']+)["'];?/g,
+    ),
+  ].map((m) => ({
+    names: m[1]
+      .split(",")
+      .map((n) => n.trim())
+      .filter(Boolean),
+    spec: m[2],
+  }));
+}
+
+/**
+ * The registry `src` (empty for a new one) with `contracts` appended, and an
+ * `import type` for each name in `imports` it neither imports nor declares.
+ * `imports` give project-relative files, seen from `nodes/state.ts`.
+ */
+export function appendContracts(
+  src: string,
+  contracts: Contract[],
+  imports: { name: string; file: string }[],
+): string {
+  const known = new Set([
+    ...importedTypes(src).flatMap((i) => i.names),
+    ...declarations(src).map((d) => d.name),
+  ]);
+  let head = src;
+  for (const { name, file } of imports) {
+    if (known.has(name)) continue;
+    known.add(name);
+    let spec = relative(dirname(REGISTRY), file);
+    if (!spec.startsWith(".")) spec = `./${spec}`;
+    const same = new RegExp(
+      `import\\s+type\\s*\\{([^}]*)\\}(\\s*from\\s*["']${spec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'])`,
+    ).exec(head);
+    if (same) {
+      const names = `${same[1].trim()}, ${name}`;
+      head =
+        head.slice(0, same.index) +
+        `import type { ${names} }${same[2]}` +
+        head.slice(same.index + same[0].length);
+      continue;
+    }
+    const line = `import type { ${name} } from "${spec}";\n`;
+    const lastImport = [...head.matchAll(/^import\s[^;]*;[^\n]*\n/gm)].at(-1);
+    const at = lastImport ? lastImport.index + lastImport[0].length : 0;
+    head = head.slice(0, at) + line + head.slice(at);
+  }
+  const body = contracts
+    .map(
+      ({ name, field }) =>
+        `export interface ${name} {\n  ${field.name}${field.optional ? "?" : ""}: ${field.type};\n}\n`,
+    )
+    .join("\n");
+  const kept = head.replace(/\s*$/, "");
+  return kept ? `${kept}\n\n${body}` : body;
 }
 
 /**
