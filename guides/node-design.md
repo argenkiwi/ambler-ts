@@ -25,8 +25,10 @@ A node does one thing a spec can describe in a sentence or two. If the descripti
 
 ## State
 
-- `State` lists only the fields the node reads or writes, with their types: `count: number`.
-- Reuse the field name and type another node already gives it (`bun run ambler node … --state count`).
+- Each field has one contract in `nodes/state.ts`, `Has` and its name: `export interface HasCount { count: number; }`. One field per contract, so a node can take exactly the fields it needs.
+- `State` extends the contracts of the fields the node reads or writes, and declares nothing itself: `export interface State extends HasCount {}`. A node that needs no state has `export type State = object;`.
+- Reuse a contract that exists (`bun run ambler node … --state count`) before adding one. A field means the same thing, with the same type, in every node.
+- An optional field's contract says so: `export interface HasError { error?: string; }`.
 - Return a new object: `{ ...state, count: state.count + 1 }`.
 
 ## Utils

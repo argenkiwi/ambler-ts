@@ -16,6 +16,7 @@ Rules:
 - Wire the edges to any ids, `{ onSuccess: "NEXT", onError: "ERROR" }`, or `null` for a terminal edge, and assert the id that comes back.
 - Pass every util. Nothing in a node test touches the terminal, the clock, the network or the disk.
 - Assert both halves of the result: the next id and the new state. Check the input state was not mutated.
+- Type the initial state as the node's `State`: `const initial: State = { count: 0 };`. It holds the fields of the contracts the node extends, and nothing else; a node with `type State = object` takes `{}`.
 - `await` the result: it works whether the node is synchronous or not.
 - Use `toBeUndefined()` and `toBeNull()`, not `toEqual(undefined)`.
 

@@ -16,7 +16,7 @@ Before writing any code, determine:
 
 - **Research Existing Nodes:** Check `specs/*.md` and `nodes/` to see if a node with similar behavior already exists. It is always better to reuse or adapt an existing node than to create a duplicate.
 - **Node name**: The purpose of the node (e.g., `retry`, `prompt`, `validate`). The file will be named `<name>.ts`.
-- **State shape**: What fields does this node read or mutate? Every node has a minimum `State` interface that must include the fields it touches.
+- **State shape**: What fields does this node read or mutate? Each field has a one-field `Has<Field>` contract in `nodes/state.ts` (reuse an existing one; add one only for a new field). The node's `State` extends exactly those contracts and declares no field of its own; a node with no state uses `export type State = object;`.
 - **Edges**: What named transitions can this node take? Define an `Edge` type (union of strings) for these names.
 - **Utils**: What side-effectful operations does the node perform? List them (e.g., `print`, `readLine`). Each becomes a field on the `Utils` type with a production default in `defaultUtils`.
 - **Sync vs async**: Does the node need `await`? Determines whether the factory returns a plain function or an `async` function.
@@ -33,11 +33,9 @@ Write only the type exports and a stub factory. The factory body must throw so t
 
 ```typescript
 import type { NodeFactory } from "../ambler.ts";
+import type { HasCount } from "./state.ts"; // nodes/state.ts: export interface HasCount { count: number; }
 
-export interface State {
-  // Fields from requirements
-  count: number;
-}
+export interface State extends HasCount {}
 
 export type Edge = "onSuccess" | "onError"; // from requirements
 
@@ -62,10 +60,9 @@ export const factory: NodeFactory<State, Edge, Utils> = (
 
 ```typescript
 import type { NodeFactory } from "../ambler.ts";
+import type { HasCount } from "./state.ts";
 
-export interface State {
-  count: number;
-}
+export interface State extends HasCount {}
 
 export type Edge = "onSuccess" | "onError";
 
@@ -174,10 +171,9 @@ Replace the stub body with the real logic. The type exports (`State`, `Edge`, `U
 
 ```typescript
 import type { NodeFactory } from "../ambler.ts";
+import type { HasCount } from "./state.ts";
 
-export interface State {
-  count: number;
-}
+export interface State extends HasCount {}
 
 export type Edge = "onSuccess" | "onError";
 
@@ -221,10 +217,9 @@ If you need to use an existing node but the walk's state has different property 
 ```typescript
 import type { NodeFactory } from "../ambler.ts";
 import { factory as originalFactory, Edge, Utils } from "./originalNode.ts";
+import type { HasNewPropertyName } from "./state.ts";
 
-export interface State {
-  newPropertyName: number;
-}
+export interface State extends HasNewPropertyName {}
 
 export const factory: NodeFactory<State, Edge, Utils> = (edges, utils) => {
   const node = originalFactory(edges, utils);
@@ -255,7 +250,7 @@ All tests must be green. Fix the implementation (never the tests) until they pas
 
 - [ ] `nodes/<name>.ts` uses the `Edge` naming convention for edge keys.
 - [ ] Factory uses `NodeFactory<State, Edge, Utils>` and is exported as `factory`.
-- [ ] `State` interface is minimal.
+- [ ] `State` only extends the `Has*` contracts of the fields the node uses (or is `type State = object`).
 - [ ] `defaultUtils` provides real implementations.
 - [ ] No direct state mutation.
 - [ ] Shared logic is in `utils/`.

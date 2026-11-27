@@ -107,10 +107,23 @@ test("scaffolded nodes, utils and walks pass biome check and tsc unchanged", () 
     expect(code).toBe(0);
   }
 
+  const registry = readFileSync(join(dir, "nodes", "state.ts"), "utf8");
+  expect(registry).toContain('import type { Board } from "../utils/game.ts";');
+  expect(registry).toContain(
+    "export interface HasCount {\n  count: number;\n}",
+  );
+  expect(registry).toContain("winner: Record<string, number> | null;");
   const reuse = readFileSync(join(dir, "nodes", "reuse.ts"), "utf8");
-  expect(reuse).toContain('import type { Board } from "../utils/game.ts";');
-  expect(reuse).toContain("count: number;");
-  expect(reuse).toContain("winner: Record<string, number> | null;");
+  expect(reuse).toContain(
+    "export interface State extends HasCount, HasBoard, HasWinner {}",
+  );
+  const stop = readFileSync(join(dir, "nodes", "stop.ts"), "utf8");
+  expect(stop).toContain("export type State = object;");
+  const walk = readFileSync(join(dir, "walks", "demo.ts"), "utf8");
+  expect(walk).toContain("  winner: Record<string, number> | null;\n");
+
+  const conventions = ambler("check", "--lint-only");
+  expect(conventions.out).not.toContain("state-contracts");
   expect(readFileSync(join(dir, "package.json"), "utf8")).toContain(
     '"demo": "bun walks/demo.ts"',
   );

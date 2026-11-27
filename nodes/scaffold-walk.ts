@@ -4,10 +4,13 @@ import type { NodeFactory } from "../ambler.ts";
 import { defaultScaffoldUtils, type ScaffoldUtils } from "../utils/fs.ts";
 import { toEdge, toKebab, toShout } from "../utils/naming.ts";
 import {
+  type Contract,
   type Field,
   findTypeImports,
   type NodeSource,
   parseNode,
+  parseRegistry,
+  REGISTRY,
   readSources,
 } from "../utils/node-source.ts";
 import { addWalkScript } from "../utils/package-json.ts";
@@ -17,11 +20,9 @@ import {
   renderWalkTest,
   type WalkNode,
 } from "../utils/templates.ts";
+import type { HasArgv, HasExitCode } from "./state.ts";
 
-export interface State {
-  argv: string[];
-  exitCode: number;
-}
+export interface State extends HasArgv, HasExitCode {}
 
 export type Edge = "onDone" | "onError";
 
@@ -69,38 +70,36 @@ function nodeCommand(name: string, flags: EdgeFlag[]): string {
 }
 
 /**
- * One `State` with every field of every node. A field is optional only if
- * every node that has it says so. Returns the first field nodes give
- * different types as an error.
+ * One `State` with the field of every contract the nodes compose, resolved
+ * through the registry, in the order the nodes name them. The field keeps
+ * the registry's optionality. Returns a contract the registry lacks, or a
+ * node that declares fields of its own, as an error.
  */
 function mergeState(
   nodes: { file: string; source: NodeSource }[],
-): Field[] | { conflict: string } {
-  const merged = new Map<string, { field: Field; files: string[] }>();
+  registry: Contract[],
+): Field[] | { error: string } {
+  const merged = new Map<string, Field>();
   for (const { file, source } of nodes) {
-    for (const field of source.state) {
-      const seen = merged.get(field.name);
-      if (!seen) {
-        merged.set(field.name, { field: { ...field }, files: [file] });
-      } else if (seen.field.type !== field.type) {
-        const given = nodes
-          .map((n) => ({
-            file: n.file,
-            f: n.source.state.find((f) => f.name === field.name),
-          }))
-          .filter((n) => n.f)
-          .map((n) => `${n.file}: ${n.f?.type}`)
-          .join(", ");
+    if (source.state.length > 0) {
+      const own = source.state.map((f) => f.name).join(", ");
+      return {
+        error: `${file} declares State fields of its own (${own}); move each to a Has* contract in ${REGISTRY} and extend it`,
+      };
+    }
+    for (const name of source.contracts) {
+      const contract = registry.find((c) => c.name === name);
+      if (!contract) {
         return {
-          conflict: `nodes give "${field.name}" different types (${given})`,
+          error: `${file} extends ${name}, which ${REGISTRY} does not declare`,
         };
-      } else {
-        seen.field.optional &&= field.optional;
-        seen.files.push(file);
+      }
+      if (!merged.has(contract.field.name)) {
+        merged.set(contract.field.name, { ...contract.field });
       }
     }
   }
-  return [...merged.values()].map((m) => m.field);
+  return [...merged.values()];
 }
 
 export const factory: NodeFactory<State, Edge, Utils> =
@@ -234,14 +233,17 @@ export const factory: NodeFactory<State, Edge, Utils> =
       }),
     }));
 
-    const stateFields = mergeState(nodes);
-    if ("conflict" in stateFields) {
-      return [edges.onError, failed(2, `Error: ${stateFields.conflict}`)];
+    const registry = utils.exists(REGISTRY)
+      ? parseRegistry(utils.readFile(REGISTRY))
+      : [];
+    const stateFields = mergeState(nodes, registry);
+    if ("error" in stateFields) {
+      return [edges.onError, failed(2, `Error: ${stateFields.error}`)];
     }
 
     const { imports: typeImports, missing: missingTypes } = findTypeImports(
       stateFields.map((f) => f.type),
-      [...readSources(utils, "utils"), ...nodes],
+      [...readSources(utils, "utils"), ...readSources(utils, "nodes")],
     );
     for (const typeName of missingTypes) {
       utils.printError(

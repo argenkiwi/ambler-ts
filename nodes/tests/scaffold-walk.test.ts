@@ -9,8 +9,23 @@ const edges = { onDone: "DONE", onError: "ERROR" };
 const run = (fs: ReturnType<typeof fakeFs>, argv: string[]) =>
   factory(edges, fs.utils)({ argv, exitCode: 0 });
 
-const node = (state: string, edgeUnion: string) =>
-  `export interface State {\n${state}}\n\nexport type Edge = ${edgeUnion};\n`;
+const node = (contracts: string, edgeUnion: string) =>
+  `import type { ${contracts} } from "./state.ts";\n\nexport interface State extends ${contracts} {}\n\nexport type Edge = ${edgeUnion};\n`;
+
+const REGISTRY = `import type { Board } from "../utils/game.ts";
+
+export interface HasCount {
+  count: number;
+}
+
+export interface HasBoard {
+  board: Board;
+}
+
+export interface HasNote {
+  note?: string;
+}
+`;
 
 const PACKAGE = `{
   "name": "demo",
@@ -26,12 +41,13 @@ const PACKAGE = `{
 function project(extra: Record<string, string> = {}) {
   return fakeFs({
     "package.json": PACKAGE,
-    "nodes/start.ts": node("  count: number;\n", '"onSuccess" | "onError"'),
+    "nodes/state.ts": REGISTRY,
+    "nodes/start.ts": node("HasCount", '"onSuccess" | "onError"'),
     "nodes/count.ts": node(
-      "  count: number;\n  board: Board;\n  note?: string;\n",
+      "HasCount, HasBoard, HasNote",
       '"onCount" | "onStop"',
     ),
-    "nodes/stop.ts": node("  count: number;\n", '"onDone"'),
+    "nodes/stop.ts": node("HasCount", '"onDone"'),
     "utils/game.ts": "export type Board = string[][];\n",
     ...extra,
   });
@@ -160,16 +176,41 @@ test("scaffoldWalk rejects bad --edge flags (exit code 2)", async () => {
   }
 });
 
-test("scaffoldWalk fails when nodes give a field different types (exit code 2)", async () => {
+test("scaffoldWalk fails when a node extends a contract the registry lacks (exit code 2)", async () => {
   const fs = project({
-    "nodes/other.ts": node("  count: string;\n", '"onDone"'),
+    "nodes/other.ts": node("HasCount, HasScore", '"onDone"'),
   });
   const [next, state] = await run(fs, ["demo", "--nodes", "start,other"]);
   expect(next).toBe("ERROR");
   expect(state.exitCode).toBe(2);
   expect(fs.errors).toEqual([
-    'Error: nodes give "count" different types (nodes/start.ts: number, nodes/other.ts: string)',
+    "Error: nodes/other.ts extends HasScore, which nodes/state.ts does not declare",
   ]);
+  expect(fs.files.has("walks/demo.ts")).toBe(false);
+});
+
+test("scaffoldWalk fails when a node declares State fields of its own (exit code 2)", async () => {
+  const fs = project({
+    "nodes/other.ts":
+      'export interface State {\n  hp: number;\n}\n\nexport type Edge = "onDone";\n',
+  });
+  const [next, state] = await run(fs, ["demo", "--nodes", "start,other"]);
+  expect(next).toBe("ERROR");
+  expect(state.exitCode).toBe(2);
+  expect(fs.errors[0]).toContain(
+    "nodes/other.ts declares State fields of its own (hp)",
+  );
+});
+
+test("scaffoldWalk gives State = object when no node has state", async () => {
+  const fs = project({
+    "nodes/bye.ts":
+      'export type State = object;\n\nexport type Edge = "onDone";\n',
+  });
+  await run(fs, ["demo", "--nodes", "bye"]);
+  const walk = fs.files.get("walks/demo.ts") ?? "";
+  expect(walk).toContain("export type State = object;");
+  expect(walk).toContain('await walk(createWalk(), "BYE", {});');
 });
 
 test("scaffoldWalk requires a name and --nodes (exit code 2)", async () => {

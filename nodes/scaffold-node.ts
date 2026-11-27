@@ -3,17 +3,23 @@ import { parseArgs } from "node:util";
 import type { NodeFactory } from "../ambler.ts";
 import { defaultScaffoldUtils, type ScaffoldUtils } from "../utils/fs.ts";
 import { toCamel, toEdge, toKebab } from "../utils/naming.ts";
-import { findTypeImports, readSources } from "../utils/node-source.ts";
+import {
+  appendContracts,
+  type Contract,
+  contractName,
+  findTypeImports,
+  parseRegistry,
+  REGISTRY,
+  readSources,
+} from "../utils/node-source.ts";
 import {
   renderNode,
   renderNodeTest,
   type StateField,
 } from "../utils/templates.ts";
+import type { HasArgv, HasExitCode } from "./state.ts";
 
-export interface State {
-  argv: string[];
-  exitCode: number;
-}
+export interface State extends HasArgv, HasExitCode {}
 
 export type Edge = "onDone" | "onError";
 
@@ -70,69 +76,98 @@ export const factory: NodeFactory<State, Edge, Utils> =
       ];
     }
 
-    // `--state count:number` gives a type; `--state count` reuses the type
-    // another node already gives the field.
-    const nodes = readSources(utils, "nodes");
-    const stateFields: StateField[] = [];
+    // Each field is a `Has*` contract in the registry, nodes/state.ts.
+    // `--state count` reuses `HasCount`; `--state count:number` reuses it if
+    // the types agree, or adds it.
+    const registrySource = utils.exists(REGISTRY)
+      ? utils.readFile(REGISTRY)
+      : "";
+    const registry = parseRegistry(registrySource);
+    const contracts: Contract[] = [];
+    const added: Contract[] = [];
     for (const item of values.state ?? []) {
       const colon = item.indexOf(":");
       const fieldName = toCamel(
         (colon < 0 ? item : item.slice(0, colon)).trim(),
       );
-      if (colon >= 0) {
-        stateFields.push({
-          name: fieldName,
-          type: item.slice(colon + 1).trim(),
-        });
-        continue;
+      const contract = contractName(fieldName);
+      const known = [...registry, ...added].find((c) => c.name === contract);
+      if (colon < 0) {
+        if (!known) {
+          return [
+            edges.onError,
+            failed(
+              2,
+              `Error: ${REGISTRY} has no ${contract}; give the field's type: --state ${fieldName}:<Type>`,
+            ),
+          ];
+        }
+      } else {
+        const type = item.slice(colon + 1).trim();
+        if (known && known.field.type !== type.replace(/\s+/g, " ")) {
+          return [
+            edges.onError,
+            failed(
+              2,
+              `Error: ${REGISTRY} gives ${contract} the type ${known.field.type}, not ${type}; use --state ${fieldName}, or change ${contract} by hand`,
+            ),
+          ];
+        }
+        if (!known) {
+          added.push({
+            name: contract,
+            field: { name: fieldName, type, optional: false },
+          });
+        }
       }
-      const found = nodes.flatMap(({ file, source }) =>
-        source.state
-          .filter((f) => f.name === fieldName)
-          .map((f) => ({ file, field: f })),
-      );
-      const types = [...new Set(found.map((f) => f.field.type))];
-      if (types.length === 0) {
-        return [
-          edges.onError,
-          failed(
-            2,
-            `Error: no node in nodes/ has a State field "${fieldName}"; give its type: --state ${fieldName}:<Type>`,
-          ),
-        ];
-      }
-      if (types.length > 1) {
-        const given = found.map((f) => `${f.file}: ${f.field.type}`).join(", ");
-        return [
-          edges.onError,
-          failed(
-            2,
-            `Error: nodes give "${fieldName}" different types (${given}); choose one: --state ${fieldName}:<Type>`,
-          ),
-        ];
-      }
-      stateFields.push({ ...found[0].field });
+      const resolved = known ?? added[added.length - 1];
+      if (!contracts.includes(resolved)) contracts.push(resolved);
     }
+    const stateFields: StateField[] = contracts.map((c) => ({ ...c.field }));
 
-    // Types the fields name, imported from the node or utility exporting them.
+    // Types the fields name, imported from the node or utility exporting them
+    // (the registry itself among them).
+    const exporters = [
+      ...readSources(utils, "utils"),
+      ...readSources(utils, "nodes"),
+    ];
     const { imports: typeImports, missing } = findTypeImports(
       stateFields.map((f) => f.type),
-      [...readSources(utils, "utils"), ...nodes],
+      exporters,
     );
     for (const typeName of missing) {
       utils.printError(
-        `Warning: no file in nodes/ or utils/ exports the type ${typeName}; declare or import it in ${nodeFile}`,
+        `Warning: no file in nodes/ or utils/ exports the type ${typeName}; declare or import it in ${REGISTRY}`,
       );
     }
 
     utils.mkdir(join("nodes", "tests"));
-    utils.writeFile(nodeFile, renderNode(edgeNames, stateFields, typeImports));
+    const written = [nodeFile, testFile];
+    if (added.length > 0) {
+      const { imports: registryImports } = findTypeImports(
+        added.map((c) => c.field.type),
+        exporters,
+      );
+      utils.writeFile(
+        REGISTRY,
+        appendContracts(registrySource, added, registryImports),
+      );
+      written.unshift(REGISTRY);
+    }
+    utils.writeFile(
+      nodeFile,
+      renderNode(
+        edgeNames,
+        contracts.map((c) => c.name),
+      ),
+    );
     utils.writeFile(
       testFile,
       renderNodeTest(name, edgeNames, stateFields, typeImports),
     );
-    utils.format([nodeFile, testFile]);
+    utils.format(written);
 
+    for (const c of added) utils.print(`Added ${c.name} to ${REGISTRY}`);
     utils.print(`Created ${nodeFile}`);
     utils.print(`Created ${testFile}`);
     return [edges.onDone, state];

@@ -16,7 +16,7 @@ Where the `ambler` command is installed, `ambler <verb>` runs the same thing. It
 
 ## The four ideas
 
-- State: one object per walk. Each node declares only the fields it uses in its own `State`; the walk's `State` has them all.
+- State: one object per walk. Each field has a one-field `Has*` contract in `nodes/state.ts`; a node's `State` extends the contracts of the fields it uses (`interface State extends HasCount {}`), and the walk's `State` has them all.
 - Node: one step. A factory takes the edges and utils and returns a function from state to `[next, newState]`. It returns the id its edge was wired to, never a node it chose.
 - Utils: a node's side effects, one function each, in its `Utils` type. `defaultUtils` is the real thing; tests pass their own.
 - Walk: wires each node's edges to the next node in `createWalk`. The edges record is typed, so an unwired edge does not compile.

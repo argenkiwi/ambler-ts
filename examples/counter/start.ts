@@ -1,8 +1,7 @@
 import type { NodeFactory } from "../../ambler.ts";
+import type { HasCount } from "./state.ts";
 
-export interface State {
-  count: number;
-}
+export interface State extends HasCount {}
 
 export type Edge = "onSuccess" | "onError";
 

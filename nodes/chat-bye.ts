@@ -1,5 +1,7 @@
 import type { NodeFactory } from "../ambler.ts";
 
+export type State = object;
+
 export type Edge = "onDone";
 
 export type Utils = {
@@ -10,7 +12,7 @@ const defaultUtils: Utils = {
   print: (msg) => console.log(msg),
 };
 
-export const factory: NodeFactory<object, Edge, Utils> = (
+export const factory: NodeFactory<State, Edge, Utils> = (
   edges,
   utils = defaultUtils,
 ) => {

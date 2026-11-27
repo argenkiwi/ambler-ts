@@ -1,11 +1,9 @@
 import type { NodeFactory } from "../ambler.ts";
 import { listModels } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
+import type { HasHost, HasModel } from "./state.ts";
 
-export interface State {
-  host: string;
-  model: string;
-}
+export interface State extends HasHost, HasModel {}
 
 export type Edge = "onSuccess";
 

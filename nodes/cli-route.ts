@@ -1,10 +1,7 @@
 import type { NodeFactory } from "../ambler.ts";
+import type { HasArgv, HasCommand, HasExitCode } from "./state.ts";
 
-export interface State {
-  argv: string[];
-  command?: string;
-  exitCode: number;
-}
+export interface State extends HasArgv, HasCommand, HasExitCode {}
 
 export type Edge =
   | "onNode"

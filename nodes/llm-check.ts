@@ -1,10 +1,9 @@
 import type { NodeFactory } from "../ambler.ts";
 import { checkHost } from "../utils/llm_chat.ts";
 import { getPrompt } from "../utils/prompt.ts";
+import type { HasHost } from "./state.ts";
 
-export interface State {
-  host: string;
-}
+export interface State extends HasHost {}
 
 /** `onQuit` fires at end of input, so a closed stdin cannot loop forever. */
 export type Edge = "onSuccess" | "onError" | "onQuit";

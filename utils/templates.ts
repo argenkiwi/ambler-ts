@@ -19,25 +19,24 @@ export interface TypeImport {
   file: string;
 }
 
-/**
- * An interface with `fields`, or an empty one with the Biome suppression that
- * keeps `noEmptyInterface` quiet until the first field is added.
- */
-function renderInterface(
-  name: string,
-  fields: StateField[],
-  why: string,
-): string {
-  if (fields.length === 0) {
-    return `// biome-ignore lint/suspicious/noEmptyInterface: ${why}
-export interface ${name} {}`;
-  }
+/** A walk's concrete `State` with `fields`, or `object` when it has none. */
+function renderWalkState(fields: StateField[]): string {
+  if (fields.length === 0) return "export type State = object;";
   const body = fields
     .map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`)
     .join("\n");
-  return `export interface ${name} {
+  return `export interface State {
 ${body}
 }`;
+}
+
+/**
+ * A node's `State`, composed of the registry's `contracts`, or `object` when
+ * the node needs no state.
+ */
+function renderNodeState(contracts: string[]): string {
+  if (contracts.length === 0) return "export type State = object;";
+  return `export interface State extends ${contracts.join(", ")} {}`;
 }
 
 /** `import type` lines for `types`, as seen from the project file `from`. */
@@ -69,16 +68,20 @@ export function mockValue(type: string): string {
   return `{} as ${type}`;
 }
 
-export function renderNode(
-  edges: string[],
-  stateFields: StateField[],
-  typeImports: TypeImport[] = [],
-): string {
+/**
+ * A node with `edges` whose `State` extends the registry's `contracts`
+ * (`HasCount`), imported from `nodes/state.ts`.
+ */
+export function renderNode(edges: string[], contracts: string[]): string {
   const edgeUnion = edges.map((e) => `"${e}"`).join(" | ");
+  const stateImport =
+    contracts.length > 0
+      ? `import type { ${[...contracts].sort().join(", ")} } from "./state.ts";\n`
+      : "";
 
   return `import type { NodeFactory } from "../ambler.ts";
-${renderTypeImports("nodes/node.ts", typeImports)}
-${renderInterface("State", stateFields, "add the fields this node reads and writes")}
+${stateImport}
+${renderNodeState(contracts)}
 
 export type Edge = ${edgeUnion};
 
@@ -191,7 +194,7 @@ function unwired(edge: string): never {
   return `import { ambler, walk } from "../ambler.ts";
 ${imports}
 ${renderTypeImports("walks/walk.ts", typeImports)}
-${renderInterface("State", stateFields, "add the fields the nodes share")}
+${renderWalkState(stateFields)}
 
 export type NodeId = ${nodeIds};
 
@@ -238,7 +241,8 @@ export function renderUtil(name: string): string {
  * Shared utility ${name}.
  */
 
-${renderInterface(`${toPascal(name)}Utils`, [], "add one function per side effect")}
+/** One function per side effect; replace \`Record<string, never>\` with them. */
+export type ${toPascal(name)}Utils = Record<string, never>;
 
 export const default${toPascal(name)}Utils: ${toPascal(name)}Utils = {
   // Production implementation
